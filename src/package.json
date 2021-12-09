@@ -1,0 +1,9 @@
+{
+  "name": "openasar",
+  "description": "Discord Client for Desktop - Bootstrapper",
+
+  "main": "index.js",
+
+  "dependencies": {
+  }
+}
