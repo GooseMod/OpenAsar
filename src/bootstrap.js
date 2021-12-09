@@ -1,10 +1,10 @@
-const { join } = require('path');
-const NodeModule = require('module');
 const { app } = require('electron');
 
 const requireNative = require('./utils/requireNative');
 const paths = require('./paths');
 const buildInfo = require('./utils/buildInfo');
+
+log('BuildInfo', 'Loaded build info', buildInfo);
 
 // Just required for startup
 const appSettings = require('./appSettings');
