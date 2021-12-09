@@ -4,7 +4,7 @@
 ## Goals
 - **Hotpluggable** - just swap the asar file, nothing else needed
 - **Lightweight** - it should be at least as fast or lightweight, hopefully more
-- **No Tracking** - no crash reporting, error tracking, etc
+- **No Tracking** - no crash reporting or error tracking (in normal Discord)
 - **Minimal** - generally only doing what is needed (see: implementation)
 - **Patch Platform** - provide a platform for future patching
 
