@@ -18,3 +18,11 @@ Below is a list in order of priority, marked as complete when finished:
 - [ ] First run
 - [ ] Self-write updater code (currently mostly copied)
 - [ ] Self-write some small parts of internals
+
+## Install Guide
+**OpenAsar is heavily disrecommened due to it being in early development.**
+1. Clone repo
+2. NPM install in `src` dir (`cd src; npm i`)
+3. Pack into `app.asar` via `asar` NPM package - `asar pack src app.asar`
+4. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
+5. Install OpenAsar `app.asar` into the original path
