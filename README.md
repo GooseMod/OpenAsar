@@ -6,6 +6,7 @@
 - **Lightweight** - it should be at least as fast or lightweight, hopefully more
 - **No Tracking** - no crash reporting, error tracking, etc
 - **Minimal** - generally only doing what is needed (see: implementation)
+- **Patch Platform** - provide a platform for future patching
 
 ## Implementation
 Below is a list in order of priority, marked as complete when finished:
@@ -16,8 +17,15 @@ Below is a list in order of priority, marked as complete when finished:
   - [ ] Handle hardware acceleration
 - [ ] Auto start
 - [ ] First run
-- [ ] Self-write updater code (currently mostly copied)
 - [ ] Self-write some small parts of internals
+- [ ] Patch updater to survive host updates
+- [ ] Self-write updater code (currently mostly copied)
+
+## Custom Patches
+Custom patches are another main goal of OpenAsar, patching enhancements where otherwise impossible to do so with traditional mods. Our current ideas for patches to do:
+- [ ] Skipping checking for updates on startup
+- [ ] Linux host app updating
+
 
 ## Install Guide
 **OpenAsar is heavily disrecommened due to it being in early development.**
