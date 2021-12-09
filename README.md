@@ -1,5 +1,5 @@
 # OpenAsar
-**Open-source alternative of Discord desktop's `app.asar`**
+**Open-source alternative of Discord desktop's `app.asar`** OpenAsar is currently made of **~80% own code**, with the rest being from Discord as it hasn't been rewritten yet or because of compatibility reasons.
 
 ## Goals
 - **Hotpluggable** - just swap the asar file, nothing else needed
