@@ -329,13 +329,13 @@ function initSplash(startMinimized = false) {
 
   _ipcMain.default.on('UPDATED_QUOTES', (_event, quotes) => cacheLatestQuotes(quotes));
 
-  if (process.env.OPENASAR_QUICKSTART) setTimeout(() => {
+  if (process.env.OPENASAR_QUICKSTART || oaConfig.quickstart) setTimeout(() => {
     destroySplash();
 
     if (newUpdater != null) {
       updateUntilCurrent();
     } else {
-      // moduleUpdater.installPendingUpdates();
+      moduleUpdater.installPendingUpdates();
       moduleUpdater.setInBackground();
     }
 
@@ -344,7 +344,7 @@ function initSplash(startMinimized = false) {
     setTimeout(() => {
       events.emit(APP_SHOULD_SHOW);
     }, 100);
-  }, 50);
+  }, newUpdater != null ? 500 : 50);
 }
 
 function destroySplash() {
