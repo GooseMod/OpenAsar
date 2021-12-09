@@ -2,7 +2,6 @@ const { join } = require('path');
 const NodeModule = require('module');
 const { app } = require('electron');
 
-const log = require('./utils/log');
 const requireNative = require('./utils/requireNative');
 const paths = require('./paths');
 const buildInfo = require('./utils/buildInfo');

@@ -67,6 +67,8 @@ const events = new _events.EventEmitter();
 exports.events = events;
 
 function webContentsSend(win, event, ...args) {
+  log('Splash', `Sending to webcontents:`, event, args);
+
   if (win != null && win.webContents != null) {
     win.webContents.send(`DISCORD_${event}`, ...args);
   }
@@ -299,6 +301,8 @@ function initOldUpdater() {
 }
 
 function initSplash(startMinimized = false) {
+  log('Splash', `Initing splash`);
+
   splashState = {};
   launchedMainWindow = false;
   updateAttempt = 0;
@@ -315,6 +319,8 @@ function initSplash(startMinimized = false) {
 }
 
 function destroySplash() {
+  log('Splash', `Destroying splash`);
+
   stopUpdateTimeout();
 
   if (splashWindow) {
@@ -385,6 +391,7 @@ function launchSplashWindow(startMinimized) {
     }
   };
   splashWindow = new _electron.BrowserWindow(windowConfig); // prevent users from dropping links to navigate in splash window
+  log('Splash', 'Created BrowserWindow');
 
   splashWindow.webContents.on('will-navigate', e => e.preventDefault());
   splashWindow.webContents.on('new-window', (e, windowURL) => {
@@ -408,6 +415,8 @@ function launchSplashWindow(startMinimized) {
   }
 
   _ipcMain.default.on('SPLASH_SCREEN_READY', () => {
+    log('Splash', 'Window declared ready, showing and starting update process');
+
     const cachedQuote = chooseCachedQuote();
 
     if (cachedQuote) {
@@ -436,6 +445,8 @@ function launchSplashWindow(startMinimized) {
   });
 
   splashWindow.loadURL(splashUrl);
+
+  log('Splash', `Loading window (with url ${splashUrl})`);
 }
 
 function launchMainWindow() {
@@ -456,12 +467,16 @@ function scheduleUpdateCheck() {
 }
 
 function focusWindow() {
+  log('Splash', `Told to focus splash window`);
+
   if (splashWindow != null) {
     splashWindow.focus();
   }
 }
 
 function pageReady() {
+  log('Splash', `Page ready called, destroying splash and marking app to show`);
+
   destroySplash();
   process.nextTick(() => events.emit(APP_SHOULD_SHOW));
 }

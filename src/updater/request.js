@@ -155,6 +155,8 @@ async function electronRequest({
 }
 
 async function requestWithMethod(method, options) {
+  log('Request', method, options);
+
   if (typeof options === 'string') {
     options = {
       url: options

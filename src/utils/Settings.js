@@ -1,8 +1,6 @@
 const { readFileSync, statSync, writeFileSync } = require('fs');
 const { join } = require('path');
 
-const log = require('./log');
-
 class Settings { // Heavily based on original for compat, but simplified and tweaked
   constructor(root) {
     this.path = join(root, 'settings.json');

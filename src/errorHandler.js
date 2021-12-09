@@ -1,7 +1,5 @@
 const { app } = require("electron");
 
-const log = require('./utils/log');
-
 exports.init = () => {
   /* process.on('uncaughtException', error => {
     const stack = error.stack ? error.stack : String(error);
