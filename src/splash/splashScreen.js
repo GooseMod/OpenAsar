@@ -192,6 +192,18 @@ async function updateUntilCurrent() {
 }
 /* eslint-enable camelcase */
 
+const oldCheckForUpdates = () => {
+  if (oaConfig.skipStartupUpdateChecks !== true) {
+    moduleUpdater.checkForUpdates();
+  } else {
+    log('Splash', 'Skipping startup update checking (enabled)');
+
+    modulesListeners[UPDATE_CHECK_FINISHED]({
+      succeeded: true,
+      updateCount: 0
+    });
+  }
+};
 
 function initOldUpdater() {
   modulesListeners = {};
@@ -263,7 +275,7 @@ function initOldUpdater() {
       });
     }
   });
-  addModulesListener(NO_PENDING_UPDATES, () => moduleUpdater.checkForUpdates());
+  addModulesListener(NO_PENDING_UPDATES, () => oldCheckForUpdates());
   addModulesListener(INSTALLING_MODULE, ({
     name,
     current,
@@ -291,7 +303,7 @@ function initOldUpdater() {
   addModulesListener(INSTALLING_MODULES_FINISHED, ({
     succeeded,
     failed
-  }) => moduleUpdater.checkForUpdates());
+  }) => oldCheckForUpdates());
   addModulesListener(UPDATE_MANUALLY, ({
     newVersion
   }) => {
@@ -316,6 +328,23 @@ function initSplash(startMinimized = false) {
   quoteCachePath = _path.default.join(paths.getUserData(), 'quotes.json');
 
   _ipcMain.default.on('UPDATED_QUOTES', (_event, quotes) => cacheLatestQuotes(quotes));
+
+  if (process.env.OPENASAR_QUICKSTART) setTimeout(() => {
+    destroySplash();
+
+    if (newUpdater != null) {
+      updateUntilCurrent();
+    } else {
+      // moduleUpdater.installPendingUpdates();
+      moduleUpdater.setInBackground();
+    }
+
+    launchMainWindow();
+    
+    setTimeout(() => {
+      events.emit(APP_SHOULD_SHOW);
+    }, 100);
+  }, 50);
 }
 
 function destroySplash() {

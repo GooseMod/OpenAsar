@@ -41,6 +41,7 @@ const startUpdate = () => {
   appUpdater.update(false, () => {
     startCore();
   }, () => {
+    log('Bootstrap', 'Setting main window visible');
     desktopCore.setMainWindowVisible(true);
   });
 };
