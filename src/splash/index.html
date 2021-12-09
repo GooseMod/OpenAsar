@@ -1,0 +1,89 @@
+<div id="text">openasar go brr</div>
+
+<div id="bar-container"></div>
+<div id="bar-fill"></div>
+
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+
+    background: #101418;
+  }
+
+  * {
+    color: rgba(255, 255, 255, 0.97);
+    font-family: sans-serif;
+  }
+
+  #text {
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    font-size: 7vw;
+    text-align: center;
+
+    text-transform: capitalize;
+
+    width: 100%;
+  }
+
+  #bar-container, #bar-fill {
+    position: absolute;
+    top: 58%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    width: 80%;
+    height: 5%;
+
+    border-radius: 4px;
+
+    display: none;
+  }
+
+  #bar-container {
+    background: #202428;
+  }
+
+  #bar-fill {
+    background: rgb(88, 101, 242);
+    width: 0;
+
+    transform: translate(0%, -50%);
+    left: 10%;
+  }
+</style>
+
+
+<script>
+  const text = document.querySelector('#text');
+
+  const barContainer = document.querySelector('#bar-container');
+  const barFill = document.querySelector('#bar-fill');
+
+  DiscordSplash.signalReady();
+
+
+  DiscordSplash.onStateUpdate(({ status, current, total, progress }) => {
+    console.log('onStateUpdate', progress);
+
+    text.textContent = status.replaceAll('-', ' ');
+
+    if (progress) {
+      barContainer.style.display = 'block';
+      barFill.style.display = 'block';
+
+      barFill.style.width = 80 * (progress / 100) + '%';
+    } else {
+      barContainer.style.display = '';
+      barFill.style.display = '';
+    }
+  });
+
+  DiscordSplash.onQuoteUpdate((e) => {
+    console.log('onQuoteUpdate', e);
+  })
+</script>
