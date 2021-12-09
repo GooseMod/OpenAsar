@@ -1,6 +1,7 @@
 {
   "name": "openasar",
   "description": "Open-source alternative of Discord desktop's app.asar",
+  "version": "0.1",
 
   "main": "index.js",
 
