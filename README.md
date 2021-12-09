@@ -22,6 +22,20 @@ Below is a list in order of priority, marked as complete when finished:
 - [ ] Self-write updater code (currently mostly copied)
 - [ ] Compatibility / replication of original Discord splash?
 
+## Custom Patches
+Custom patches are another main goal of OpenAsar, patching enhancements where otherwise impossible to do so with traditional mods. Our current ideas for patches to do:
+- [X] Skipping checking for updates on startup
+- [ ] Linux host app updating
+
+
+## Install Guide
+**OpenAsar is heavily disrecommened due to it being in early development.**
+1. Clone repo
+2. NPM install in `src` dir (`cd src; npm i`)
+3. Pack into `app.asar` via `asar` NPM package - `asar pack src app.asar`
+4. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
+5. Install OpenAsar `app.asar` into the original path
+
 ## Config
 You can configure OpenAsar via `settings.json` (found in your Discord app data / user data), under a `openasar` object. Keep in mind most options are defaults for good reason, they may temporarily brick your client until you revert your changes. The avaliable options are:
 - `quickstart` (bool) - enables Quickstart (experimental)
@@ -46,18 +60,3 @@ An example of a settings.json with OpenAsar config:
   }
 }
 ```
-
-
-## Custom Patches
-Custom patches are another main goal of OpenAsar, patching enhancements where otherwise impossible to do so with traditional mods. Our current ideas for patches to do:
-- [X] Skipping checking for updates on startup
-- [ ] Linux host app updating
-
-
-## Install Guide
-**OpenAsar is heavily disrecommened due to it being in early development.**
-1. Clone repo
-2. NPM install in `src` dir (`cd src; npm i`)
-3. Pack into `app.asar` via `asar` NPM package - `asar pack src app.asar`
-4. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
-5. Install OpenAsar `app.asar` into the original path
