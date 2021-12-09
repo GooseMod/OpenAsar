@@ -71,6 +71,7 @@
     console.log('onStateUpdate', progress);
 
     text.textContent = status.replaceAll('-', ' ');
+    if (current) text.textContent += ` (${current}/${total})`;
 
     if (progress) {
       barContainer.style.display = 'block';
