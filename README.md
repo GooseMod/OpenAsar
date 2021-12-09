@@ -30,9 +30,7 @@ Custom patches are another main goal of OpenAsar, patching enhancements where ot
 
 ## Install Guide
 **OpenAsar is heavily disrecommened due to it being in early development.**
-1. Clone repo
-2. NPM install in `src` dir (`cd src; npm i`)
-3. Pack into `app.asar` via `asar` NPM package - `asar pack src app.asar`
+1. Download latest release
 4. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
 5. Install OpenAsar `app.asar` into the original path
 
