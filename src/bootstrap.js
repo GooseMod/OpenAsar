@@ -1,8 +1,12 @@
 const { app } = require('electron');
 
 const requireNative = require('./utils/requireNative');
+
 const paths = require('./paths');
+global.moduleDataPath = paths.getModuleDataPath(); // Global because discord
+
 const buildInfo = require('./utils/buildInfo');
+app.setVersion(buildInfo.version); // More global because discord / electron
 
 log('BuildInfo', 'Loaded build info', buildInfo);
 
