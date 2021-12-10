@@ -29,10 +29,10 @@ jobs:
 
     - name: Make Deps Asar
       run: |
-      cd src
-      npm install request
-      cd ..
-      npx asar pack src openasar-with-deps.asar
+        cd src
+        npm install request
+        cd ..
+        npx asar pack src openasar-with-deps.asar
 
     - name: GitHub Release
       uses: ncipollo/release-action@v1
