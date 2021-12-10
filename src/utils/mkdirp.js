@@ -8,9 +8,9 @@ const fs = require('fs');
 const async = (path, callback) => { // async
   log('Mkdirp', 'Async:', path);
 
-  try {
-    fs.mkdir(path, callback, { recursive: true });
-  } catch (e) { } // Doesn't exist, ignore
+  fs.mkdir(path, () => { // Ignore errors (already exists)
+    callback();
+  }, { recursive: true });
 };
 
 const sync = (path) => { // sync
@@ -18,7 +18,7 @@ const sync = (path) => { // sync
 
   try {
     fs.mkdirSync(path, { recursive: true });
-  } catch (e) { } // Doesn't exist, ignore
+  } catch (e) { } // Already exists, ignore
 };
 
 const toExport = async;
