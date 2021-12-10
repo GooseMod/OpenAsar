@@ -1,11 +1,8 @@
 {
   "name": "openasar",
   "description": "Open-source alternative of Discord desktop's app.asar",
-
   "main": "index.js",
-
   "dependencies": {
-    "mkdirp": "^0.5.1",
     "request": "2.88.0",
     "yauzl": "^2.10.0"
   }

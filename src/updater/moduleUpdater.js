@@ -22,8 +22,6 @@ var _module = _interopRequireDefault(require("module"));
 
 var _events = require("events");
 
-var _mkdirp = _interopRequireDefault(require("mkdirp"));
-
 var _process = require("process");
 
 var _yauzl = _interopRequireDefault(require("yauzl"));
@@ -228,7 +226,7 @@ function init(_endpoint, _settings, _buildInfo) {
     installedModulesFilePath = _path.default.join(moduleInstallPath, 'installed.json');
     moduleDownloadPath = _path.default.join(moduleInstallPath, 'pending');
 
-    _mkdirp.default.sync(moduleDownloadPath);
+    _fs.default.mkdirSync(moduleDownloadPath, { recursive: true });
 
     logger.log(`Module install path: ${moduleInstallPath}`);
     logger.log(`Module installed file path: ${installedModulesFilePath}`);
@@ -729,7 +727,7 @@ function processUnzipQueue() {
         }
 
         stream.on('error', e => onError(e, zipfile));
-        (0, _mkdirp.default)(_path.default.join(extractRoot, _path.default.dirname(entry.fileName)), err => {
+        _fs.default.mkdir(_path.default.join(extractRoot, _path.default.dirname(entry.fileName)), err => {
           if (err) {
             onError(err, zipfile);
             return;
@@ -766,7 +764,7 @@ function processUnzipQueue() {
             zipfile.readEntry();
           });
           stream.pipe(writeStream);
-        });
+        }, { recursive: true });
       });
     });
     zipfile.on('error', err => {
