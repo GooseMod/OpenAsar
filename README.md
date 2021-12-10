@@ -3,7 +3,7 @@
 
 ## Goals
 - **Hotpluggable** - just swap the asar file, nothing else needed
-- **Lightweight** - it should be at least as fast or lightweight, hopefully more
+- **Lightweight** - currently improving startup times ~2x (up to ~4x with experimental config)
 - **No Tracking** - no crash reporting or error tracking (in normal Discord)
 - **Minimal** - generally only doing what is needed
 - **Patch Platform** - provide a platform for future patching
