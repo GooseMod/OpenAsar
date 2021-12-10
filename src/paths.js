@@ -12,12 +12,12 @@ const exeDir = dirname(app.getPath('exe'));
 const installPath = /^app-[0-9]+\.[0-9]+\.[0-9]+/.test(basename(exeDir)) ? join(exeDir, '..') : null;
 
 const moduleData = buildInfo.newUpdater ? join(userData, 'module_data') : join(userDataVersioned, 'modules');
-
+const resourcesPath = join(process.resourcesPath, '..'); // Discord uses path and require.main.filename here because ??
 
 exports.getUserData = () => userData;
 exports.getUserDataVersioned = () => userDataVersioned;
 
-exports.getResources = () => process.resourcesPath; // Discord uses path and require.main.filename here because ??
+exports.getResources = () => resourcesPath;
 exports.getModuleDataPath = () => moduleData;
 exports.getInstallPath = () => installPath;
 
