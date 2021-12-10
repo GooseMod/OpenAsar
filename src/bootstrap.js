@@ -18,6 +18,9 @@ const updater = require('./updater/updater');
 const moduleUpdater = require('./updater/moduleUpdater');
 const appUpdater = require('./updater/appUpdater');
 
+const settings = appSettings.getSettings();
+if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
+
 let desktopCore;
 const startCore = () => {
   desktopCore = requireNative('discord_desktop_core');
