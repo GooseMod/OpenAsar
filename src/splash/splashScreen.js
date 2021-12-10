@@ -332,6 +332,18 @@ function initSplash(startMinimized = false) {
   if (process.env.OPENASAR_QUICKSTART || oaConfig.quickstart) setTimeout(() => {
     destroySplash();
 
+    if (newUpdater !== null) { // Manually load desktop_core module path for faster requiring
+      const NodeModule = require('module');
+
+      const installDir = paths.getInstallPath();
+      const appDir = _fs.default.readdirSync(installDir).find((x) => x.startsWith('app-1')); // Find app dir by name
+
+      const modulesDir = _path.default.join(installDir, appDir, 'modules');
+
+      const moduleCoreDir = _fs.default.readdirSync(modulesDir).find((x) => x.startsWith('discord_desktop_core-')); // Find desktop core dir by name
+      NodeModule.globalPaths.push(_path.default.join(modulesDir, moduleCoreDir)); // Add to globalPaths for requiring
+    }
+
     if (newUpdater != null) {
       updateUntilCurrent();
     } else {
@@ -344,7 +356,7 @@ function initSplash(startMinimized = false) {
     setTimeout(() => {
       events.emit(APP_SHOULD_SHOW);
     }, 100);
-  }, newUpdater != null ? 500 : 50);
+  }, 50);
 }
 
 function destroySplash() {
