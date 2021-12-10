@@ -40,7 +40,7 @@ jobs:
         tag: "nightly"
         allowUpdates: true
         prerelease: true
-        artifacts: "app.asar,openasar-with-deps.asar"
+        artifacts: "openasar.asar,openasar-with-deps.asar"
 
         name: "Nightly"
 
