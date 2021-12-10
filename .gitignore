@@ -1,3 +1,5 @@
 node_modules
-src/package-lock.json
 *.asar
+/app.js
+package-lock.json
+pnpm-lock.yaml

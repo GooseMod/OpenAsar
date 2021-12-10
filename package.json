@@ -1,0 +1,13 @@
+{
+	"devDependencies": {
+		"asar": "^3.1.0",
+		"esbuild": "^0.14.2",
+		"uglify-js": "^3.14.4"
+	},
+	"scripts": {
+		"build-asar":  "asar p src app.asar",
+		"build-file":  "npm run bundle-file && npm run minify-file",
+		"bundle-file": "esbuild ./src --bundle --platform=node --external:electron --external:original-fs --external:auto-updater --outfile=app.js",
+		"minify-file": "uglifyjs --compress --mangle -o app.js -- app.js"
+	}
+}
