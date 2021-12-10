@@ -1,5 +1,5 @@
 {
-  "name": "openasar",
+  "name": "discord",
   "description": "Open-source alternative of Discord desktop's app.asar",
   "main": "index.js",
   "dependencies": {
