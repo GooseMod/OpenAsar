@@ -4,6 +4,7 @@
 - **Size Improvements** - size of OpenAsar is now only ~200kb! (Used to be ~4mb)
 - **Windows Quickstart v2** - should be even faster and a lot more stable
 - **Hardware Acceleration Support** - now correctly disables hardware acceleration if disabled
+- **Internal Improvements** - may fix a few minor errors in some modules, still testing
 - **Small Rewrites** - some small rewrites and cleaning up
 - **Logging Tweaks** - as always tweaks to logging output to be more helpful
 
