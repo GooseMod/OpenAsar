@@ -14,7 +14,8 @@ Below is a list in order of priority, marked as complete when finished:
 - [X] Splash screen
 - [X] Error handling
 - [ ] A bunch of specific minor fixes / features
-  - [ ] Handle hardware acceleration
+  - [X] Handle hardware acceleration
+  - [ ] Add Discord-specific Electron flags?
 - [ ] Auto start
 - [ ] First run
 - [ ] Self-write some small parts of internals
