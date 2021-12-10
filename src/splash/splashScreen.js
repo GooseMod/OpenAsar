@@ -67,7 +67,7 @@ const events = new _events.EventEmitter();
 exports.events = events;
 
 function webContentsSend(win, event, ...args) {
-  log('Splash', `Sending to webcontents:`, event, args);
+  // log('Splash', `Sending to webcontents:`, event, args);
 
   if (win != null && win.webContents != null) {
     win.webContents.send(`DISCORD_${event}`, ...args);
