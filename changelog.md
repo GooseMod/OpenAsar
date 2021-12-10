@@ -1,7 +1,7 @@
 # OpenAsar Changelog
 
 ## v0.2
-- **Size Improvements** - size of OpenAsar is now only ~200kb! (Used to be ~4mb)
+- **Size Improvements** - size of OpenAsar is now only ~200kb! (Used to be ~4mb, original Discord is ~9mb)
 - **Windows Quickstart v2** - should be even faster and a lot more stable
 - **Hardware Acceleration Support** - now correctly disables hardware acceleration if disabled
 - **Internal Improvements** - may fix a few minor errors in some modules, still testing
