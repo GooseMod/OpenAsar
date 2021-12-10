@@ -69,8 +69,12 @@ exports.events = events;
 function webContentsSend(win, event, ...args) {
   // log('Splash', `Sending to webcontents:`, event, args);
 
-  if (win != null && win.webContents != null) {
-    win.webContents.send(`DISCORD_${event}`, ...args);
+  if (splashWindow != null && !splashWindow.isDestroyed() && !splashWindow.webContents.isDestroyed()) {
+    try {
+      win.webContents.send(`DISCORD_${event}`, ...args);
+    } catch (e) { // Mostly ignore, probably just destroyed
+      log('Splash', 'Failed to send to webcontents');
+    }
   }
 }
 
@@ -407,12 +411,10 @@ function stopUpdateTimeout() {
 }
 
 function updateSplashState(event) {
-  if (splashWindow != null && !splashWindow.isDestroyed() && !splashWindow.webContents.isDestroyed()) {
-    webContentsSend(splashWindow, 'SPLASH_UPDATE_STATE', {
-      status: event,
-      ...splashState
-    });
-  }
+  webContentsSend(splashWindow, 'SPLASH_UPDATE_STATE', {
+    status: event,
+    ...splashState
+  });
 }
 
 function launchSplashWindow(startMinimized) {
