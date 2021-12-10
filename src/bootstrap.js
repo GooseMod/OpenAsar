@@ -1,5 +1,8 @@
 const { app } = require('electron');
 
+log('Bootstrap', 'Forcing Electron props');
+app.name = originalPackage.name; // Force name as sometimes breaks data path even with "discord" name (also fixes kernel?)
+
 const requireNative = require('./utils/requireNative');
 
 const paths = require('./paths');
