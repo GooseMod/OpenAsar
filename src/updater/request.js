@@ -9,7 +9,8 @@ var _electron = require("electron");
 
 var _querystring = _interopRequireDefault(require("querystring"));
 
-var _request = _interopRequireDefault(require("request"));
+// var _request = _interopRequireDefault(require("request"));
+const https = require('https');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -78,7 +79,7 @@ function handleHTTPResponse(resolve, reject, response, stream) {
   });
 }
 
-function nodeRequest({
+const nodeReq = ({
   method,
   url,
   headers,
@@ -86,20 +87,39 @@ function nodeRequest({
   timeout,
   body,
   stream
-}) {
+}) => {
   return new Promise((resolve, reject) => {
-    const req = (0, _request.default)({
+    const fullUrl = `${url}${qs != null ? `?${_querystring.default.stringify(qs)}` : ''}`; // With query string
+    const req = https.request(fullUrl, {
       method,
-      url,
-      qs,
       headers,
-      followAllRedirects: true,
-      encoding: null,
-      timeout: timeout != null ? timeout : DEFAULT_REQUEST_TIMEOUT,
-      body
+      timeout: timeout != null ? timeout : DEFAULT_REQUEST_TIMEOUT
+    }, async (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302) { // Redirect, recall function
+        return resolve(await nodeReq({
+          url: res.headers.location,
+          qs: null,
+          method,
+          headers,
+          timeout,
+          body,
+          stream
+        }));
+      }
+
+      resolve(res);
     });
-    req.on('response', response => handleHTTPResponse(resolve, reject, response, stream));
-    req.on('error', err => reject(err));
+
+    if (body) req.write(body); // Write POST body if included
+
+    req.end();
+  });
+};
+
+function nodeRequest(opts) {
+  return new Promise(async (resolve, reject) => {
+    const res = await nodeReq(opts);
+    handleHTTPResponse(resolve, reject, res, opts.stream);
   });
 }
 
@@ -155,13 +175,13 @@ async function electronRequest({
 }
 
 async function requestWithMethod(method, options) {
-  log('Request', method, options);
-
   if (typeof options === 'string') {
     options = {
       url: options
     };
   }
+
+  log('Request', options.url);
 
   options = { ...options,
     method
