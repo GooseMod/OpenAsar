@@ -1,36 +1,34 @@
 # OpenAsar
-**Open-source alternative of Discord desktop's `app.asar`** OpenAsar is currently made of **~80% own code**, with the rest being from Discord as it hasn't been rewritten yet or because of compatibility reasons.
+**An experimental open-source alternative of Discord desktop's `app.asar`**.
 
-## Goals
-- **Hotpluggable** - just swap the asar file, nothing else needed
-- **Lightweight** - currently improving startup times ~2x (up to ~4x with experimental config)
-- **No Tracking** - no crash reporting or error tracking (in normal Discord)
-- **Minimal** - current size is only ~150kb (compared to original ~9mb)
-- **Patch Platform** - provide a platform for future patching
+## Features
+### :rocket: Speed: ~2x faster startup times (up to ~4x with experimental config)
+### :feather: Lightweight: <2% of Discord's original size (9mb -> ~150kb)
+### :electric_plug: Hotpluggable: Replace one file and it's installed, that's it
+### :shield: No Tracking: Removes Discord's built-in tracking for crashes and errors
+### :sewing_needle: Patching: A future platform for custom patches to further enhance
 
-## Implementation
-Below is a list in order of priority, marked as complete when finished:
-- [X] Bootstrapping
-- [X] Splash screen
-- [X] Error handling
+
+<br>
+
+## To Be Implemented
+Below is a list in order of priority, removed when completed:
 - [ ] A bunch of specific minor fixes / features
-  - [X] Handle hardware acceleration
   - [ ] Add Discord-specific Electron flags?
-- [X] Asar auto-updating
-- [X] Multi-instance handling
-- [X] Asar retention (surviving Discord host updates)
 - [ ] Auto start
 - [ ] First run
 - [ ] Self-write some small parts of internals
 - [ ] Self-write updater code (currently mostly copied)
 - [ ] Compatibility / replication of original Discord splash?
 
-## Custom Patches
+## Custom Patches / Changes
 Custom patches are another main goal of OpenAsar, patching enhancements where otherwise impossible to do so with traditional mods. Our current ideas for patches to do:
 - [X] Rewrite portions of Discord's code to not rely on external dependencies, increasing speed and decreasing size
 - [X] Skipping checking for updates on startup
 - [ ] Linux host app updating
 
+
+<br>
 
 ## Install Guide
 **OpenAsar is heavily disrecommened due to it being in early development.**
@@ -39,7 +37,6 @@ Custom patches are another main goal of OpenAsar, patching enhancements where ot
 5. Install OpenAsar `app.asar` into the original path
 
 **If using Linux it is highly recommended to disable write protection** (needing root to overwrite files) for your Discord install if you have it enabled. It is not much of a security defecit as Windows has no write protection as well. This enables updating the asar and potentially host updating further on.
-
 
 ## Config
 You can configure OpenAsar via `settings.json` (found in your Discord app data / user data), under a `openasar` object. Keep in mind most options are defaults for good reason, they may temporarily brick your client until you revert your changes. The avaliable options are:
