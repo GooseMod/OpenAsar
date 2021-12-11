@@ -9,8 +9,7 @@ var _electron = require("electron");
 
 var _querystring = _interopRequireDefault(require("querystring"));
 
-// var _request = _interopRequireDefault(require("request"));
-const https = require('https');
+var _request = _interopRequireDefault(require("request"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -79,7 +78,7 @@ function handleHTTPResponse(resolve, reject, response, stream) {
   });
 }
 
-const nodeReq = ({
+function nodeRequest({
   method,
   url,
   headers,
@@ -87,39 +86,20 @@ const nodeReq = ({
   timeout,
   body,
   stream
-}) => {
+}) {
   return new Promise((resolve, reject) => {
-    const fullUrl = `${url}${qs != null ? `?${_querystring.default.stringify(qs)}` : ''}`; // With query string
-    const req = https.request(fullUrl, {
+    const req = (0, _request.default)({
       method,
+      url,
+      qs,
       headers,
-      timeout: timeout != null ? timeout : DEFAULT_REQUEST_TIMEOUT
-    }, async (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) { // Redirect, recall function
-        return resolve(await nodeReq({
-          url: res.headers.location,
-          qs: null,
-          method,
-          headers,
-          timeout,
-          body,
-          stream
-        }));
-      }
-
-      resolve(res);
+      followAllRedirects: true,
+      encoding: null,
+      timeout: timeout != null ? timeout : DEFAULT_REQUEST_TIMEOUT,
+      body
     });
-
-    if (body) req.write(body); // Write POST body if included
-
-    req.end();
-  });
-};
-
-function nodeRequest(opts) {
-  return new Promise(async (resolve, reject) => {
-    const res = await nodeReq(opts);
-    handleHTTPResponse(resolve, reject, res, opts.stream);
+    req.on('response', response => handleHTTPResponse(resolve, reject, response, stream));
+    req.on('error', err => reject(err));
   });
 }
 
@@ -181,11 +161,11 @@ async function requestWithMethod(method, options) {
     };
   }
 
-  log('Request', options.url);
-
   options = { ...options,
     method
   };
+
+  log('Request', method, options.url);
 
   try {
     return await electronRequest(options);
