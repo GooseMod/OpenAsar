@@ -32,7 +32,7 @@ module.exports = () => { // (Try) update asar
     res.pipe(file);
   });
 
-  file.on('finish', () => {
+  file.on('finish', async () => {
     file.close();
     log('AsarUpdate', 'Completed download');
 
@@ -45,10 +45,21 @@ New Hash: ${newHash}
 Changed: ${changed}`);
 
     if (changed) {
-      electron.dialog.showMessageBox(null, {
+      const { response } = await electron.dialog.showMessageBox(null, {
         message: 'Updated OpenAsar',
-        detail: `New version will be used next restart.`
+        detail: `Restart required to use new version.`,
+        buttons: ['Restart Now', 'Later'],
+        defaultId: 0
       });
+
+      log('AsarUpdate', 'Modal response', response);
+
+      if (response === 0) {
+        log('AsarUpdate', 'Restarting');
+
+        electron.app.relaunch();
+        electron.app.exit();
+      }
     }
   });
 };
