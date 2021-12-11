@@ -22,7 +22,7 @@ var _module = _interopRequireDefault(require("module"));
 
 var _events = require("events");
 
-var _mkdirp = _interopRequireDefault(require("../utils/mkdirp"));
+var _mkdirp = _interopRequireDefault(require("mkdirp"));
 
 var _process = require("process");
 

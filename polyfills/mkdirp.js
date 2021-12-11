@@ -1,5 +1,4 @@
 // Minimal wrapper mimicking mkdirp package
-
 exports.__esModule = true; // Makes moduleUpdater internals load properly
 
 const fs = require('fs');
