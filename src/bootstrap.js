@@ -10,6 +10,7 @@ global.moduleDataPath = paths.getModuleDataPath(); // Global because discord
 
 const buildInfo = require('./utils/buildInfo');
 app.setVersion(buildInfo.version); // More global because discord / electron
+global.releaseChannel = buildInfo.releaseChannel;
 
 log('BuildInfo', 'Loaded build info', buildInfo);
 
