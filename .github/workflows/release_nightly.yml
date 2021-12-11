@@ -47,10 +47,11 @@ jobs:
     - name: GitHub Release
       run: |
         gh release delete ${{ env.VERSION }} -y
-        gh release create ${{ env.VERSION }} -p -t "${{ env.NAME }}" ${{ env.FILES }}
+        gh release create ${{ env.VERSION }} -p -t "${{ env.NAME }}" -n "${{ env.BODY }}" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         VERSION: 'nightly'
         NAME: 'Nightly'
         FILES: app.asar
+        BODY: Latest Nightly release
         # FILES: app.asar minified.asar
