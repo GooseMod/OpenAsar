@@ -33,7 +33,7 @@ Custom patches are another main goal of OpenAsar, patching enhancements where ot
 
 ## Install Guide
 **OpenAsar is heavily disrecommened due to it being in early development.**
-1. Download latest release
+1. Download latest release (nightly recommended)
 4. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
 5. Install OpenAsar `app.asar` into the original path
 
