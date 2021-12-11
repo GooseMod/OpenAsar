@@ -25,7 +25,7 @@ jobs:
       run: |
         npm i -g asar
         node injectPolyfills.js
-        rm -rf src/package-lock.json src/node_modules/.package-lock.json src/splash/splashScreen.js.self
+        rm -rf src/package-lock.json src/node_modules/.package-lock.json src/splash/splashScreen.js.self src/node_modules/**/*.md src/node_modules/**/*.yml src/node_modules/**/.npmignore src/node_modules/**/LICENSE src/node_modules/**/test*
         npx asar pack src openasar.asar
 
     - name: GitHub Release
