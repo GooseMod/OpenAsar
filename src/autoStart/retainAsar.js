@@ -10,7 +10,9 @@ module.exports = () => {
   const installDir = paths.getInstallPath();
 
   const nextAppDir = readdirSync(installDir).reverse().find((x) => x.startsWith('app-1'));
-  const nextAsarPath = join(installDir, nextAppDir, 'resources', 'app.asar');
+  const nextAppResources = join(installDir, nextAppDir, 'resources');
+  const nextAsarPath = join(nextAppResources, 'app.asar');
+  const backupAsarPath = join(nextAppResources, 'app.asar.backup');
 
   log('RetainAsar', `Paths:
 Install Dir: ${installDir}
@@ -18,6 +20,7 @@ Next App Dir: ${nextAppDir}
 Current Asar: ${currentAsarPath}
 Next Asar: ${nextAsarPath}`);
 
+  copyFileSync(nextAsarPath, backupAsarPath);
   copyFileSync(currentAsarPath, nextAsarPath);
 
   log('RetainAsar', 'Completed');
