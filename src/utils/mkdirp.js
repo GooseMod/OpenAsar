@@ -8,9 +8,9 @@ const fs = require('fs');
 const async = (path, callback) => { // async
   log('Mkdirp', 'Async:', path);
 
-  fs.mkdir(path, () => { // Ignore errors (already exists)
+  fs.mkdir(path, { recursive: true }, () => { // Ignore errors (already exists)
     callback();
-  }, { recursive: true });
+  });
 };
 
 const sync = (path) => { // sync
