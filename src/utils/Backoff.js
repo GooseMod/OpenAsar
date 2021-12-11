@@ -1,94 +1,50 @@
-class Backoff { // Heavily based on original for compat
-  /**
-   * Create a backoff instance can automatically backoff retries.
-   */
-  constructor(min = 500, max = null, jitter = true) {
-    this.min = min;
-    this.max = max != null ? max : min * 10;
-    this.jitter = jitter;
-    this._current = min;
-    this._timeoutId = null;
-    this._fails = 0;
+module.exports = class Backoff {
+  constructor(min = 500, max = null) {
+    this._timeoutId = null; // Setup internal vars
+    this.fails = 0;
+
+    this.min = min; // Setup args
+    this.max = max ?? (min * 10);
+
+    this.current = min;
   }
-  /**
-   * Return the number of failures.
-   */
 
-
-  get fails() {
-    return this._fails;
+  get pending() { // If timeout currently set / waiting
+    return this._timeoutId !== null;
   }
-  /**
-   * Current backoff value in milliseconds.
-   */
 
+  succeed() { // Reset state on succeed
+    this.current = this.min;
+    this.fails = 0;
 
-  get current() {
-    return this._current;
-  }
-  /**
-   * A callback is going to fire.
-   */
-
-
-  get pending() {
-    return this._timeoutId != null;
-  }
-  /**
-   * Clear any pending callbacks and reset the backoff.
-   */
-
-
-  succeed() {
     this.cancel();
-    this._fails = 0;
-    this._current = this.min;
   }
-  /**
-   * Increment the backoff and schedule a callback if provided.
-   */
 
+  fail(callback) { // On fail, wait and callback
+    const delay = this.current * 2;
 
-  fail(callback) {
-    this._fails += 1;
-    let delay = this._current * 2;
+    this.current = Math.min(this.current + delay, this.max);
 
-    if (this.jitter) {
-      delay *= Math.random();
-    }
+    this.fails += 1; // Bump fails
 
-    this._current = Math.min(this._current + delay, this.max);
+    if (!callback) return this.current; // No callback given, skip rest of this
+    if (this._timeoutId !== null) throw new Error('Callback already pending call'); // Timeout already set as waiting for another callback to call, throw error
 
-    if (callback != null) {
-      if (this._timeoutId != null) {
-        throw new Error('callback already pending');
+    this._timeoutId = setTimeout(() => { // Set new timeout
+      try {
+        callback(); // Run callback
+      } finally {
+        this_timeoutId = null; // Stop tracking timeout internally as it's been executed
       }
+    }, this.current);
 
-      this._timeoutId = setTimeout(() => {
-        try {
-          if (callback != null) {
-            callback();
-          }
-        } finally {
-          this._timeoutId = null;
-        }
-      }, this._current);
-    }
-
-    return this._current;
-  }
-  /**
-   *  Clear any pending callbacks.
-   */
-
-
-  cancel() {
-    if (this._timeoutId != null) {
-      clearTimeout(this._timeoutId);
-      this._timeoutId = null;
-    }
+    return this.current;
   }
 
-}
+  cancel() { // Cancel current timeout
+    if (this._timeoutId === null) return; // If no timeout already, do nothing
 
-module.exports = Backoff;
+    clearTimeout(this._timeoutId); // Stop timeout
+    this_timeoutId = null; // Stop tracking timeout internally as it's been executed
+  }
+};
