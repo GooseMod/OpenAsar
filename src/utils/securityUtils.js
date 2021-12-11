@@ -1,45 +1,36 @@
-"use strict";
+const { shell } = require('electron');
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.saferShellOpenExternal = saferShellOpenExternal;
-exports.checkUrlOriginMatches = checkUrlOriginMatches;
+const BLOCKED_URL_PROTOCOLS = ['file:', 'javascript:', 'vbscript:', 'data:', 'about:', 'chrome:', 'ms-cxh:', 'ms-cxh-full:', 'ms-word:']; // From Discord
+const allowedProtocols = [ 'https:', 'http:' ];
 
-var _electron = require("electron");
-
-var _url = _interopRequireDefault(require("url"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const BLOCKED_URL_PROTOCOLS = ['file:', 'javascript:', 'vbscript:', 'data:', 'about:', 'chrome:', 'ms-cxh:', 'ms-cxh-full:', 'ms-word:'];
-
-function saferShellOpenExternal(externalUrl) {
-  let parsedUrl;
+exports.saferShellOpenExternal = (url) => {
+  let parsed;
 
   try {
-    parsedUrl = _url.default.parse(externalUrl);
-  } catch (_) {
-    return Promise.reject();
+    parsed = new URL(url);
+  } catch (_e) { return Promise.reject(); }
+
+  const protocol = parsed.protocol?.toLowerCase();
+
+  let disallowed = false;
+  if (oaConfig.ssoeAllowlist === false) { // Allow config option to use traditional Discord check for compatibility
+    if (!protocol || BLOCKED_URL_PROTOCOLS.includes(protocol)) disallowed = true;
+  } else {
+    if (!allowedProtocols.includes(protocol)) disallowed = true;
   }
 
-  if (parsedUrl.protocol == null || BLOCKED_URL_PROTOCOLS.includes(parsedUrl.protocol.toLowerCase())) {
-    return Promise.reject();
-  }
+  if (disallowed) return Promise.reject();
 
-  return _electron.shell.openExternal(externalUrl);
-}
+  return shell.openExternal(url);
+};
 
-function checkUrlOriginMatches(urlA, urlB) {
-  let parsedUrlA;
-  let parsedUrlB;
+exports.checkUrlOriginMatches = (url1, url2) => {
+  let parse1, parse2;
 
   try {
-    parsedUrlA = _url.default.parse(urlA);
-    parsedUrlB = _url.default.parse(urlB);
-  } catch (_) {
-    return false;
-  }
+    parse1 = new URL(url1);
+    parse2 = new URL(url2);
+  } catch (_e) { return Promise.reject(); }
 
-  return parsedUrlA.protocol === parsedUrlB.protocol && parsedUrlA.slashes === parsedUrlB.slashes && parsedUrlA.host === parsedUrlB.host;
-}
+  return parse1.protocol === parse2.protocol && parse1.host === parse2.host;
+};

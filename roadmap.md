@@ -12,5 +12,5 @@
   - [X] `windowsUtils`
   - [X] `Settings`
   - [X] `Backoff`
-  - [ ] `securityUtils`
+  - [X] `securityUtils`
 - [ ] Compatibility / replication of original Discord splash
