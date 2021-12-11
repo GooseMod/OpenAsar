@@ -21,4 +21,6 @@ exports.getResources = () => resourcesPath;
 exports.getModuleDataPath = () => moduleData;
 exports.getInstallPath = () => installPath;
 
+exports.getExeDir = () => exeDir; // Custom / non-standard
+
 exports.init = () => {}; // Stub as we setup on require
