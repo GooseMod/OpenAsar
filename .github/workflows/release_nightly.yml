@@ -32,17 +32,17 @@ jobs:
         rm -rf src/package-lock.json src/node_modules/.package-lock.json src/splash/splashScreen.js.self src/node_modules/**/package.json src/node_modules/**/*.md src/node_modules/**/.*.yml src/node_modules/**/.npmignore src/node_modules/**/LICENSE src/node_modules/**/test*
         npx asar pack src app.asar
 
-    - name: Pack minified asar
-      run: |
-        npm i -g esbuild uglify-js minify-json
-        npx esbuild ./src --bundle --platform=node --external:electron --external:original-fs --external:auto-updater --outfile=index.js
-        npx uglifyjs --compress --mangle -o index.js -- index.js
-        cp src/package.json .
-        npx minify-json package.json
-        rm -rf src/*
-        cp index.js src
-        cp package.json src
-        npx asar pack src minified.asar
+    # - name: Pack minified asar
+    #   run: |
+    #     npm i -g esbuild uglify-js minify-json
+    #     npx esbuild ./src --bundle --platform=node --external:electron --external:original-fs --external:auto-updater --outfile=index.js
+    #     npx uglifyjs --compress --mangle -o index.js -- index.js
+    #     cp src/package.json .
+    #     npx minify-json package.json
+    #     rm -rf src/*
+    #     cp index.js src
+    #     cp package.json src
+    #     npx asar pack src minified.asar
 
     - name: GitHub Release
       run: |
@@ -52,4 +52,5 @@ jobs:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         VERSION: 'nightly'
         NAME: 'Nightly'
-        FILES: app.asar minified.asar
+        FILES: app.asar
+        # FILES: app.asar minified.asar
