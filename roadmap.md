@@ -8,7 +8,7 @@
   - [ ] Add Discord-specific Electron flags?
 - [ ] Auto start
 - [ ] First run
-- [ ] Self-rewrite some small / utility parts of internals
+- [X] Self-rewrite some small / utility parts of internals
   - [X] `windowsUtils`
   - [X] `Settings`
   - [X] `Backoff`
