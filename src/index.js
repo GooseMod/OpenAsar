@@ -1,6 +1,6 @@
 const log = require('./utils/log');
 global.log = log; // Make log global for easy usage everywhere
-global.oaVersion = '0.2';
+global.oaVersion = 'nightly';
 
 log('Init', 'OpenAsar v' + oaVersion);
 
