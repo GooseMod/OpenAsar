@@ -1,7 +1,7 @@
 # OpenAsar Changelog
 
 ## v0.3
-- **OpenAsar Automatic Updating**- OpenAsar now tries to automatically after Discord startup
+- **OpenAsar Automatic Updating**- OpenAsar now tries to automatically update itself after Discord startup
 - **Retain Asar for Windows Host Updates** - Discord host updates on Windows no longer overwrites OpenAsar, it should be kept
 - **Fixed Data Reset / Missing Issue** - fixed using incorrect data and other data issues
 - **Correct Multi-instance Handling** - now correctly handles multiple instances like normal Discord
