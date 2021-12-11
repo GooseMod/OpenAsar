@@ -3,6 +3,9 @@ name: Release Nightly
 on:
   push:
     branches: [ main ]
+    paths:
+    - 'src/**'
+    - 'polyfills/**'
 
 jobs:
   build:
