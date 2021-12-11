@@ -27,7 +27,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
   }
 
   get(key, defaultValue = false) {
-    return this.settings[key] || defaultValue;
+    return this.settings[key] ?? defaultValue;
   }
 
   set(key, value) {
