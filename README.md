@@ -38,6 +38,9 @@ Custom patches are another main goal of OpenAsar, patching enhancements where ot
 4. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
 5. Install OpenAsar `app.asar` into the original path
 
+**If using Linux it is highly recommended to disable write protection** (needing root to overwrite files) for your Discord install if you have it enabled. It is not much of a security defecit as Windows has no write protection as well. This enables updating the asar and potentially host updating further on.
+
+
 ## Config
 You can configure OpenAsar via `settings.json` (found in your Discord app data / user data), under a `openasar` object. Keep in mind most options are defaults for good reason, they may temporarily brick your client until you revert your changes. The avaliable options are:
 - `quickstart` (bool, default false) - whether to use Quickstart (experimental)
