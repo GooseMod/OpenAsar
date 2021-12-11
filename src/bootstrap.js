@@ -57,7 +57,7 @@ const startUpdate = () => {
     desktopCore.setMainWindowVisible(true);
 
     setTimeout(() => { // Try to update our asar
-      if (!oaConfig.autoupdate) return; // If autoupdate disabled, don't update
+      if (oaConfig.autoupdate === false) return; // If autoupdate disabled, don't update
 
       const asarUpdate = require('./asarUpdate');
 
