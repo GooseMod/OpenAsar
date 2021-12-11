@@ -333,18 +333,17 @@ function initSplash(startMinimized = false) {
 
   _ipcMain.default.on('UPDATED_QUOTES', (_event, quotes) => cacheLatestQuotes(quotes));
 
+  log('Splash', 'Quickstart config:', process.env.OPENASAR_QUICKSTART || oaConfig.quickstart, '-', process.env.OPENASAR_QUICKSTART, oaConfig.quickstart);
+
   if (process.env.OPENASAR_QUICKSTART || oaConfig.quickstart) setTimeout(() => {
     destroySplash();
 
     if (newUpdater != null) { // Manually load desktop_core module path for faster requiring
       const NodeModule = require('module');
 
-      const installDir = paths.getInstallPath();
-      const appDir = _fs.default.readdirSync(installDir).find((x) => x.startsWith('app-1')); // Find app dir by name
-
-      const modulesDir = _path.default.join(installDir, appDir, 'modules');
-
+      const modulesDir = _path.default.join(paths.getExeDir(), 'modules');
       const moduleCoreDir = _fs.default.readdirSync(modulesDir).find((x) => x.startsWith('discord_desktop_core-')); // Find desktop core dir by name
+
       NodeModule.globalPaths.push(_path.default.join(modulesDir, moduleCoreDir)); // Add to globalPaths for requiring
     }
 
