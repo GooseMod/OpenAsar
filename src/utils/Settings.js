@@ -8,7 +8,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
     try {
       this.lastSaved = readFileSync(this.path);
       this.settings = JSON.parse(this.lastSaved);
-    } catch (e) {
+    } catch (_e) {
       this.lastSaved = '';
       this.settings = {};
     }
@@ -35,7 +35,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
   }
 
   save() {
-    if (this.lastModified && this.lastModified !== this.getLastModified()) {
+    if (this.lastModified && this.lastModified !== this.getLastModified()) { // File was last modified after Settings was made, so was externally edited therefore we don't save over
       log('AppSettings', 'Refusing to save settings.json due to last modified date mismatch');
       return;
     }
@@ -43,7 +43,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
     try {
       const toSave = JSON.stringify(this.settings, null, 2);
 
-      if (this.lastSaved != toSave) {
+      if (this.lastSaved != toSave) { // Settings has changed
         this.lastSaved = toSave;
 
         writeFileSync(this.path, toSave);
@@ -51,9 +51,9 @@ class Settings { // Heavily based on original for compat, but simplified and twe
         this.lastModified = this.getLastModified();
       }
 
-      log('AppSettings', 'Saved settings.json');
-    } catch (err) {
-      log('AppSettings', 'Failed to save settings.json', err);
+      log('AppSettings', 'Saved', this.path);
+    } catch (e) {
+      log('AppSettings', 'Failed to save', this.path, e);
     }
   }
 
