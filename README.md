@@ -5,7 +5,7 @@
 - **Hotpluggable** - just swap the asar file, nothing else needed
 - **Lightweight** - currently improving startup times ~2x (up to ~4x with experimental config)
 - **No Tracking** - no crash reporting or error tracking (in normal Discord)
-- **Minimal** - current size is only ~200kb (compared to original ~9mb)
+- **Minimal** - current size is only ~150kb (compared to original ~9mb)
 - **Patch Platform** - provide a platform for future patching
 
 ## Implementation
