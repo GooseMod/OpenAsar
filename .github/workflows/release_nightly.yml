@@ -52,7 +52,7 @@ jobs:
     - name: GitHub Release
       run: |
         gh release delete ${{ env.VERSION }} -y
-        gh release create ${{ env.VERSION }} -p -t "${{ env.NAME }}" -n "${{ env.BODY }}" ${{ env.FILES }}
+        gh release create ${{ env.VERSION }} -t "${{ env.NAME }}" -n "${{ env.BODY }}" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         VERSION: 'nightly'
