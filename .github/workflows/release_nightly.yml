@@ -6,6 +6,7 @@ on:
     paths:
     - 'src/**'
     - 'polyfills/**'
+    - '.github/workflows/release_nightly.yml'
 
 jobs:
   build:
