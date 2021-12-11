@@ -25,6 +25,15 @@ module.exports = () => { // (Try) update asar
   log('AsarUpdate', 'Original Hash:', originalHash);
 
   const file = fs.createWriteStream(asarPath);
+
+  let writeError = false;
+  file.on('error', err => {
+    log('AsarUpdate', 'Failed to write', err);
+    file.close();
+
+    writeError = true;
+  });
+
   log('AsarUpdate', 'Opened write stream to asar');
 
   request(asarUrl, (_err, res) => {
@@ -60,6 +69,10 @@ Changed: ${changed}`);
         electron.app.relaunch();
         electron.app.exit();
       }
+    }
+
+    if (writeError) {
+      // Warn message?
     }
   });
 };
