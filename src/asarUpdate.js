@@ -8,7 +8,7 @@ const asarPath = join(require.main.filename, '..');
 log('AsarUpdate', 'Asar Path:', asarPath);
 
 const downloadUrls = {
-  nightly: 'https://github.com/GooseMod/OpenAsar/releases/download/nightly/openasar.asar'
+  nightly: 'https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar'
 };
 
 const channel = 'nightly'; // Have prod, etc. once stable / 1.0
