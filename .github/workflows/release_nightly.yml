@@ -23,13 +23,17 @@ jobs:
         node-version: 16.x
 
     - name: NPM Install
-      run: cd src; npm i; cd ..
+      run: |
+        cd src
+        npm i;
+        cd ..
+        npm i -g asar uglify-js
 
     - name: Pack base asar
       run: |
-        npm i -g asar
+        node strip.js
         node injectPolyfills.js
-        rm -rf src/package-lock.json src/node_modules/.package-lock.json src/splash/splashScreen.js.self src/node_modules/**/package.json src/node_modules/**/*.md src/node_modules/**/.*.yml src/node_modules/**/.npmignore src/node_modules/**/LICENSE src/node_modules/**/test*
+
         npx asar pack src app.asar
 
     # - name: Pack minified asar
