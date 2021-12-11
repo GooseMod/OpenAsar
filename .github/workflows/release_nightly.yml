@@ -34,7 +34,7 @@ jobs:
 
     - name: Pack minified asar
       run: |
-        npm i -g esbuild uglifyjs minify-json
+        npm i -g esbuild uglify-js minify-json
         npx esbuild ./src --bundle --platform=node --external:electron --external:original-fs --external:auto-updater --outfile=index.js
         npx uglifyjs --compress --mangle -o index.js -- index.js
         cp src/package.json .
