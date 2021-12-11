@@ -1,4 +1,4 @@
-module.exports = class Backoff {
+module.exports = class Backoff { // Internal library / utility for a class to retry a callback with delays, etc.
   constructor(min = 500, max = null) {
     this._timeoutId = null; // Setup internal vars
     this.fails = 0;
