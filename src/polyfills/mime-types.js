@@ -1,0 +1,2 @@
+// Stub
+exports.lookup = (file) => {};
