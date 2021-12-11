@@ -9,4 +9,8 @@
 - [ ] Auto start
 - [ ] First run
 - [ ] Self-write some small parts of internals
+  - [X] `windowsUtils`
+  - [X] `Settings`
+  - [X] `Backoff`
+  - [ ] `securityUtils`
 - [ ] Compatibility / replication of original Discord splash
