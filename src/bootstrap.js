@@ -7,6 +7,7 @@ const requireNative = require('./utils/requireNative');
 
 const paths = require('./paths');
 global.moduleDataPath = paths.getModuleDataPath(); // Global because discord
+app.setPath('userData', paths.getUserData()); // Set userData properly because electron
 
 const buildInfo = require('./utils/buildInfo');
 app.setVersion(buildInfo.version); // More global because discord / electron
@@ -82,6 +83,8 @@ getInstallPath: ${paths.getInstallPath()}`);
 
   const instanceLock = app.requestSingleInstanceLock();
   const allowMultiInstance = hasArgvFlag('--multi-instance') || oaConfig.multiInstance; // argv flag or config
+
+  console.log(instanceLock, allowMultiInstance);
 
   if (!instanceLock && !allowMultiInstance) {
     log('Bootstrap', 'Non-first instance, quitting (multi-instance disabled)');
