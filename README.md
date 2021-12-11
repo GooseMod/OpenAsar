@@ -11,25 +11,6 @@
 
 <br>
 
-## To Be Implemented
-Below is a list in order of priority, removed when completed:
-- [ ] A bunch of specific minor fixes / features
-  - [ ] Add Discord-specific Electron flags?
-- [ ] Auto start
-- [ ] First run
-- [ ] Self-write some small parts of internals
-- [ ] Self-write updater code (currently mostly copied)
-- [ ] Compatibility / replication of original Discord splash?
-
-## Custom Patches / Changes
-Custom patches are another main goal of OpenAsar, patching enhancements where otherwise impossible to do so with traditional mods. Our current ideas for patches to do:
-- [X] Rewrite portions of Discord's code to not rely on external dependencies, increasing speed and decreasing size
-- [X] Skipping checking for updates on startup
-- [ ] Linux host app updating
-
-
-<br>
-
 ## Install Guide
 **OpenAsar is heavily disrecommened due to it being in early development.**
 1. [Download latest nightly release](https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar)
