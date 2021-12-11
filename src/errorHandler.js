@@ -1,15 +1,15 @@
 const { app } = require("electron");
 
 exports.init = () => {
-  /* process.on('uncaughtException', error => {
+  process.on('uncaughtException', error => {
     const stack = error.stack ? error.stack : String(error);
-    const message = `Uncaught exception:\n ${stack}`;
+    const message = `Uncaught exception:\n${stack}`;
     console.warn(message);
 
-    if (!isErrorSafeToSuppress(error)) {
-      _electron.dialog.showErrorBox('A JavaScript error occurred in the main process', message);
-    }
-  }); */
+    // _electron.dialog.showErrorBox('A JavaScript error occurred in the main process', message);
+  });
+
+  log('ErrorHandler', 'Inited');
 };
 
 

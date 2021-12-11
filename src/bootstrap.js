@@ -15,6 +15,9 @@ global.releaseChannel = buildInfo.releaseChannel;
 
 log('BuildInfo', 'Loaded build info', buildInfo);
 
+const errorHandler = require('./errorHandler');
+errorHandler.init();
+
 // Just required for startup
 const appSettings = require('./appSettings');
 const GPUSettings = require('./GPUSettings');
