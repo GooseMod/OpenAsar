@@ -16,6 +16,7 @@ Below is a list in order of priority, marked as complete when finished:
 - [ ] A bunch of specific minor fixes / features
   - [X] Handle hardware acceleration
   - [ ] Add Discord-specific Electron flags?
+- [ ] Asar auto-updating
 - [ ] Multi-instance handling
 - [ ] Auto start
 - [ ] First run
@@ -39,8 +40,9 @@ Custom patches are another main goal of OpenAsar, patching enhancements where ot
 
 ## Config
 You can configure OpenAsar via `settings.json` (found in your Discord app data / user data), under a `openasar` object. Keep in mind most options are defaults for good reason, they may temporarily brick your client until you revert your changes. The avaliable options are:
-- `quickstart` (bool) - enables Quickstart (experimental)
-- `skipStartupUpdateChecks` (bool) - skips startup update checking (Linux-only)
+- `quickstart` (bool, default false) - whether to use Quickstart (experimental)
+- `skipStartupUpdateChecks` (bool, default false) - skips startup update checking (Linux-only)
+- `autoupdate` (bool, default true) - whether to autoupdate OpenAsar after Discord startup
 
 An example of a settings.json with OpenAsar config:
 ```json

@@ -53,6 +53,18 @@ const startUpdate = () => {
   }, () => {
     log('Bootstrap', 'Setting main window visible');
     desktopCore.setMainWindowVisible(true);
+
+    setTimeout(() => { // Try to update our asar
+      if (!oaConfig.autoupdate) return; // If autoupdate disabled, don't update
+
+      const asarUpdate = require('./asarUpdate');
+
+      try {
+        asarUpdate();
+      } catch (e) {
+        log('AsarUpdate', 'Failed to update', e);
+      }
+    }, 1000);
   });
 };
 
