@@ -4,7 +4,14 @@ const retainAsar = require('./retainAsar');
 
 exports.install = (callback) => { callback(); };
 exports.update = (callback) => {
-  retainAsar();
+  if (process.platform === 'win32') {
+    try {
+      retainAsar();
+    } catch (e) {
+      log('RetainAsar', 'Error', e);
+    }
+  }
+
   callback();
 };
 exports.uninstall = (callback) => { callback(); };

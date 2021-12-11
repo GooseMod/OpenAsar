@@ -14,6 +14,8 @@ module.exports = () => {
   const nextAsarPath = join(nextAppResources, 'app.asar');
   const backupAsarPath = join(nextAppResources, 'app.asar.backup');
 
+  if (nextAsarPath === currentAsarPath) return;
+
   log('RetainAsar', `Paths:
 Install Dir: ${installDir}
 Next App Dir: ${nextAppDir}
