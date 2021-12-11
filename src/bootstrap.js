@@ -68,6 +68,8 @@ const startUpdate = () => {
   });
 };
 
+const hasArgvFlag = (flag) => (process.argv || []).slice(1).includes(flag);
+
 module.exports = () => {
   // Paths logging
   log('Paths', `Init! Returns:
@@ -76,6 +78,14 @@ getUserDataVersioned: ${paths.getUserDataVersioned()}
 getResources: ${paths.getResources()}
 getModuleDataPath: ${paths.getModuleDataPath()}
 getInstallPath: ${paths.getInstallPath()}`);
+
+  const instanceLock = app.requestSingleInstanceLock();
+  const allowMultiInstance = hasArgvFlag('--multi-instance') || oaConfig.multiInstance; // argv flag or config
+
+  if (!instanceLock && !allowMultiInstance) {
+    log('Bootstrap', 'Non-first instance, quitting (multi-instance disabled)');
+    return app.quit();
+  }
 
   if (app.isReady()) {
     startUpdate();

@@ -43,6 +43,7 @@ You can configure OpenAsar via `settings.json` (found in your Discord app data /
 - `quickstart` (bool, default false) - whether to use Quickstart (experimental)
 - `skipStartupUpdateChecks` (bool, default false) - skips startup update checking (Linux-only)
 - `autoupdate` (bool, default true) - whether to autoupdate OpenAsar after Discord startup
+- `multiInstance` (bool, default false) - whether to enable multi-instance
 
 An example of a settings.json with OpenAsar config:
 ```json
