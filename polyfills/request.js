@@ -8,7 +8,7 @@ const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => {
     const req = https.request(fullUrl, {
       method,
       headers,
-      timeout: timeout != null ? timeout : DEFAULT_REQUEST_TIMEOUT
+      timeout
     }, async (res) => {
       if (res.statusCode === 301 || res.statusCode === 302) { // Redirect, recall function
         return resolve(await nodeReq({
@@ -38,13 +38,13 @@ module.exports = (options, callback) => {
     };
   }
 
-  log('Polyfill > Request', options.method, options.url);
+  // log('Polyfill > Request', options.method, options.url);
 
   const listener = {};
 
   nodeReq(options).then((res) => { // No error handling because yes
     if (callback) callback(undefined, res, res.body);
-    listener['response'](res);
+    if (listener['response']) listener['response'](res);
   });
 
   return {

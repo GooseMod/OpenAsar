@@ -21,18 +21,12 @@ jobs:
     - name: NPM Install
       run: cd src; npm i; cd ..
 
-    - name: Install Asar
-      run: npm i -g asar
-
-    - name: Pack Asar
-      run: npx asar pack src openasar.asar
-
-    - name: Make Deps Asar
+    - name: Pack
       run: |
-        cd src
-        npm install request
-        cd ..
-        npx asar pack src openasar-with-deps.asar
+        npm i -g asar
+        node injectPolyfills.js
+        rm -rf src/package-lock.json src/node_modules/.package-lock.json src/splash/splashScreen.js.self
+        npx asar pack src openasar.asar
 
     - name: GitHub Release
       uses: ncipollo/release-action@v1
@@ -40,7 +34,7 @@ jobs:
         tag: "nightly"
         allowUpdates: true
         prerelease: true
-        artifacts: "openasar.asar,openasar-with-deps.asar"
+        artifacts: "openasar.asar"
 
         name: "Nightly"
 
