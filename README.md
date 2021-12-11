@@ -18,10 +18,10 @@ Below is a list in order of priority, marked as complete when finished:
   - [ ] Add Discord-specific Electron flags?
 - [X] Asar auto-updating
 - [X] Multi-instance handling
+- [X] Asar retention (surviving Discord host updates)
 - [ ] Auto start
 - [ ] First run
 - [ ] Self-write some small parts of internals
-- [ ] Patch updater to survive host updates
 - [ ] Self-write updater code (currently mostly copied)
 - [ ] Compatibility / replication of original Discord splash?
 
