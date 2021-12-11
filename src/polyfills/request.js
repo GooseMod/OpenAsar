@@ -38,6 +38,8 @@ module.exports = (options, callback) => {
     };
   }
 
+  log('Polyfill > Request', options.method, options.url);
+
   const listener = {};
 
   nodeReq(options).then((res) => { // No error handling because yes
