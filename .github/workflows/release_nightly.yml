@@ -26,16 +26,13 @@ jobs:
         npm i -g asar
         node injectPolyfills.js
         rm -rf src/package-lock.json src/node_modules/.package-lock.json src/splash/splashScreen.js.self src/node_modules/**/package.json src/node_modules/**/*.md src/node_modules/**/.*.yml src/node_modules/**/.npmignore src/node_modules/**/LICENSE src/node_modules/**/test*
-        npx asar pack src openasar.asar
+        npx asar pack src app.asar
 
-    - name: GitHub Release
-      uses: ncipollo/release-action@v1
+    - uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        tag: "nightly"
-        allowUpdates: true
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "nightly"
         prerelease: true
-        artifacts: "openasar.asar"
-
-        name: "Nightly"
-
-        token: ${{ secrets.GITHUB_TOKEN }}
+        title: "Nightly"
+        files: |
+          app.asar
