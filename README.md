@@ -16,8 +16,8 @@ Below is a list in order of priority, marked as complete when finished:
 - [ ] A bunch of specific minor fixes / features
   - [X] Handle hardware acceleration
   - [ ] Add Discord-specific Electron flags?
-- [ ] Asar auto-updating
-- [ ] Multi-instance handling
+- [X] Asar auto-updating
+- [X] Multi-instance handling
 - [ ] Auto start
 - [ ] First run
 - [ ] Self-write some small parts of internals
