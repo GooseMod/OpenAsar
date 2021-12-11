@@ -2,11 +2,11 @@
 **An experimental open-source alternative of Discord desktop's `app.asar`**.
 
 ## Features
-### :rocket: Speed: ~2x faster startup times (up to ~4x with experimental config)
-### :feather: Lightweight: <2% of Discord's original size (9mb -> ~150kb)
-### :electric_plug: Hotpluggable: Replace one file and it's installed, that's it
-### :shield: No Tracking: Removes Discord's built-in tracking for crashes and errors
-### :sewing_needle: Patching: A future platform for custom patches to further enhance
+- **:rocket: Speed**: ~2x faster startup times (up to ~4x with experimental config)
+- **:feather: Lightweight**: <2% of Discord's original size (9mb -> ~150kb)
+- **:electric_plug: Hotpluggable**: Replace one file and it's installed, that's it
+- **:shield: No Tracking**: Removes Discord's built-in tracking for crashes and errors
+- **:sewing_needle: Patching**: A future platform for custom patches to further enhance
 
 
 <br>
