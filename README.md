@@ -1,5 +1,5 @@
 # OpenAsar
-**An experimental open-source alternative of Discord desktop's `app.asar`**.
+**An experimental open-source alternative of Discord desktop's `app.asar`**
 
 ## Features
 - **:rocket: Speed**: ~2x faster startup times (up to ~4x with experimental config)
