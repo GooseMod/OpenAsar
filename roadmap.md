@@ -13,4 +13,4 @@
   - [X] `Settings`
   - [X] `Backoff`
   - [X] `securityUtils`
-- [ ] Compatibility / replication of original Discord splash
+- [X] Replication of original Discord splash UI
