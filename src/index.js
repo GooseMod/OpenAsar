@@ -9,6 +9,20 @@ global.oaConfig = appSettings.getSettings().get('openasar', {});
 
 log('Init', 'Loaded config', oaConfig);
 
-const bootstrap = require('./bootstrap');
+const appMode = process.argv?.includes('--overlay-host') ? 'overlay-host' : 'app';
 
-bootstrap(); // Start bootstrap
+if (appMode === 'overlay-host') {
+  const buildInfo = require('./utils/buildInfo');
+
+  if (buildInfo.newUpdater) {
+    require('./utils/u2LoadModulePath')('discord_overlay2');
+  } else {
+    require('./updater/moduleUpdater').initPathsOnly(buildInfo);
+  }
+
+  require('./utils/requireNative')('discord_overlay2/standalone_host.js')
+} else {
+  const bootstrap = require('./bootstrap');
+
+  bootstrap(); // Start bootstrap
+}
