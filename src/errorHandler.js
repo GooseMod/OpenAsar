@@ -1,4 +1,4 @@
-const { app } = require("electron");
+const { app, dialog } = require("electron");
 
 exports.init = () => {
   process.on('uncaughtException', error => {
@@ -20,15 +20,7 @@ exports.fatal = (err) => {
     detail: err && err.stack ? err.stack : String(err)
   };
 
-  const callback = _ => app.quit();
-
-  const electronMajor = parseInt(process.versions.electron.split('.')[0]);
-
-  if (electronMajor >= 6) {
-    _electron.dialog.showMessageBox(null, options).then(callback);
-  } else {
-    _electron.dialog.showMessageBox(options, callback);
-  }
+  dialog.showMessageBox(null, options).then(() => app.quit());
 
   log('ErrorHandler', 'Fatal:', err);
 };
