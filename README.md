@@ -9,11 +9,13 @@
 - **:shield: No Tracking**: Removes Discord's built-in tracking for crashes and errors
 - **:sewing_needle: Patching**: A future platform for custom patches to further enhance
 
+### :test_tube: Experimental
+OpenAsar is mostly stable, but still lacks a few minor features and likely has a few possible issues. Crashes are unlikely.
 
 <br>
 
 ## Install Guide
-**OpenAsar is heavily disrecommened due to it being in early development.**
+**OpenAsar is not 100% recommened due to it being experimental.**
 1. [Download latest nightly release](https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar)
 2. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
 3. Install OpenAsar `app.asar` into the original path (you may need to be root on Linux)
