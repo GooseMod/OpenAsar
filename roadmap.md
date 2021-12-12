@@ -1,7 +1,9 @@
 # OpenAsar Roadmap
 
 ## v2.0
-- [ ] Self-write updater code
+- [ ] Self-write 100% of code:
+  - [ ] Updater
+  - [ ] Splash backend
 - [ ] Custom splashes
 
 ## v1.0
