@@ -1,62 +1,88 @@
-<div id="text">openasar go brr</div>
+<video loop autoplay src="https://canary.discord.com/assets/3b0d96ed8113994f3d139088726cfecd.webm"></video>
+
+<div id="text">Launching...</div>
 
 <div id="bar-container"></div>
 <div id="bar-fill"></div>
 
 <style>
+  @font-face {
+    font-family: Whitney;
+    font-weight: 400;
+    font-style: normal;
+    src: url(https://goosemod.com/font/whitney_400.woff) format("woff");
+  }
+
   html, body {
+    -webkit-app-region: drag;
+    overflow: hidden;
+
     margin: 0;
     padding: 0;
+    width: 300px;
+    height: 300px;
 
-    background: #101418;
+    background: #282b30;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   * {
-    color: rgba(255, 255, 255, 0.97);
-    font-family: sans-serif;
+    font-family: 'Whitney', sans-serif;
+
+    box-sizing: border-box;
+    -webkit-user-select: none;
+    cursor: default;
+  }
+
+  video {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
   }
 
   #text {
-    position: absolute;
-    top: 45%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-
     font-size: 7vw;
     text-align: center;
 
-    text-transform: capitalize;
+    color: #fff;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 16px;
+
+    text-transform: uppercase;
 
     width: 100%;
   }
 
   #bar-container, #bar-fill {
-    position: absolute;
-    top: 58%;
-    left: 50%;
+    margin-top: 10px;
     transform: translate(-50%, -50%);
 
-    width: 80%;
-    height: 5%;
+    width: 180px;
+    height: 8px;
 
     border-radius: 4px;
 
-    display: none;
+    visibility: hidden;
   }
 
   #bar-container {
-    background: #202428;
+    position: absolute;
+    background: rgba(255, 255, 255, 0.1);
   }
 
   #bar-fill {
-    background: rgb(88, 101, 242);
+    background-color: #737f8d;
     width: 0;
 
     transform: translate(0%, -50%);
     left: 10%;
   }
 </style>
-
 
 <script>
   const text = document.querySelector('#text');
@@ -66,16 +92,14 @@
 
   DiscordSplash.signalReady();
 
-
+  const outOfStates = [ 'downloading-updates', 'installing-updates' ];
   DiscordSplash.onStateUpdate(({ status, current, total, progress }) => {
-    console.log('onStateUpdate', progress);
-
-    text.textContent = status.replaceAll('-', ' ');
-    if (current) text.textContent += ` (${current}/${total})`;
+    text.textContent = status.replaceAll('-', ' ') + '...';
+    if (outOfStates.includes(state)) text.textContent += ` (${current}/${total})`;
 
     if (progress) {
-      barContainer.style.display = 'block';
-      barFill.style.display = 'block';
+      barContainer.style.visibility = 'visible';
+      barFill.style.visibility = 'visible';
 
       barFill.style.width = 80 * (progress / 100) + '%';
     } else {
@@ -83,8 +107,4 @@
       barFill.style.display = '';
     }
   });
-
-  DiscordSplash.onQuoteUpdate((e) => {
-    console.log('onQuoteUpdate', e);
-  })
 </script>
