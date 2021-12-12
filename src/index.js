@@ -15,20 +15,7 @@ if (appMode === 'overlay-host') {
   const buildInfo = require('./utils/buildInfo');
 
   if (buildInfo.newUpdater) {
-    const updater = require('./updater/updater');
-
-    const {
-      NEW_UPDATE_ENDPOINT
-    } = require('./Constants');
-
-    if (!updater.tryInitUpdater(buildInfo, NEW_UPDATE_ENDPOINT)) {
-      throw new Error('Failed to initialize modules in overlay host.');
-    }
-
-    updater.getUpdater().startCurrentVersionSync({
-      allowObsoleteHost: true
-    });
-    // require('./utils/u2LoadModulePath')('discord_overlay2');
+    require('./utils/u2LoadModulePath')('discord_overlay2');
   } else {
     require('./updater/moduleUpdater').initPathsOnly(buildInfo);
   }
