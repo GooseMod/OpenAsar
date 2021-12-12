@@ -15,7 +15,7 @@ if (appMode === 'overlay-host') {
   const buildInfo = require('./utils/buildInfo');
 
   if (buildInfo.newUpdater) {
-    require('./utils/u2LoadModulePath')('discord_overlay2');
+    require('./utils/u2LoadModulePath')();
   } else {
     require('./updater/moduleUpdater').initPathsOnly(buildInfo);
   }
