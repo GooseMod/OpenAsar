@@ -5,9 +5,18 @@ const NodeModule = require('module');
 const paths = require('../paths');
 
 
-module.exports = (moduleName) => {
+module.exports = (moduleName) => { // If undefined, load all
   const modulesDir = join(paths.getExeDir(), 'modules');
-  const moduleCoreDir = readdirSync(modulesDir).find((x) => x.startsWith(moduleName + '-')); // Find desktop core dir by name
+  const moduleDirs = readdirSync(modulesDir);
 
-  NodeModule.globalPaths.push(join(modulesDir, moduleCoreDir)); // Add to globalPaths for requiring
+  if (moduleName) {
+    const moduleCoreDir = moduleDirs.find((x) => x.startsWith(moduleName + '-')); // Find desktop core dir by name
+
+    return NodeModule.globalPaths.push(join(modulesDir, moduleCoreDir)); // Add to globalPaths for requiring
+  }
+
+  // Undefined moduleName, load all
+  for (const dir of moduleDirs) {
+    NodeModule.globalPaths.push(join(modulesDir, dir));
+  }
 };
