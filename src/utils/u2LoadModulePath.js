@@ -1,8 +1,13 @@
+const { readdirSync } = require('fs');
+const { join } = require('path');
+const NodeModule = require('module');
+
+const paths = require('../paths');
+
+
 module.exports = (moduleName) => {
-  const NodeModule = require('module');
+  const modulesDir = join(paths.getExeDir(), 'modules');
+  const moduleCoreDir = readdirSync(modulesDir).find((x) => x.startsWith(moduleName + '-')); // Find desktop core dir by name
 
-  const modulesDir = _path.default.join(paths.getExeDir(), 'modules');
-  const moduleCoreDir = _fs.default.readdirSync(modulesDir).find((x) => x.startsWith(moduleName + '-')); // Find desktop core dir by name
-
-  NodeModule.globalPaths.push(_path.default.join(modulesDir, moduleCoreDir)); // Add to globalPaths for requiring
+  NodeModule.globalPaths.push(join(modulesDir, moduleCoreDir)); // Add to globalPaths for requiring
 };
