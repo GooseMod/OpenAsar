@@ -2,6 +2,7 @@
 
 ## v2.0
 - [ ] Self-write updater code
+- [ ] Custom splashes
 
 ## v1.0
 - [ ] A bunch of specific minor fixes / features
