@@ -54,6 +54,11 @@ const startCore = () => {
 
 const startUpdate = () => {
   appUpdater.update(false, () => {
+    if (process.env.OPENASAR_NOSTART) {
+      log('Bootstrap', 'Found nostart variable, halting bootstrap');
+      return;
+    }
+
     startCore();
   }, () => {
     log('Bootstrap', 'Setting main window visible');
