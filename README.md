@@ -47,3 +47,7 @@ An example of a settings.json with OpenAsar config:
   }
 }
 ```
+
+Additionally there are some environmental variables you can use:
+- `OPENASAR_QUICKSTART` (bool, default false) - same as `quickstart` config option
+- `OPENASAR_NOSTART` (bool, default false) - if enabled halts starting after splash loads (for splash testing)
