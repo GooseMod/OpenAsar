@@ -17,7 +17,7 @@ const spawn = (cmd, args, callback = (() => {})) => {
     stdout += data;
   });
 
-  proocess.on('error', err => { callback(err, stdout); });
+  process.on('error', err => { callback(err, stdout); });
 
   process.on('exit', (code, signal) => {
     let err = null;
