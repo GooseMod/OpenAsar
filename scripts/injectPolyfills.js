@@ -1,12 +1,14 @@
 const { readdirSync, mkdirSync, copyFileSync } = require('fs');
 const { join } = require('path');
 
-const polyfillsDir = join(__dirname, 'polyfills');
+const rootDir = join(__dirname, '..');
+
+const polyfillsDir = join(rootDir, 'polyfills');
 for (const file of readdirSync(polyfillsDir)) {
   const [ name ] = file.split('.');
   const jsPath = join(polyfillsDir, file);
 
-  const moduleDir = join(__dirname, 'src', 'node_modules', name);
+  const moduleDir = join(rootDir, 'src', 'node_modules', name);
 
   try {
     mkdirSync(moduleDir);

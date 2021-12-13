@@ -31,8 +31,8 @@ jobs:
 
     - name: Pack base asar
       run: |
-        node strip.js
-        node injectPolyfills.js
+        node scripts/strip.js
+        node scripts/injectPolyfills.js
         sed -i -e "s/nightly/nightly-$(git rev-parse HEAD | cut -c 1-7)/" src/index.js
 
         npx asar pack src app.asar
