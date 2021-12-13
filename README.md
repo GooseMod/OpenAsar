@@ -19,9 +19,10 @@ OpenAsar is mostly stable, but still lacks a few minor features and likely has a
 ## Install Guide
 **OpenAsar is not 100% recommened due to it being experimental.**
 1. [Download latest nightly release](https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar)
-2. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
-3. Install OpenAsar `app.asar` into the original path (you may need to be root on Linux)
-4. Restart Discord via system tray (you should notice Discord start faster as a way to see if it's instantly working)
+2. Find your `app.asar`, it should be `<where the Discord exe is>/resources/app.asar`. For Windows this is like: `%localappdata%\Discord\app-1.0.9003\resources\app.asar` (your app folder may have a different version)
+3. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
+4. Install OpenAsar `app.asar` into the original path (you may need to be root on Linux)
+5. Restart Discord via system tray (you should notice Discord start faster as a way to see if it's instantly working)
 
 <!-- **If using Linux it is highly recommended to disable write protection** (needing root to overwrite files) for your Discord install if you have it enabled. It is not much of a security defecit as Windows has no write protection as well. This enables updating the asar and potentially host updating further on. -->
 
