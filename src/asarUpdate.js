@@ -18,6 +18,10 @@ const getAsarHash = () => crypto.createHash('sha512').update(fs.readFileSync(asa
 module.exports = () => { // (Try) update asar
   log('AsarUpdate', 'Updating...');
 
+  if (!oaVersion.startsWith('nightly-')) {
+    return log('AsarUpdate', 'Found non-standard version, not updating');
+  }
+
   const asarUrl = downloadUrls[channel];
   log('AsarUpdate', 'Release Channel:', channel, 'Download URL:', asarUrl);
 
