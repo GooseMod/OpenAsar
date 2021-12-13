@@ -17,3 +17,6 @@ Quickstart skips a few Discord features like the splash screen and waiting for u
 
 ### This didn't speed up Discord that much for me?
 If OpenAsar wasn't that much faster (in term of startup time) you likely already have a good PC. OpenAsar speeds up most for lower-end PCs, especially those without an SSD. You might still notice a subtle (~1.25x) difference.
+
+### Is this 100% original?
+No, and depends on your definition. By original if you mean all of this is rewritten, not containing any original Discord code - not yet but we hope for v2.0. If you mean original by design, etc. - no, as we have to follow Discord APIs to maintain compatibility.
