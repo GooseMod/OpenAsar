@@ -5,7 +5,7 @@ const squirrel = require('../updater/squirrelUpdate');
 const Constants = require('../Constants');
 
 const appPath = path.resolve(process.execPath, '..');
-const rootPath = path.resolve(appFolder, '..');
+const rootPath = path.resolve(appPath, '..');
 const exeFilename = path.basename(process.execPath);
 const updateExe = path.join(rootFolder, 'Update.exe');
 
