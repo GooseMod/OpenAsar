@@ -49,6 +49,8 @@ const updateShortcuts = (updater) => {
 };
 
 exports.performFirstRunTasks = (updater) => {
+  log('FirstRun', 'Perform');
+
   const flagPath = path.join(paths.getUserDataVersioned(), '.first-run');
 
   if (fs.existsSync(flagPath)) return; // Already ran first path, skip
