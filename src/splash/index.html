@@ -5,6 +5,8 @@
 <div id="bar-container"></div>
 <div id="bar-fill"></div>
 
+<div id="debug"></div>
+
 <style>
   @font-face {
     font-family: Whitney;
@@ -82,6 +84,17 @@
     transform: translate(0%, -50%);
     left: 10%;
   }
+
+  #debug {
+    position: absolute;
+    bottom: 6px;
+    right: 6px;
+
+    text-align: right;
+    font-size: 10px;
+    color: #72767d;
+    white-space: pre;
+  }
 </style>
 
 <script>
@@ -107,4 +120,6 @@
       barFill.style.display = '';
     }
   });
+
+  document.querySelector('#debug').textContent = DiscordSplash.getDebugInfo();
 </script>

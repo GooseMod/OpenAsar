@@ -487,7 +487,7 @@ function launchSplashWindow(startMinimized) {
     pathname: _path.default.join(__dirname, 'index.html')
   });
 
-  splashWindow.loadURL(splashUrl);
+  splashWindow.loadURL(splashUrl + '?oaVersion=' + global.oaVersion);
 
   log('Splash', `Loading window (with url ${splashUrl})`);
 }
