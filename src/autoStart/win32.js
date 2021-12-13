@@ -6,7 +6,7 @@ const retainAsar = require('./retainAsar');
 const appSettings = require('../appSettings');
 const settings = appSettings.getSettings();
 
-const appName = _path.basename(process.execPath, '.exe');
+const appName = path.basename(process.execPath, '.exe');
 const fullExeName = path.basename(process.execPath);
 const updatePath = path.join(path.dirname(process.execPath), '..', 'Update.exe');
 
