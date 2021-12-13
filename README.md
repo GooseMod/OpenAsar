@@ -10,7 +10,7 @@
 - **:sewing_needle: Patching**: A future platform for custom patches to further enhance
 
 ### :test_tube: Experimental
-OpenAsar is mostly stable, but still lacks a few minor features and likely has a few possible issues. Crashes are unlikely.
+OpenAsar is highly stable, but still likely has a few possible minor issues. Crashes are very unlikely.
 
 ### [FAQ](faq.md)
 
