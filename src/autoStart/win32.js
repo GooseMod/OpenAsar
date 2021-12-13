@@ -21,7 +21,7 @@ exports.install = (callback) => {
 };
 
 exports.update = (callback) => {
-  exports.isInstalled(installed => installed ? install(callback) : callback()); // Reinstall if installed, else leave it (just callback)
+  exports.isInstalled(installed => installed ? exports.install(callback) : callback()); // Reinstall if installed, else leave it (just callback)
 
   retainAsar(); // Retain OpenAsar
 };
