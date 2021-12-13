@@ -10,7 +10,7 @@
 - [ ] A bunch of specific minor fixes / features
   - [ ] Add Discord-specific Electron flags?
 - [ ] Auto start
-- [ ] First run
+- [X] First run
 - [X] Overlay
 - [X] Self-rewrite some small / utility parts of internals
   - [X] `windowsUtils`
