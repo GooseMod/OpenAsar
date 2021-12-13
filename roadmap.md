@@ -7,8 +7,7 @@
 - [ ] Custom splashes
 
 ## v1.0
-- [ ] A bunch of specific minor fixes / features
-  - [ ] Add Discord-specific Electron flags?
+- [X] A bunch of specific minor fixes / features
 - [X] Auto start
 - [X] First run
 - [X] Overlay
