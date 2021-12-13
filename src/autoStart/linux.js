@@ -25,6 +25,8 @@ X-GNOME-Autostart-enabled=true
 `;
 
 exports.install = (callback) => {
+  log('AutoStart', 'Install');
+
   try {
     fs.mkdirSync(autostartDir);
   } catch (_e) { } // Already exists, ignore
@@ -38,10 +40,14 @@ exports.install = (callback) => {
 };
 
 exports.update = (callback) => { // Discord has stub here
+  log('AutoStart', 'Update');
+
   callback();
 };
 
 exports.uninstall = (callback) => {
+  log('AutoStart', 'Uninstall');
+
   return fs.unlink(desktopPath, callback);
 };
 

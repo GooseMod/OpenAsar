@@ -11,6 +11,8 @@ const fullExeName = path.basename(process.execPath);
 const updatePath = path.join(path.dirname(process.execPath), '..', 'Update.exe');
 
 exports.install = (callback) => {
+  log('AutoStart', 'Install');
+
   let execPath = `${updatePath} --processStart ${fullExeName}`;
 
   if (settings.get('START_MINIMIZED', false)) { // If start minimized enabled, pass it to Electron via --process-start-args
@@ -21,12 +23,16 @@ exports.install = (callback) => {
 };
 
 exports.update = (callback) => {
+  log('AutoStart', 'Update');
+
   exports.isInstalled(installed => installed ? exports.install(callback) : callback()); // Reinstall if installed, else leave it (just callback)
 
   retainAsar(); // Retain OpenAsar
 };
 
 exports.uninstall = (callback) => {
+  log('AutoStart', 'Uninstall');
+
   windowsUtils.spawnReg(['delete', 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName, '/f'], (_error, _stdout) => { // Delete reg
     callback();
   });
