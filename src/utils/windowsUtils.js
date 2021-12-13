@@ -4,7 +4,7 @@ const { join } = require('path');
 const regExePath = process.env.SystemRoot ? join(process.env.SystemRoot, 'System32', 'reg.exe') : 'reg.exe';
 
 const spawn = (cmd, args, callback = (() => {})) => {
-  const stdout = '';
+  let stdout = '';
   let process;
 
   try {
