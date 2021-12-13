@@ -1,10 +1,3 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.performFirstRunTasks = performFirstRunTasks;
-
 const fs = require('fs');
 const path = require('path');
 const paths = require('../paths');
