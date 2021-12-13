@@ -12,6 +12,8 @@
 ### :test_tube: Experimental
 OpenAsar is mostly stable, but still lacks a few minor features and likely has a few possible issues. Crashes are unlikely.
 
+### [FAQ](faq.md)
+
 <br>
 
 ## Install Guide
