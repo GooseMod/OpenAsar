@@ -25,7 +25,7 @@ jobs:
     - name: NPM Install
       run: |
         cd src
-        npm i;
+        npm i
         cd ..
         npm i -g asar uglify-js
 
