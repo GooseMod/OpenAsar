@@ -7,7 +7,7 @@ const ipcMain = require('../ipcMain');
 
 
 const LOADING_WINDOW_WIDTH = 300;
-const LOADING_WINDOW_HEIGHT = process.platform === 'darwin' ? 300 : 350; // TODO: addModulesListener events should use Module's constants
+const LOADING_WINDOW_HEIGHT = process.platform === 'darwin' ? 300 : 350;
 
 let window;
 
@@ -52,12 +52,6 @@ exports.initSplash = (startMinimized = false) => { // Make splash window
 
     events.emit(APP_SHOULD_LAUNCH);
   });
-
-  if (!startMinimized && window) window.show();
-
-  // Update and stuff
-
-  events.emit(APP_SHOULD_LAUNCH);
 
   ipcMain.on('SPLASH_SCREEN_QUIT', () => {
     app.quit();
