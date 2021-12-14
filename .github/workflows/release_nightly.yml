@@ -36,7 +36,7 @@ jobs:
         node scripts/injectPolyfills.js
         sed -i -e "s/nightly/nightly-$(git rev-parse HEAD | cut -c 1-7)/" src/index.js
 
-        npx asar pack src debug.asar
+        npx asar pack src app.asar
 
     - name: Pack minified asar
       run: |
@@ -45,10 +45,11 @@ jobs:
         npx uglifyjs --compress --mangle -o index.js -- index.js
         cp src/package.json .
         npx minify-json package.json
-        rm -rf src/*
+        rm -rf src
+        mkdir src
         cp index.js src
         cp package.json src
-        npx asar pack src app.asar
+        npx asar pack src minified.asar
 
     - name: GitHub Release
       run: |
@@ -59,4 +60,5 @@ jobs:
         VERSION: 'nightly'
         NAME: 'Nightly'
         BODY: Latest Nightly release
-        FILES: app.asar debug.asar
+        # FILES: app.asar debug.asar
+        FILES: app.asar
