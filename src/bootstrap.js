@@ -38,6 +38,15 @@ const startCore = () => {
   desktopCore = requireNative('discord_desktop_core');
   log('Bootstrap', 'Required desktop_core:', desktopCore);
 
+  /* const electronPath = require.resolve('electron'); // Patch webapp host version to suffix -openasar
+  const originalVersion = require.cache[electronPath].exports.app.getVersion();
+  require.cache[electronPath].exports.app.getVersion = function() {
+    const inDiscordNative = (new Error()).stack.includes('discord_native');
+    if (!inDiscordNative) return originalVersion;
+
+    return originalVersion + '-openasar';
+  }; */
+
   desktopCore.startup({
     paths,
     splashScreen,
