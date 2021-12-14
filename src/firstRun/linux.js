@@ -1,2 +1,1 @@
-// Stub in normal Discord
-exports.performFirstRunTasks = () => {};
+module.exports = require('./stub');
