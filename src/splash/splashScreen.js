@@ -335,6 +335,12 @@ function initSplash(startMinimized = false) {
 
   log('Splash', 'Quickstart config:', process.env.OPENASAR_QUICKSTART || oaConfig.quickstart, '-', process.env.OPENASAR_QUICKSTART, oaConfig.quickstart);
 
+  if (newUpdater != null) {
+    updateUntilCurrent();
+  } else {
+    moduleUpdater.installPendingUpdates();
+  }
+
   if (process.env.OPENASAR_QUICKSTART || oaConfig.quickstart) setTimeout(() => {
     destroySplash();
 
@@ -348,12 +354,12 @@ function initSplash(startMinimized = false) {
       NodeModule.globalPaths.push(_path.default.join(modulesDir, moduleCoreDir)); // Add to globalPaths for requiring
     }
 
-    if (newUpdater != null) {
+    /* if (newUpdater != null) {
       updateUntilCurrent();
     } else {
       moduleUpdater.installPendingUpdates();
       moduleUpdater.setInBackground();
-    }
+    } */
 
     launchMainWindow();
     
@@ -468,12 +474,6 @@ function launchSplashWindow(startMinimized) {
 
     if (splashWindow && !startMinimized) {
       splashWindow.show();
-    }
-
-    if (newUpdater != null) {
-      updateUntilCurrent();
-    } else {
-      moduleUpdater.installPendingUpdates();
     }
   });
 
