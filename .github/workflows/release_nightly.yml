@@ -58,6 +58,7 @@ jobs:
     - name: GitHub Release
       run: |
         git tag -d nightly
+        git push origin --delete nightly
         git tag nightly
         git push origin nightly
         gh release delete ${{ env.VERSION }} -y
