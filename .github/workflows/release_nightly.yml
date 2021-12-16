@@ -57,6 +57,9 @@ jobs:
 
     - name: GitHub Release
       run: |
+        git tag -d nightly
+        git tag nightly
+        git push origin nightly
         gh release delete ${{ env.VERSION }} -y
         gh release create ${{ env.VERSION }} -t "${{ env.NAME }}" -n "${{ env.BODY }}" ${{ env.FILES }}
       env:
