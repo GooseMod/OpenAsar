@@ -43,9 +43,9 @@ jobs:
         npm i -g esbuild uglify-js minify-json
         npx esbuild ./src --bundle --platform=node --external:electron --external:original-fs --external:auto-updater --outfile=index.js
         npx uglifyjs --compress --mangle -o index.js -- index.js
+        npx uglifyjs --compress --mangle -o preload.js -- src/splash/preload.js
         cp src/package.json .
         cp src/splash/index.html .
-        cp src/splash/preload.js .
         npx minify-json package.json
         rm -rf src
         mkdir src
