@@ -49,7 +49,7 @@ jobs:
         mkdir src
         cp index.js src
         cp package.json src
-        npx asar pack src minified.asar
+        npx asar pack src testing.asar
 
     - name: GitHub Release
       run: |
@@ -60,5 +60,5 @@ jobs:
         VERSION: 'nightly'
         NAME: 'Nightly'
         BODY: Latest Nightly release
-        # FILES: app.asar debug.asar
-        FILES: app.asar
+        FILES: app.asar testing.asar
+        # FILES: app.asar
