@@ -29,10 +29,11 @@ OpenAsar is highly stable, but still likely has a few possible minor issues. Cra
 ## Config
 You can configure OpenAsar via `settings.json` (found in your Discord app data / user data), under a `openasar` object. Keep in mind most options are defaults for good reason. The avaliable options are:
 - `quickstart` (bool, default false) - whether to use Quickstart (experimental)
-- `skipStartupUpdateChecks` (bool, default false) - skips startup update checking (Linux-only)
+- `themeSync` (bool, default true) - syncs your modded client's theme with splash theming
 - `autoupdate` (bool, default true) - whether to autoupdate OpenAsar after Discord startup
 - `multiInstance` (bool, default false) - whether to enable multi-instance
 - `ssoeAllowlist` (bool, default true) - whether to use safer custom method of opening external urls (true) or normal Discord's method (false)
+- `skipStartupUpdateChecks` (bool, default false) - skips startup update checking (Linux-only)
 
 An example of a settings.json with OpenAsar config:
 ```json

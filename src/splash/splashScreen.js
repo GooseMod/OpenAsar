@@ -487,7 +487,13 @@ function launchSplashWindow(startMinimized) {
     pathname: _path.default.join(__dirname, 'index.html')
   });
 
-  splashWindow.loadURL(splashUrl + '?oaVersion=' + global.oaVersion);
+  try {
+    webContentsSend(splashWindow, 'GET_CSS', JSON.parse(_fs.default.readFileSync(_path.default.join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
+  } catch (e) {
+    log('Splash', 'Failed to inject splash CSS');
+  }
+
+  splashWindow.loadURL(splashUrl + '?oaVersion=' + global.oaVersion + '&oaThemeSync=' + oaConfig.themeSync);
 
   log('Splash', `Loading window (with url ${splashUrl})`);
 }

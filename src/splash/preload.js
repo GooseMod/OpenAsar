@@ -2,6 +2,8 @@ const { app, contextBridge, ipcRenderer } = require('electron');
 
 const { saferShellOpenExternal } = require('../utils/securityUtils');
 
+const urlParams = new URLSearchParams(window.location.search);
+
 
 contextBridge.exposeInMainWorld('DiscordSplash', {
   signalReady: () => {
@@ -20,9 +22,11 @@ contextBridge.exposeInMainWorld('DiscordSplash', {
   getDebugInfo: () => {
     const buildInfo = require('../utils/buildInfo');
 
-    const urlParams = new URLSearchParams(window.location.search);
-
     return `${buildInfo.releaseChannel} ${buildInfo.version}
     OpenAsar ${urlParams.get('oaVersion')}`;
-  }
+  },
+
+  getCSS: callback => urlParams.get('oaThemeSync') !== 'false' ? ipcRenderer.on('DISCORD_GET_CSS', (_, value) => {
+    callback(value);
+  }) : {}
 });

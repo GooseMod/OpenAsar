@@ -1,4 +1,6 @@
-const { app } = require('electron');
+const { app, BrowserWindow } = require('electron');
+const { readFileSync } = require('fs');
+const { join } = require('path');
 
 log('Bootstrap', 'Forcing Electron props');
 app.name = 'discord'; // Force name as sometimes breaks data path even with "discord" name (also fixes kernel?)
@@ -58,6 +60,24 @@ const startCore = () => {
     GPUSettings,
     updater,
     crashReporterSetup
+  });
+
+  const i = setImmediate(() => {
+    log('MainWindowInject', 'Attempting to get main window');
+
+    if (!global.mainWindowId) return;
+
+    log('MainWindowInject', 'Success, adding dom-ready handler');
+
+    clearInterval(i);
+
+    const bw = BrowserWindow.fromId(global.mainWindowId);
+
+    bw.webContents.on('dom-ready', () => {
+      log('MainWindowInject', 'dom-ready triggered, injecting JS');
+
+      bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindowInject.js'), 'utf8'));
+    });
   });
 };
 

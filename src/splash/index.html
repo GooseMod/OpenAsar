@@ -8,6 +8,14 @@
 <div id="debug"></div>
 
 <style>
+  :root {
+    --background-primary: #282b30;
+    --background-secondary: rgba(255, 255, 255, 0.1);
+    --brand-experiment: #5865F2;
+    --header-primary: #fff;
+    --text-muted: #72767d;
+  }
+
   @font-face {
     font-family: Whitney;
     font-weight: 400;
@@ -24,7 +32,7 @@
     width: 100%;
     height: 100%;
 
-    background: #282b30;
+    background: var(--background-primary);
 
     display: flex;
     flex-direction: column;
@@ -50,7 +58,7 @@
     font-size: 7vw;
     text-align: center;
 
-    color: #fff;
+    color: var(--header-primary);
     font-weight: 400;
     font-style: italic;
     font-size: 16px;
@@ -74,11 +82,11 @@
 
   #bar-container {
     position: absolute;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--background-secondary);
   }
 
   #bar-fill {
-    background-color: #737f8d;
+    background-color: var(--brand-experiment);
     width: 0;
 
     transform: translate(0%, -50%);
@@ -92,7 +100,7 @@
 
     text-align: right;
     font-size: 10px;
-    color: #72767d;
+    color: var(--text-muted);
     white-space: pre;
   }
 </style>
@@ -122,4 +130,12 @@
   });
 
   document.querySelector('#debug').textContent = DiscordSplash.getDebugInfo();
+
+  DiscordSplash.getCSS((css) => {
+    document.body.classList.add('theme-dark'); // Theme compat
+
+    const cssInject = document.createElement('style');
+    cssInject.appendChild(document.createTextNode(css));
+    document.body.appendChild(cssInject);
+  });
 </script>
