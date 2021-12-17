@@ -493,7 +493,7 @@ function launchSplashWindow(startMinimized) {
     log('Splash', 'Failed to inject splash CSS');
   }
 
-  splashWindow.loadURL(splashUrl + '?oaVersion=' + global.oaVersion + '&oaThemeSync=' + oaConfig.themeSync);
+  splashWindow.loadURL(splashUrl + '?oaVersion=' + global.oaVersion + '&oaThemeSync=' + oaConfig.themeSync + '&oaSplashText' + oaConfig.splashText);
 
   log('Splash', `Loading window (with url ${splashUrl})`);
 }

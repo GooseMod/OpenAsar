@@ -33,6 +33,7 @@ You can configure OpenAsar via `settings.json` (found in your Discord app data /
 - `autoupdate` (bool, default true) - whether to autoupdate OpenAsar after Discord startup
 - `multiInstance` (bool, default false) - whether to enable multi-instance
 - `ssoeAllowlist` (bool, default true) - whether to use safer custom method of opening external urls (true) or normal Discord's method (false)
+- `splashText` (bool, default true) - whether to show bottom right version info text in splash
 - `skipStartupUpdateChecks` (bool, default false) - skips startup update checking (Linux-only)
 
 An example of a settings.json with OpenAsar config:

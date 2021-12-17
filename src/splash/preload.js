@@ -20,6 +20,8 @@ contextBridge.exposeInMainWorld('DiscordSplash', {
   quitDiscord: () => ipcRenderer.send('DISCORD_SPLASH_SCREEN_QUIT'),
 
   getDebugInfo: () => {
+    if (urlParams.get('oaSplashText') === 'false') return '';
+
     const buildInfo = require('../utils/buildInfo');
 
     return `${buildInfo.releaseChannel} ${buildInfo.version}
