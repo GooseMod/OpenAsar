@@ -82,7 +82,7 @@ const startCore = () => {
       let injectJs = readFileSync(join(__dirname, 'mainWindowInject.js'), 'utf8');
 
       const [ version1, version2 ] = oaVersion.split('-'); // Split via -
-      injectJs = injectJs.replace('<version_1>', version1[0].toUpperCase() + version1.substring(1).toLowerCase()).replace('<version_2>', version2 || '');
+      injectJs = injectJs.replace('<version_1>', version1[0].toUpperCase() + version1.substring(1).toLowerCase()).replace('<version_2>', version2 || 'custom');
 
       bw.webContents.executeJavaScript(injectJs);
     });
