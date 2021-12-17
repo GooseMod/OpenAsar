@@ -3,7 +3,7 @@ const { app, contextBridge, ipcRenderer } = require('electron');
 const { saferShellOpenExternal } = require('../utils/securityUtils');
 
 const urlParams = new URLSearchParams(window.location.search);
-
+const oaConfig = JSON.parse(urlParams.get('oaConfig'));
 
 contextBridge.exposeInMainWorld('DiscordSplash', {
   signalReady: () => {
@@ -20,7 +20,7 @@ contextBridge.exposeInMainWorld('DiscordSplash', {
   quitDiscord: () => ipcRenderer.send('DISCORD_SPLASH_SCREEN_QUIT'),
 
   getDebugInfo: () => {
-    if (urlParams.get('oaSplashText') === 'false') return '';
+    if (oaConfig.splashText === false) return '';
 
     const buildInfo = require('../utils/buildInfo');
 
@@ -28,7 +28,7 @@ contextBridge.exposeInMainWorld('DiscordSplash', {
     OpenAsar ${urlParams.get('oaVersion')}`;
   },
 
-  getCSS: callback => urlParams.get('oaThemeSync') !== 'false' ? ipcRenderer.on('DISCORD_GET_CSS', (_, value) => {
+  getCSS: callback => oaConfig.themeSync !== 'false' ? ipcRenderer.on('DISCORD_GET_CSS', (_, value) => {
     callback(value);
   }) : {}
 });
