@@ -4,7 +4,10 @@
 - [ ] Self-write 100% of code:
   - [ ] Updater
   - [ ] Splash backend
-- [ ] Custom splashes
+- [ ] Full custom splashes
+- [X] ThemeSync
+  - [ ] ThemeSync storage rewrite
+- [ ] More QuickStart testing and improvements
 
 ## v1.0
 - [X] A bunch of specific minor fixes / features
