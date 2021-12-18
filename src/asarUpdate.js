@@ -22,7 +22,7 @@ module.exports = async () => { // (Try) update asar
   log('AsarUpdate', 'Updating...');
 
   if (!oaVersion.startsWith('nightly-')) {
-    // return log('AsarUpdate', 'Found non-standard version, not updating');
+    return log('AsarUpdate', 'Found non-standard version, not updating');
   }
 
   const asarUrl = downloadUrls[channel];
