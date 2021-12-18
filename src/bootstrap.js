@@ -40,15 +40,6 @@ const startCore = () => {
   desktopCore = requireNative('discord_desktop_core');
   log('Bootstrap', 'Required desktop_core:', desktopCore);
 
-  /* const electronPath = require.resolve('electron'); // Patch webapp host version to suffix -openasar
-  const originalVersion = require.cache[electronPath].exports.app.getVersion();
-  require.cache[electronPath].exports.app.getVersion = function() {
-    const inDiscordNative = (new Error()).stack.includes('discord_native');
-    if (!inDiscordNative) return originalVersion;
-
-    return originalVersion + '-openasar';
-  }; */
-
   desktopCore.startup({
     paths,
     splashScreen,
@@ -77,6 +68,8 @@ const startCore = () => {
     const bw = BrowserWindow.fromId(global.mainWindowId);
 
     bw.webContents.on('dom-ready', () => {
+      splashScreen.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
+
       log('MainWindowInject', 'dom-ready triggered, injecting JS');
 
       let injectJs = readFileSync(join(__dirname, 'mainWindowInject.js'), 'utf8');
