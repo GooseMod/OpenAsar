@@ -43,6 +43,9 @@ const request = (options, callback) => { // Main function
   const listener = {};
 
   nodeReq(options).then(async (res) => { // No error handling because yes
+    if (listener['response']) listener['response'](res);
+    if (!callback) return;
+
     let body = '';
     res.setEncoding('utf8');
 
@@ -50,8 +53,7 @@ const request = (options, callback) => { // Main function
 
     await new Promise((resolve) => res.on('end', resolve)); // Wait to read full body
 
-    if (callback) callback(undefined, res, body);
-    if (listener['response']) listener['response'](res);
+    callback(undefined, res, body);
   });
 
   return {
