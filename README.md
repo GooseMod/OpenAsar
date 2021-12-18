@@ -27,13 +27,18 @@ OpenAsar is highly stable, but still likely has a few possible minor issues. Cra
 <!-- **If using Linux it is highly recommended to disable write protection** (needing root to overwrite files) for your Discord install if you have it enabled. It is not much of a security defecit as Windows has no write protection as well. This enables updating the asar and potentially host updating further on. -->
 
 ## Config
-You can configure OpenAsar via `settings.json` (found in your Discord app data / user data), under a `openasar` object. Keep in mind most options are defaults for good reason. The avaliable options are:
+You can configure OpenAsar via `settings.json` (found in your Discord app data / user data), under a `openasar` object. Keep in mind most options are defaults for good reason.
+
+### OpenAsar Options
 - `quickstart` (bool, default false) - whether to use Quickstart (experimental)
 - `themeSync` (bool, default true) - syncs your modded client's theme with splash theming
 - `autoupdate` (bool, default true) - whether to autoupdate OpenAsar after Discord startup
-- `multiInstance` (bool, default false) - whether to enable multi-instance
-- `ssoeAllowlist` (bool, default true) - whether to use safer custom method of opening external urls (true) or normal Discord's method (false)
+- `updatePrompt` (bool, default false) - whether to show update prompt after updating OpenAsar
 - `splashText` (bool, default true) - whether to show bottom right version info text in splash
+- `ssoeAllowlist` (bool, default true) - whether to use safer custom method of opening external urls (true) or normal Discord's method (false)
+
+### Extra Discord Options
+- `multiInstance` (bool, default false) - whether to enable multi-instance
 - `skipStartupUpdateChecks` (bool, default false) - skips startup update checking (Linux-only)
 
 An example of a settings.json with OpenAsar config:

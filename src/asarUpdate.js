@@ -15,7 +15,7 @@ const channel = 'nightly'; // Have prod, etc. once stable / 1.0
 
 const getAsarHash = () => crypto.createHash('sha512').update(fs.readFileSync(asarPath)).digest('hex');
 
-module.exports = () => { // (Try) update asar
+module.exports = async () => { // (Try) update asar
   log('AsarUpdate', 'Updating...');
 
   if (!oaVersion.startsWith('nightly-')) {
@@ -28,55 +28,63 @@ module.exports = () => { // (Try) update asar
   const originalHash = getAsarHash();
   log('AsarUpdate', 'Original Hash:', originalHash);
 
-  const file = fs.createWriteStream(asarPath);
+  const updateSuccess = await new Promise((res) => {
+    const file = fs.createWriteStream(asarPath);
 
-  let writeError = false;
-  file.on('error', err => {
-    log('AsarUpdate', 'Failed to write', err);
-    file.close();
+    let writeError = false;
+    file.on('error', err => {
+      log('AsarUpdate', 'Failed to write', err);
+      file.close();
 
-    writeError = true;
+      writeError = true;
+      res(false);
+    });
+
+    log('AsarUpdate', 'Opened write stream to asar');
+
+    request(asarUrl, (_err, res) => {
+      if (writeError) return;
+
+      log('AsarUpdate', 'Piping download response to stream');
+      res.pipe(file);
+    });
+
+    file.on('finish', () => {
+      file.close();
+      res(true);
+    });
   });
 
-  log('AsarUpdate', 'Opened write stream to asar');
+  if (!updateSuccess) {
+    log('AsarUpdate', 'Aborting rest of update due to update error');
+    return;
+  }
 
-  request(asarUrl, (_err, res) => {
-    log('AsarUpdate', 'Piping download response to stream');
-    res.pipe(file);
-  });
+  log('AsarUpdate', 'Completed download');
 
-  file.on('finish', async () => {
-    file.close();
-    log('AsarUpdate', 'Completed download');
+  const newHash = getAsarHash();
+  const changed = originalHash !== newHash;
 
-    const newHash = getAsarHash();
-    const changed = originalHash !== newHash;
-
-    log('AsarUpdate', `Hash Comparison:
+  log('AsarUpdate', `Hash Comparison:
 Original Hash: ${originalHash}
 New Hash: ${newHash}
 Changed: ${changed}`);
 
-    if (changed) {
-      const { response } = await electron.dialog.showMessageBox(null, {
-        message: 'Updated OpenAsar',
-        detail: `Restart required to use new version.`,
-        buttons: ['Restart Now', 'Later'],
-        defaultId: 0
-      });
+  if (changed && oaConfig.updatePrompt === true) {
+    const { response } = await electron.dialog.showMessageBox(null, {
+      message: 'Updated OpenAsar',
+      detail: `Restart required to use new version.`,
+      buttons: ['Restart Now', 'Later'],
+      defaultId: 0
+    });
 
-      log('AsarUpdate', 'Modal response', response);
+    log('AsarUpdate', 'Modal response', response);
 
-      if (response === 0) {
-        log('AsarUpdate', 'Restarting');
+    if (response === 0) {
+      log('AsarUpdate', 'Restarting');
 
-        electron.app.relaunch();
-        electron.app.exit();
-      }
+      electron.app.relaunch();
+      electron.app.exit();
     }
-
-    if (writeError) {
-      // Warn message?
-    }
-  });
+  }
 };
