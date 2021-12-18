@@ -12,15 +12,18 @@ const update = async () => {
 };
 setInterval(update, 5000);
 
-const settingsInject = async () => {
-  const infoEl = document.querySelector('.info-1VyQPT');
-  if (!infoEl || document.getElementById('openasar-version')) return;
+const css = `
+.socialLinks-3jqNFy + .info-1VyQPT .colorMuted-HdFt4q:nth-child(2)::after {
+  content: " | OpenAsar <version_2>";
+  display: inline;
+  text-transform: none;
+}
 
-  const el = document.createElement('el');
-  el.id = 'openasar-version';
-  el.className = 'colorMuted-HdFt4q size12-3cLvbJ line-3ColD0 versionHash-2gXjIB';
-  el.textContent = 'OpenAsar <version_1> (<version_2>)';
+.socialLinks-3jqNFy + .info-1VyQPT {
+  padding-right: 0;
+}
+`;
 
-  infoEl.appendChild(el);
-};
-setInterval(settingsInject, 1000);
+const el = document.createElement('style');
+el.appendChild(document.createTextNode(css));
+document.body.appendChild(el);
