@@ -63,5 +63,12 @@ const request = (options, callback) => { // Main function
 
 // Method functions
 request.get = (url, callback) => request({ url: url, method: 'GET' }, callback);
+request.post = (url, callback) => request({ url: url, method: 'POST' }, callback);
+request.put = (url, callback) => request({ url: url, method: 'PUT' }, callback);
+request.patch = (url, callback) => request({ url: url, method: 'PATCH' }, callback);
+request.delete = (url, callback) => request({ url: url, method: 'DELETE' }, callback);
+request.del = request.delete; // Random shortened func because request
+request.head = (url, callback) => request({ url: url, method: 'HEAD' }, callback);
+request.options = (url, callback) => request({ url: url, method: 'OPTIONS' }, callback);
 
 module.exports = request;
