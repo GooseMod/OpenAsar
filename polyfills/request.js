@@ -31,7 +31,7 @@ const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => {
   });
 };
 
-module.exports = (options, callback) => {
+const request = (options, callback) => { // Main function
   if (typeof options === 'string') {
     options = {
       url: options
@@ -42,8 +42,15 @@ module.exports = (options, callback) => {
 
   const listener = {};
 
-  nodeReq(options).then((res) => { // No error handling because yes
-    if (callback) callback(undefined, res, res.body);
+  nodeReq(options).then(async (res) => { // No error handling because yes
+    let body = '';
+    res.setEncoding('utf8');
+
+    res.on('data', (chunk) => body += chunk);
+
+    await new Promise((resolve) => res.on('end', resolve)); // Wait to read full body
+
+    if (callback) callback(undefined, res, body);
     if (listener['response']) listener['response'](res);
   });
 
@@ -53,3 +60,8 @@ module.exports = (options, callback) => {
     }
   }
 };
+
+// Method functions
+request.get = (url, callback) => request({ url: url, method: 'GET' }, callback);
+
+module.exports = request;
