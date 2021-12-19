@@ -9,15 +9,11 @@
 - **:shield: No Tracking**: Removes Discord's built-in tracking for crashes and errors
 - **:sewing_needle: Patching**: A future platform for custom patches to further enhance
 
-### :test_tube: Experimental
-OpenAsar is highly stable, but still likely has a few possible minor issues. Crashes are very unlikely.
-
 ### [FAQ](faq.md)
 
 <br>
 
 ## Install Guide
-**OpenAsar is not 100% recommened due to it being experimental.**
 1. [Download latest nightly release](https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar)
 2. Find your `app.asar`, it should be `<where the Discord exe is>/resources/app.asar`. For Windows this is like: `%localappdata%\Discord\app-1.0.9003\resources\app.asar` (your app folder may have a different version)
 3. Backup your original `app.asar` (rename to `app.asar.backup` / etc)
