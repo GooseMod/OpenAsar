@@ -13,7 +13,7 @@ const update = async () => {
 setInterval(update, 5000);
 
 const css = `
-.socialLinks-3jqNFy + .info-1VyQPT .colorMuted-HdFt4q:nth-child(2)::after {
+.socialLinks-3jqNFy + .info-1VyQPT .colorMuted-HdFt4q:nth-last-child(2)::after {
   content: " | OpenAsar <version_2>";
   display: inline;
   text-transform: none;
