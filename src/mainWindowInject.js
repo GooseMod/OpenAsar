@@ -5,12 +5,12 @@ const update = async () => {
   let cached = await DiscordNative.userDataCache.getCached() || {};
 
   const value = `.theme-dark { ${vars.reduce((acc, x) => acc += `${x}: ${getVar(x)}; `, '')} }`;
-
+  const pastValue = cached['openasarSplashCSS'];
   cached['openasarSplashCSS'] = value;
 
-  DiscordNative.userDataCache.cacheUserData(JSON.stringify(cached));
+  if (value !== pastValue) DiscordNative.userDataCache.cacheUserData(JSON.stringify(cached));
 };
-setInterval(update, 5000);
+setInterval(update, 3000);
 
 const css = `
 .socialLinks-3jqNFy + .info-1VyQPT .colorMuted-HdFt4q:nth-last-child(2)::after {
