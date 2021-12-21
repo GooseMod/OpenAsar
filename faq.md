@@ -9,6 +9,15 @@ An asar is a format for [Electron](https://electronjs.org), commonly used for th
 
 *OpenAsar* is an open-source alternative / rewrite / etc of Discord's `app.asar` which hopes to bring the various features outlined in the readme.
 
+### Does OpenAsar support X mod?
+Most likely, yes! OpenAsar is known to widely support BD, PC, GM, and others. It's very unlikely to cause any issues with your mods.
+
+### This didn't speed up Discord that much for me?
+If OpenAsar wasn't that much faster (in term of startup time) you likely already have a good PC. OpenAsar speeds up most for lower-end PCs, especially those without an SSD. You will likely still notice a subtle (~1.2x) difference.
+
+### How does OpenAsar make the client "snappier" / more performant?
+OpenAsar optimizes Chromium (the web engine / browser Discord uses) to help increase performance, mostly rendering, which looks like it helps makes most (~90%) people's clients looking noticeably snappier / faster generally. This is most noticeable with things like scrolling quickly, switching channels, and with various animations like tooltips for servers in the sidebar plus settings opening / closing.
+
 ### How is this so fast?
 The main speed increase (default options) is mostly accidental / coincidental (not intended) as it is mostly a side effect of rewriting it.
 
@@ -16,13 +25,7 @@ The main speed increase (default options) is mostly accidental / coincidental (n
 Compared to Discord's original, OpenAsar is <2% of the size. This is because when rewriting we remove NPM dependencies with our own custom code for more performance and efficiency. These are replaced with custom polyfills (compatible replacements).
 
 ### What is Quickstart?
-Quickstart skips a few Discord features like the splash screen and waiting for updates in favour of speed. It is currently experimental and not fully recommended for normal use.
-
-### Does OpenAsar support X mod?
-Most likely, yes! OpenAsar is known to widely support BD, PC, GM, and others. It's very unlikely to cause any issues with your mods.
-
-### This didn't speed up Discord that much for me?
-If OpenAsar wasn't that much faster (in term of startup time) you likely already have a good PC. OpenAsar speeds up most for lower-end PCs, especially those without an SSD. You will likely still notice a subtle (~1.2x) difference.
+Quickstart "skips" a few Discord features like the splash screen and waiting for updates in favour of speed. It is currently experimental and not fully recommended for normal use.
 
 ### Is this 100% original?
 No, and depends on your definition. By original if you mean all of this is rewritten, not containing any original Discord code - not yet but we hope for v2.0. If you mean original by design, etc. - no, as we have to follow Discord APIs to maintain compatibility.
