@@ -3,14 +3,14 @@
 
 ## Features
 - **:rocket: Startup Speed**: ~2x faster startup times (up to ~4x with experimental config)
-- **:chart_with_upwards_trend: Performance**: OpenAsar can make your client feel snappier (scrolling, switching channels, etc) by optimizing Chromium
+- **:chart_with_upwards_trend: Performance**: OpenAsar can make your client feel snappier (scrolling, switching channels, etc)
 - **:paintbrush: Splash Theming**: Easy theming for your splash which works with most themes for any client mod
 - **:electric_plug: Hotpluggable**: Replace one file and it's installed, that's it (same with uninstall)
 - **:gear: Configurable**: Adds many config options for Discord and OpenAsar enhancements (see config section)
 - **:feather: Lightweight**: <2% of Discord's original size (9mb -> ~150kb)
 - **:shield: No Tracking**: Removes Discord's built-in tracking for crashes and errors
 
-### [FAQ](faq.md)
+### See [FAQ](faq.md) for more details
 
 <br>
 
