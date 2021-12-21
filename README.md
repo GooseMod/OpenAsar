@@ -2,12 +2,12 @@
 **An experimental open-source alternative of Discord desktop's `app.asar`**
 
 ## Features
-- **:rocket: Speed**: ~2x faster startup times (up to ~4x with experimental config)
-- **:feather: Lightweight**: <2% of Discord's original size (9mb -> ~150kb)
+- **:rocket: Startup Speed**: ~2x faster startup times (up to ~4x with experimental config)
+- **:paintbrush: Splash Theming**: Easy theming for your splash which works with most themes for any client mod
+- **:electric_plug: Hotpluggable**: Replace one file and it's installed, that's it (same with uninstall)
 - **:gear: Configurable**: Adds many config options for Discord and OpenAsar enhancements (see config section)
-- **:electric_plug: Hotpluggable**: Replace one file and it's installed, that's it
+- **:feather: Lightweight**: <2% of Discord's original size (9mb -> ~150kb)
 - **:shield: No Tracking**: Removes Discord's built-in tracking for crashes and errors
-- **:sewing_needle: Patching**: A future platform for custom patches to further enhance
 
 ### [FAQ](faq.md)
 
