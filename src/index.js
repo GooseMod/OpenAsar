@@ -9,6 +9,8 @@ global.oaConfig = appSettings.getSettings().get('openasar', {});
 
 log('Init', 'Loaded config', oaConfig);
 
+require('./cmdSwitches')();
+
 const appMode = process.argv?.includes('--overlay-host') ? 'overlay-host' : 'app';
 
 if (appMode === 'overlay-host') {
