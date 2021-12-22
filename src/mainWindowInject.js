@@ -4,7 +4,7 @@ const update = async () => {
 
   let cached = await DiscordNative.userDataCache.getCached() || {};
 
-  const value = `.theme-dark { ${vars.reduce((acc, x) => acc += `${x}: ${getVar(x)}; `, '')} }`;
+  const value = `body { ${vars.reduce((acc, x) => acc += `${x}: ${getVar(x)}; `, '')} }`;
   const pastValue = cached['openasarSplashCSS'];
   cached['openasarSplashCSS'] = value;
 

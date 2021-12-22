@@ -132,8 +132,6 @@
   document.querySelector('#debug').textContent = DiscordSplash.getDebugInfo();
 
   DiscordSplash.getCSS((css) => {
-    document.body.classList.add('theme-dark'); // Theme compat
-
     const cssInject = document.createElement('style');
     cssInject.appendChild(document.createTextNode(css));
     document.body.appendChild(cssInject);
