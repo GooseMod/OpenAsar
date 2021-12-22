@@ -9,7 +9,7 @@ const desktopPath = path.join(autostartDir, (app.name ? app.name : app.getName()
 
 // Vars for use in desktop file content template
 const appName = path.basename(process.execPath, '.exe');
-const exePath = app.getPath('exe');
+const exePath = global.systemElectron ? '/usr/share/pixmaps/Discord' : app.getPath('exe');
 const iconPath = path.join(path.dirname(exePath), 'discord.png');
 
 // Template for desktop file

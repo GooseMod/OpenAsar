@@ -4,6 +4,17 @@ global.oaVersion = 'nightly';
 
 log('Init', 'OpenAsar v' + oaVersion);
 
+log('Init', 'Resources Path:', process.resourcesPath);
+if (process.resourcesPath === '/usr/lib/electron/resources') { // Using system electron, fix process.resourcesPath
+  log('Init', 'Detected System Electron, fixing paths');
+  global.systemElectron = true;
+
+  const { join } = require('path');
+  process.resourcesPath = join(__dirname, '..');
+
+  log('Init', 'Resources Path:', process.resourcesPath);
+}
+
 const appSettings = require('./appSettings');
 global.oaConfig = appSettings.getSettings().get('openasar', {});
 
