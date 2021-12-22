@@ -1,13 +1,19 @@
 # OpenAsar Roadmap
 
 ## v2.0
-- [ ] Self-write 100% of code:
-  - [ ] Updater
-  - [ ] Splash backend
+- [X] Look into performance optimisations via Chromium flags
+- [ ] More config options
+- [ ] Fixes for custom setups
+  - [ ] System electron
+- [ ] More QuickStart testing and improvements
+- [ ] Make splash compatible with client mod theming
 - [ ] Full custom splashes
 - [X] ThemeSync
   - [ ] ThemeSync storage rewrite
-- [ ] More QuickStart testing and improvements
+- [ ] Self-write 100% of code:
+  - [ ] Updater
+  - [ ] Splash backend
+
 
 ## v1.0
 - [X] A bunch of specific minor fixes / features
