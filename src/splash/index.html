@@ -114,9 +114,19 @@
   DiscordSplash.signalReady();
 
   const outOfStates = [ 'downloading-updates', 'installing-updates' ];
-  DiscordSplash.onStateUpdate(({ status, current, total, progress }) => {
-    text.textContent = status.replaceAll('-', ' ') + '...';
-    if (outOfStates.includes(state)) text.textContent += ` (${current}/${total})`;
+  const retryStates = [ 'update-failure' ];
+  DiscordSplash.onStateUpdate(({ status, current, total, progress, seconds }) => {
+    let text = status.replaceAll('-', ' ') + '...';
+
+    if (outOfStates.includes(status)) { // X out of Y states
+      text = text.slice(0, -4) + ` ${current} of ${total}`; // Remove "s..." and concat
+    }
+    if (retryStates.includes(status)) { // Retrying in X states
+      text = text.slice(0, -3) + ` - Retrying in ${seconds}`; // Remove "..." and concat
+    }
+
+    text.textContent = text;
+
 
     if (progress) {
       barContainer.style.visibility = 'visible';
