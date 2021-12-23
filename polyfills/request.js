@@ -5,25 +5,33 @@ const querystring = require("querystring");
 const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => {
   return new Promise((resolve, reject) => {
     const fullUrl = `${url}${qs != null ? `?${querystring.stringify(qs)}` : ''}`; // With query string
-    const req = https.request(fullUrl, {
-      method,
-      headers,
-      timeout
-    }, async (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) { // Redirect, recall function
-        return resolve(await nodeReq({
-          url: res.headers.location,
-          qs: null,
-          method,
-          headers,
-          timeout,
-          body,
-          stream
-        }));
-      }
 
-      resolve(res);
-    });
+    let req;
+    try {
+      req = https.request(fullUrl, {
+        method,
+        headers,
+        timeout
+      }, async (res) => {
+        if (res.statusCode === 301 || res.statusCode === 302) { // Redirect, recall function
+          return resolve(await nodeReq({
+            url: res.headers.location,
+            qs: null,
+            method,
+            headers,
+            timeout,
+            body,
+            stream
+          }));
+        }
+
+        resolve(res);
+      });
+    } catch (e) {
+      return resolve(e);
+    }
+
+    req.on('error', resolve);
 
     if (body) req.write(body); // Write POST body if included
 
@@ -40,10 +48,19 @@ const request = (options, callback) => { // Main function
 
   // log('Polyfill > Request', options.method, options.url);
 
-  const listener = {};
+  const listeners = {};
 
   nodeReq(options).then(async (res) => { // No error handling because yes
-    if (listener['response']) listener['response'](res);
+    const isError = !res.agent;
+
+    if (isError) {
+      if (listeners['error']) listeners['error'](res);
+      if (callback) callback(res, null, null); // Return null for others?
+
+      return;
+    }
+
+    if (listeners['response']) listeners['response'](res);
     if (!callback) return;
 
     let body = '';
@@ -58,7 +75,7 @@ const request = (options, callback) => { // Main function
 
   return {
     on: (type, handler) => {
-      listener[type] = handler;
+      listeners[type] = handler;
     }
   }
 };
