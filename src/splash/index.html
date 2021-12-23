@@ -1,9 +1,8 @@
 <video loop autoplay src="https://goosemod.com/vid/discord_loading.webm"></video>
 
-<div id="text">Launching...</div>
+<div id="text">Starting...</div>
 
-<div id="bar-container"></div>
-<div id="bar-fill"></div>
+<div id="bar-container"><div id="bar-fill"></div></div>
 
 <div id="debug"></div>
 
@@ -69,9 +68,6 @@
   }
 
   #bar-container, #bar-fill {
-    margin-top: 10px;
-    transform: translate(-50%, -50%);
-
     width: 180px;
     height: 8px;
 
@@ -81,16 +77,15 @@
   }
 
   #bar-container {
-    position: absolute;
-    background: var(--background-secondary);
+    background-color: var(--background-secondary);
+
+    position: relative;
+    margin-top: 12px;
   }
 
   #bar-fill {
     background-color: var(--brand-experiment);
     width: 0;
-
-    transform: translate(0%, -50%);
-    left: 10%;
   }
 
   #debug {
@@ -114,34 +109,36 @@
   DiscordSplash.signalReady();
 
   DiscordSplash.onStateUpdate(({ status, current, total, progress, seconds }) => {
-    let text = status.replaceAll('-', ' ');
+    let statusText = status.replaceAll('-', ' ');
+    let showProgress = false;
 
     switch (status) {
       case 'downloading-updates': // X of Y states
       case 'installing-updates':
-        text = text.slice(0, -1) + ` ${current} of ${total}`; // Remove "s" and concat
+        statusText = statusText.slice(0, -1) + ` ${current} of ${total}`; // Remove "s" and concat
+        showProgress = true;
         break;
 
       case 'update-failure': // Custom for update failure, include retry and reorder text
-        text = `Update Failed - Retrying in ${seconds}`;
+        statusText = `Update Failed - Retrying in ${seconds}`;
         break;
 
       case 'launching':
-        text = 'Starting...';
+        statusText = 'Starting...';
         break;
     }
 
-    text.textContent = text;
+    text.textContent = statusText;
 
 
-    if (progress) {
+    if (showProgress) {
       barContainer.style.visibility = 'visible';
       barFill.style.visibility = 'visible';
 
-      barFill.style.width = 80 * (progress / 100) + '%';
+      barFill.style.width = 100 * (progress / 100) + '%';
     } else {
-      barContainer.style.display = '';
-      barFill.style.display = '';
+      barContainer.style.visibility = '';
+      barFill.style.visibility = '';
     }
   });
 
