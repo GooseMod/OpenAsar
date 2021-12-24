@@ -51,7 +51,7 @@ const request = (options, callback) => { // Main function
   const listeners = {};
 
   nodeReq(options).then(async (res) => { // No error handling because yes
-    const isError = !res.agent;
+    const isError = !res.statusCode;
 
     if (isError) {
       listeners['error']?.(res);
