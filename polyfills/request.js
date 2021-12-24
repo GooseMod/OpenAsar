@@ -54,30 +54,35 @@ const request = (options, callback) => { // Main function
     const isError = !res.agent;
 
     if (isError) {
-      if (listeners['error']) listeners['error'](res);
-      if (callback) callback(res, null, null); // Return null for others?
+      listeners['error']?.(res);
+      callback?.(res, null, null); // Return null for others?
 
       return;
     }
 
-    if (listeners['response']) listeners['response'](res);
-    if (!callback) return;
+    listeners['response']?.(res);
 
     let body = '';
     res.setEncoding('utf8');
 
-    res.on('data', (chunk) => body += chunk);
+    res.on('data', (chunk) => {
+      body += chunk;
+      listeners['data']?.(chunk);
+    });
 
     await new Promise((resolve) => res.on('end', resolve)); // Wait to read full body
 
-    callback(undefined, res, body);
+    callback?.(undefined, res, body);
   });
 
-  return {
+  const ret = {
     on: (type, handler) => {
       listeners[type] = handler;
+      return ret; // Return self
     }
-  }
+  };
+
+  return ret;
 };
 
 // Method functions
