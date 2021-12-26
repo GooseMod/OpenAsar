@@ -6,6 +6,7 @@ log('Bootstrap', 'Forcing Electron props');
 app.name = 'discord'; // Force name as sometimes breaks data path even with "discord" name (also fixes kernel?)
 
 const requireNative = require('./utils/requireNative');
+const argv = require('./utils/argv');
 
 const paths = require('./paths');
 global.moduleDataPath = paths.getModuleDataPath(); // Global because discord
@@ -89,7 +90,10 @@ const startCore = () => {
 };
 
 const startUpdate = () => {
-  appUpdater.update(false, () => {
+  const startMinimized = argv.hasFlag('--start-minimized');
+  log('Bootstrap', 'Start minimized:', startMinimized);
+
+  appUpdater.update(startMinimized, () => {
     if (process.env.OPENASAR_NOSTART) {
       log('Bootstrap', 'Found nostart variable, halting bootstrap');
       return;
@@ -98,7 +102,7 @@ const startUpdate = () => {
     startCore();
   }, () => {
     log('Bootstrap', 'Setting main window visible');
-    desktopCore.setMainWindowVisible(true);
+    desktopCore.setMainWindowVisible(!startMinimized);
 
     setTimeout(() => { // Try to update our asar
       if (oaConfig.autoupdate === false) return; // If autoupdate disabled, don't update
