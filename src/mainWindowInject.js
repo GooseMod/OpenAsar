@@ -1,5 +1,5 @@
 let lastBgPrimary = '';
-const update = async () => {
+const themesync = async () => {
   const getVar = (name, el = document.body) => el && (getComputedStyle(el).getPropertyValue(name) || getVar(name, el.parentElement)).trim();
 
   const bgPrimary = getVar('--background-primary');
@@ -16,7 +16,8 @@ const update = async () => {
 
   if (value !== pastValue) DiscordNative.userDataCache.cacheUserData(JSON.stringify(cached));
 };
-setInterval(update, 3000);
+setInterval(themesync, 3000);
+
 
 const css = `
 .socialLinks-3jqNFy + .info-1VyQPT .colorMuted-HdFt4q:nth-last-child(2)::after {
@@ -28,8 +29,47 @@ const css = `
 .socialLinks-3jqNFy + .info-1VyQPT {
   padding-right: 0;
 }
+
+.vertical-V37hAW > div[style="display: flex; justify-content: space-between;"] > div > .description-3_Ncsb {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 `;
 
 const el = document.createElement('style');
 el.appendChild(document.createTextNode(css));
 document.body.appendChild(el);
+
+
+const injectGMSettings = async () => {
+  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
+
+  while (!window.goosemod) {
+    await sleep(100);
+  }
+
+  await sleep(1000); // Wait for init / etc
+
+  goosemod.settings.items.unshift(
+    ['item', 'OpenAsar', ['',
+      {
+        type: 'header',
+        text: 'Info'
+      },
+
+      {
+        type: 'text',
+        text: 'Version',
+        subtext: 'Channel: <oa_version_channel>\nHash: <oa_version_hash>'
+      },
+
+      {
+        type: 'text',
+        text: 'Cmd',
+        subtext: 'Preset: <oa_cmd_preset>\nCmd: <oa_cmd_full>'
+      }
+    ], undefined, false],
+    ['separator']
+  )
+};
+injectGMSettings();
