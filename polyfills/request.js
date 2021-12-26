@@ -63,7 +63,6 @@ const request = (options, callback) => { // Main function
     listeners['response']?.(res);
 
     let body = '';
-    res.setEncoding('utf8');
 
     res.on('data', (chunk) => {
       body += chunk;
