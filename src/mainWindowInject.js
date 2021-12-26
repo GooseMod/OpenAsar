@@ -1,5 +1,11 @@
+const lastBgPrimary = '';
 const update = async () => {
   const getVar = (name, el = document.body) => el && (getComputedStyle(el).getPropertyValue(name) || getVar(name, el.parentElement)).trim();
+
+  const bgPrimary = getVar('--background-primary');
+  if (bgPrimary === '#36393f' || bgPrimary === lastBgPrimary) return; // Default primary bg or same as last
+  lastBgPrimary = bgPrimary;
+
   const vars = [ '--background-primary', '--background-secondary', '--brand-experiment', '--header-primary', '--text-muted' ];
 
   let cached = await DiscordNative.userDataCache.getCached() || {};
@@ -14,7 +20,7 @@ setInterval(update, 3000);
 
 const css = `
 .socialLinks-3jqNFy + .info-1VyQPT .colorMuted-HdFt4q:nth-last-child(2)::after {
-  content: " | OpenAsar <version_2>";
+  content: " | OpenAsar <oa_version_hash>";
   display: inline;
   text-transform: none;
 }
