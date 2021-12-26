@@ -1,4 +1,4 @@
-const lastBgPrimary = '';
+let lastBgPrimary = '';
 const update = async () => {
   const getVar = (name, el = document.body) => el && (getComputedStyle(el).getPropertyValue(name) || getVar(name, el.parentElement)).trim();
 
