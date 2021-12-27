@@ -39,7 +39,30 @@ const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => {
   });
 };
 
-const request = (options, callback) => { // Main function
+const request = (...args) => { // Main function
+  // We have to use ...args because fun fact! request supports both:
+  // request(url, callback)
+  // request(options, callback)
+  // ^ These are fine as they have the same number of arguments, however it also supports:
+  // request(url, options, callback)
+  // ...I know, right
+
+  let options, callback;
+  switch (args.length) {
+    case 3: // request(url, options, callback)
+      options = {
+        url: args[0],
+        ...args[1]
+      };
+
+      callback = args[2];
+      break;
+
+    default: // request(url, callback) / request(options, callback)
+      options = args[0];
+      callback = args[1];
+  }
+
   if (typeof options === 'string') {
     options = {
       url: options
