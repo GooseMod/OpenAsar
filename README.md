@@ -8,7 +8,7 @@
 - **:electric_plug: Hotpluggable**: Replace one file and it's installed, that's it (same with uninstall)
 - **:gear: Configurable**: Adds many config options for Discord and OpenAsar enhancements (see config section)
 - **:feather: Lightweight**: <2% of Discord's original size (9mb -> ~150kb)
-- **:shield: No Tracking**: Removes Discord's built-in tracking for crashes and errors (asar-side only)
+- **:shield: No Tracking**: Removes Discord's built-in tracking for crashes and errors in the asar (not app itself)
 
 ### See [FAQ](faq.md) for more details
 
