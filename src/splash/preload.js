@@ -28,7 +28,7 @@ contextBridge.exposeInMainWorld('DiscordSplash', {
     OpenAsar ${urlParams.get('oaVersion')}`;
   },
 
-  getCSS: callback => oaConfig.themeSync !== 'false' ? ipcRenderer.on('DISCORD_GET_CSS', (_, value) => {
+  getCSS: callback => oaConfig.themeSync !== false ? ipcRenderer.on('DISCORD_GET_CSS', (_, value) => {
     callback(value);
   }) : {}
 });
