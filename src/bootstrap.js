@@ -68,8 +68,12 @@ const startCore = () => {
 
     const bw = BrowserWindow.fromId(global.mainWindowId);
 
+    let donePageReady = false;
     bw.webContents.on('dom-ready', () => {
-      splashScreen.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
+      if (!donePageReady) { // Only run once
+        splashScreen.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
+        donePageReady = true;
+      }
 
       log('MainWindowInject', 'dom-ready triggered, injecting JS');
 
