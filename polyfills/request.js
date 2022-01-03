@@ -70,6 +70,7 @@ const request = (...args) => { // Main function
   }
 
   // log('Polyfill > Request', options.method, options.url);
+  console.log('[OpenAsar Request Polyfill]', options.url);
 
   const listeners = {};
 
@@ -107,6 +108,7 @@ const request = (...args) => { // Main function
   return ret;
 };
 
+['get']
 // Method functions
 request.get = (url, callback) => request({ url: url, method: 'GET' }, callback);
 request.post = (url, callback) => request({ url: url, method: 'POST' }, callback);
