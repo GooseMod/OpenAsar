@@ -20,17 +20,17 @@ setInterval(themesync, 3000);
 
 
 const css = `
-.socialLinks-3jqNFy + .info-1VyQPT .colorMuted-HdFt4q:nth-last-child(2)::after {
+[class^="socialLinks-"] + [class^="info-"] [class^="colorMuted-"]:nth-last-child(2)::after {
   content: " | OpenAsar <oa_version_hash>";
   display: inline;
   text-transform: none;
 }
 
-.socialLinks-3jqNFy + .info-1VyQPT {
+[class^="socialLinks-"] + [class^="info-"] {
   padding-right: 0;
 }
 
-.vertical-V37hAW > div[style="display: flex; justify-content: space-between;"] > div > .description-3_Ncsb {
+[class^="vertical-"] > div[style="display: flex; justify-content: space-between;"] > div > [class^="description-"] {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -44,11 +44,8 @@ document.body.appendChild(el);
 const injectGMSettings = async () => {
   const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
-  while (!window.goosemod) {
-    await sleep(100);
-  }
-
-  await sleep(1000); // Wait for init / etc
+  await sleep(3000);
+  if (!window.goosemod) return;
 
   goosemod.settings.items.unshift(
     ['item', 'OpenAsar', ['',
