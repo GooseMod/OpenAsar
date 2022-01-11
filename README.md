@@ -16,12 +16,13 @@
 
 ## Install Guide
 1. [Download latest nightly release](https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar)
-2. Find your `app.asar`, it should be `<where the Discord exe is>/resources/app.asar`. 
-  - **MacOS** `/Applications/Discord.app/Contents/Resources/app.asar`
-  - **Windows** `%LOCALAPPDATA%\Discord\app-X.X.XXX\resources\app.asar` (X is replaced for numerical values depending on which version you are on)
-4. Backup your original `app.asar` (rename to `app.asar.bak` / etc)
-5. Install OpenAsar `app.asar` into the original path (you may need to be root on Linux)
-6. Restart Discord via system tray (you should notice Discord start faster as a way to see if it's instantly working)
+2. Find your `app.asar`, it should be `<where the Discord exe is>/resources/app.asar`.
+3. Backup your original `app.asar` (rename to `app.asar.bak` / etc)
+4. Install OpenAsar `app.asar` into the original path (you may need to be root on Linux)
+5. Restart Discord via system tray (you should notice Discord start faster as a way to see if it's instantly working)
+
+- **MacOS** `/Applications/Discord.app/Contents/Resources/app.asar`
+- **Windows** `%LOCALAPPDATA%\Discord\app-X.X.XXX\resources\app.asar` (X is replaced for numerical values depending on which version you are on)
 
 <!-- **If using Linux it is highly recommended to disable write protection** (needing sudo (root) to overwrite files) for your Discord install if you have it enabled. It is not much of a security defecit as MacOS and Windows has no write protection as well. This enables updating the asar and potentially host updating further on. -->
 
