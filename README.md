@@ -60,7 +60,7 @@ An example of a `settings.json` with OpenAsar config:
   }
 }
 ```
-On **MacOS**, `settings.json` is located at `/Users/username/Library/Application\ Support/discord/settings.json`
+On MacOS, `settings.json` is located at `/Users/username/Library/Application\ Support/discord/settings.json`
 
 Additionally there are some environmental variables you can use:
 - `OPENASAR_QUICKSTART` (bool, default false) - same as `quickstart` config option
