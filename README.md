@@ -41,7 +41,7 @@ You can configure OpenAsar via `settings.json` (found in your Discord app data /
 - `multiInstance` (bool, default false) - whether to enable multi-instance
 - `skipStartupUpdateChecks` (bool, default false) - skips startup update checking (Linux-only)
 
-An example of a settings.json with OpenAsar config:
+An example of a `settings.json` with OpenAsar config:
 ```json
 {
   "BACKGROUND_COLOR": "#202225",
