@@ -5,7 +5,7 @@ global.oaVersion = 'nightly';
 log('Init', 'OpenAsar v' + oaVersion);
 
 log('Init', 'Resources Path:', process.resourcesPath);
-if (process.resourcesPath === '/usr/lib/electron/resources') { // Using system electron, fix process.resourcesPath
+if (process.resourcesPath.startsWith('/usr/lib/electron')) { // Using system electron, fix process.resourcesPath
   log('Init', 'Detected System Electron, fixing paths');
   global.systemElectron = true;
 
