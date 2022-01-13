@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
     - 'src/**'
+    - 'scripts/**'
     - 'polyfills/**'
     - '.github/workflows/release_nightly.yml'
 
