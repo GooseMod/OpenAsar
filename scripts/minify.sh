@@ -16,4 +16,4 @@ cp src/package.json miniSrc/package.json
 npx minify-json miniSrc/package.json
 
 npx asar pack miniSrc minified.asar
-# rm -rf miniSrc
+rm -rf miniSrc
