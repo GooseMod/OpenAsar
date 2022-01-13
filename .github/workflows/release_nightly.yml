@@ -40,18 +40,8 @@ jobs:
 
     - name: Pack minified asar
       run: |
-        npm i -g esbuild uglify-js minify-json
-        npx esbuild ./src --bundle --platform=node --external:electron --external:original-fs --external:auto-updater --outfile=index.js
-        npx uglifyjs --compress --mangle -o index.js -- index.js
-        npx uglifyjs --compress --mangle -o preload.js -- src/splash/preload.js
-        npx uglifyjs --compress --mangle -o mainWindowInject.js -- src/mainWindowInject.js
-        cp src/package.json .
-        cp src/splash/index.html .
-        npx minify-json package.json
-        rm -rf src
-        mkdir src
-        cp index.js package.json index.html preload.js mainWindowInject.js src
-        npx asar pack src testing_dont_use.asar
+        npm i -g esbuild uglify-js minify-json html-minifier
+        bash scripts/minify.sh
 
     - name: GitHub Release
       run: |
@@ -66,5 +56,5 @@ jobs:
         VERSION: 'nightly'
         NAME: 'Nightly'
         BODY: Latest Nightly release
-        FILES: app.asar testing_dont_use.asar
+        FILES: app.asar minified.asar
         # FILES: app.asar
