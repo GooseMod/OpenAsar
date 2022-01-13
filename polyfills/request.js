@@ -12,7 +12,6 @@ const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => new Pro
       headers,
       timeout
     }, async (res) => {
-      console.log('https response', res.statusCode);
       if (res.statusCode === 301 || res.statusCode === 302) { // Redirect, recall function
         return resolve(await nodeReq({
           url: res.headers.location,
@@ -31,15 +30,11 @@ const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => new Pro
     return resolve(e);
   }
 
-  console.log('https req');
-
   req.on('error', resolve);
 
   if (body) req.write(body); // Write POST body if included
 
   req.end();
-
-  console.log('https ended');
 });
 
 const request = (...args) => { // Main function
