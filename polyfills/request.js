@@ -2,42 +2,45 @@ const https = require('https');
 const querystring = require("querystring");
 
 // Generic polyfill for "request" npm package, wrapper for https
-const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => {
-  return new Promise((resolve, reject) => {
-    const fullUrl = `${url}${qs != null ? `?${querystring.stringify(qs)}` : ''}`; // With query string
+const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => new Promise((resolve, reject) => {
+  const fullUrl = `${url}${qs != null ? `?${querystring.stringify(qs)}` : ''}`; // With query string
 
-    let req;
-    try {
-      req = https.request(fullUrl, {
-        method,
-        headers,
-        timeout
-      }, async (res) => {
-        if (res.statusCode === 301 || res.statusCode === 302) { // Redirect, recall function
-          return resolve(await nodeReq({
-            url: res.headers.location,
-            qs: null,
-            method,
-            headers,
-            timeout,
-            body,
-            stream
-          }));
-        }
+  let req;
+  try {
+    req = https.request(fullUrl, {
+      method,
+      headers,
+      timeout
+    }, async (res) => {
+      console.log('https response', res.statusCode);
+      if (res.statusCode === 301 || res.statusCode === 302) { // Redirect, recall function
+        return resolve(await nodeReq({
+          url: res.headers.location,
+          qs: null,
+          method,
+          headers,
+          timeout,
+          body,
+          stream
+        }));
+      }
 
-        resolve(res);
-      });
-    } catch (e) {
-      return resolve(e);
-    }
+      resolve(res);
+    });
+  } catch (e) {
+    return resolve(e);
+  }
 
-    req.on('error', resolve);
+  console.log('https req');
 
-    if (body) req.write(body); // Write POST body if included
+  req.on('error', resolve);
 
-    req.end();
-  });
-};
+  if (body) req.write(body); // Write POST body if included
+
+  req.end();
+
+  console.log('https ended');
+});
 
 const request = (...args) => { // Main function
   // We have to use ...args because fun fact! request supports both:
@@ -78,6 +81,7 @@ const request = (...args) => { // Main function
     const isError = !res.statusCode;
 
     if (isError) {
+      console.log('[OpenAsar Request Polyfill] Error:', res);
       listeners['error']?.(res);
       callback?.(res, null, null); // Return null for others?
 
@@ -108,7 +112,6 @@ const request = (...args) => { // Main function
   return ret;
 };
 
-['get']
 // Method functions
 request.get = (url, callback) => request({ url: url, method: 'GET' }, callback);
 request.post = (url, callback) => request({ url: url, method: 'POST' }, callback);
