@@ -44,15 +44,13 @@ jobs:
         npx esbuild ./src --bundle --platform=node --external:electron --external:original-fs --external:auto-updater --outfile=index.js
         npx uglifyjs --compress --mangle -o index.js -- index.js
         npx uglifyjs --compress --mangle -o preload.js -- src/splash/preload.js
+        npx uglifyjs --compress --mangle -o mainWindowInject.js -- src/mainWindowInject.js
         cp src/package.json .
         cp src/splash/index.html .
         npx minify-json package.json
         rm -rf src
         mkdir src
-        cp index.js src
-        cp package.json src
-        cp index.html src
-        cp preload.js src
+        cp index.js package.json index.html preload.js mainWindowInject.js src
         npx asar pack src testing.asar
 
     - name: GitHub Release
