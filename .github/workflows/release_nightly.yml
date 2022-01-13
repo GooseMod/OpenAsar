@@ -51,7 +51,7 @@ jobs:
         rm -rf src
         mkdir src
         cp index.js package.json index.html preload.js mainWindowInject.js src
-        npx asar pack src testing.asar
+        npx asar pack src testing_dont_use.asar
 
     - name: GitHub Release
       run: |
@@ -66,5 +66,5 @@ jobs:
         VERSION: 'nightly'
         NAME: 'Nightly'
         BODY: Latest Nightly release
-        FILES: app.asar testing.asar
+        FILES: app.asar testing_dont_use.asar
         # FILES: app.asar
