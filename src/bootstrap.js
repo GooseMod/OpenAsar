@@ -2,6 +2,12 @@ const { app, BrowserWindow } = require('electron');
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
+if (process.platform === 'linux') { // Discord is a well-made app which properly implements WebRTC
+  if (process.env.PULSE_LATENCY_MSEC === undefined) {
+    process.env.PULSE_LATENCY_MSEC = 30;
+  }
+}
+
 log('Bootstrap', 'Forcing Electron props');
 app.name = 'discord'; // Force name as sometimes breaks data path even with "discord" name (also fixes kernel?)
 
@@ -134,7 +140,7 @@ getModuleDataPath: ${paths.getModuleDataPath()}
 getInstallPath: ${paths.getInstallPath()}`);
 
   const instanceLock = app.requestSingleInstanceLock();
-  const allowMultiInstance = hasArgvFlag('--multi-instance') || oaConfig.multiInstance; // argv flag or config
+  const allowMultiInstance = hasArgvFlag('--multi-instance') || oaConfig.multiInstance === true; // argv flag or config
 
   console.log(instanceLock, allowMultiInstance);
 
