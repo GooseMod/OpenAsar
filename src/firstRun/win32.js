@@ -37,7 +37,7 @@ const updateShortcuts = (updater) => {
 
     updater.createShortcut({
       target_path: updateExe,
-      shortcut_path: shortcutPath,
+      shortcut_path: path,
       arguments: `--processStart ${exeFilename}`,
       icon_path: icon,
       icon_index: 0,
