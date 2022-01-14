@@ -8,7 +8,13 @@ execSync(`rm -rf src/package-lock.json src/node_modules/.package-lock.json src/n
 // Minify node deps code
 
 for (const package of readdirSync('src/node_modules')) {
-  const indexPath = join('src/node_modules', package, 'index.js');
+  let indexPath;
+  if (package.endsWith('.js')) {
+    indexPath = join('src/node_modules', package);
+  } else {
+    indexPath = join('src/node_modules', package, 'index.js');
+  }
+  console.log(package, indexPath);
 
   execSync(`npx uglifyjs --compress --mangle -o ${indexPath} -- ${indexPath}`);
 }
