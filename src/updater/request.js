@@ -167,12 +167,12 @@ async function requestWithMethod(method, options) {
 
   log('Request', method, options.url);
 
-  try {
+  /* try {
     return await electronRequest(options);
   } catch (err) {
     console.log(`Error downloading with electron net: ${err.message}`);
     console.log('Falling back to node net library..');
-  }
+  } */
 
   return nodeRequest(options);
 } // only supports get for now, since retrying is non-idempotent and
