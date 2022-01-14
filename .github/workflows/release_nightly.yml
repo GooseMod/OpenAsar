@@ -33,7 +33,6 @@ jobs:
     - name: Pack base asar
       run: |
         node scripts/strip.js
-        rm src/splash/_splashScreen.rewrite.js
         node scripts/injectPolyfills.js
         sed -i -e "s/nightly/nightly-$(git rev-parse HEAD | cut -c 1-7)/" src/index.js
 
