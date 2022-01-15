@@ -35,6 +35,7 @@ jobs:
       run: |
         npm i -g esbuild uglify-js minify-json html-minifier
         bash scripts/minify.sh
+        mv minified.asar minified_testing_dont_use.asar
 
     - name: GitHub Release
       run: |
@@ -49,5 +50,5 @@ jobs:
         VERSION: 'nightly'
         NAME: 'Nightly'
         BODY: Latest Nightly release
-        FILES: app.asar minified.asar
+        FILES: app.asar minified_testing_dont_use.asar
         # FILES: app.asar
