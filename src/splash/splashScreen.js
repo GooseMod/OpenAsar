@@ -84,7 +84,6 @@ let updateTimeout;
 let updateAttempt;
 let splashState;
 let launchedMainWindow;
-let quoteCachePath;
 let restartRequired = false;
 let newUpdater;
 const updateBackoff = new _Backoff.default(1000, 30000); // TODO(eiz): some of this logic should probably not live in the splash.
@@ -329,9 +328,6 @@ function initSplash(startMinimized = false) {
   }
 
   launchSplashWindow(startMinimized);
-  quoteCachePath = _path.default.join(paths.getUserData(), 'quotes.json');
-
-  _ipcMain.default.on('UPDATED_QUOTES', (_event, quotes) => cacheLatestQuotes(quotes));
 
   log('Splash', 'Quickstart config:', process.env.OPENASAR_QUICKSTART || oaConfig.quickstart, '-', process.env.OPENASAR_QUICKSTART, oaConfig.quickstart);
 
@@ -460,12 +456,6 @@ function launchSplashWindow(startMinimized) {
   _ipcMain.default.on('SPLASH_SCREEN_READY', () => {
     log('Splash', 'Window declared ready, showing and starting update process');
 
-    const cachedQuote = chooseCachedQuote();
-
-    if (cachedQuote) {
-      webContentsSend(splashWindow, 'SPLASH_SCREEN_QUOTE', cachedQuote);
-    }
-
     if (splashWindow && !startMinimized) {
       splashWindow.show();
     }
@@ -522,23 +512,4 @@ function pageReady() {
 
   destroySplash();
   process.nextTick(() => events.emit(APP_SHOULD_SHOW));
-}
-
-function cacheLatestQuotes(quotes) {
-  _fs.default.writeFile(quoteCachePath, JSON.stringify(quotes), e => {
-    if (e) {
-      console.warn('Failed updating quote cache with error: ', e);
-    }
-  });
-}
-
-function chooseCachedQuote() {
-  let cachedQuote = null;
-
-  try {
-    const cachedQuotes = JSON.parse(_fs.default.readFileSync(quoteCachePath));
-    cachedQuote = cachedQuotes[Math.floor(Math.random() * cachedQuotes.length)];
-  } catch (_err) {}
-
-  return cachedQuote;
 }
