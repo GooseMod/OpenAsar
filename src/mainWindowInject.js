@@ -16,7 +16,12 @@ const themesync = async () => {
 
   if (value !== pastValue) DiscordNative.userDataCache.cacheUserData(JSON.stringify(cached));
 };
-setInterval(themesync, 3000);
+
+setInterval(() => {
+  try {
+    themesync();
+  } catch (e) { }
+}, 5000);
 
 
 const css = `
