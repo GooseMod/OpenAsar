@@ -5,21 +5,17 @@
 /* eslint camelcase: 0 */
 const childProcess = require('child_process');
 
-const {
-  app
-} = require('electron');
+const { app } = require('electron');
 
-const {
-  EventEmitter
-} = require('events');
+const { EventEmitter } = require('events');
 
 const NodeModule = require('module');
 
 const path = require('path');
 
-const {
-  hrtime
-} = require('process');
+const { hrtime } = require('process');
+
+const paths = require('../paths');
 
 let instance;
 const TASK_STATE_COMPLETE = 'Complete';
@@ -39,12 +35,11 @@ class Updater extends EventEmitter {
     if (nativeUpdaterModule == null) {
       try {
         // eslint-disable-next-line import/no-unresolved
-        nativeUpdaterModule = require('../../../updater');
+        nativeUpdaterModule = require(paths.getExeDir() + '/updater');
       } catch (e) {
-        if (e.code === 'MODULE_NOT_FOUND') {
-          return;
-        }
+        log('Updater', 'Failed to require nativeUpdater', e);
 
+        if (e.code === 'MODULE_NOT_FOUND') return;
         throw e;
       }
     }
@@ -422,10 +417,6 @@ function getUpdaterPlatformName(platform) {
 }
 
 function tryInitUpdater(buildInfo, repositoryUrl) {
-  // We can't require this in module scope because it's not part of the
-  // bootstrapper, which carries a copy of the Updater class.
-  const paths = require('../paths');
-
   const rootPath = paths.getInstallPath(); // If we're not running from an actual install directory, don't bother trying
   // to initialize the updater.
 
