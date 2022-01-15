@@ -1,21 +1,24 @@
 # OpenAsar Roadmap
+These are rough milestones for OpenAsar progress over original Discord's asar.
 
-## v2.0
-- [X] Look into performance optimisations via Chromium flags
-- [ ] More config options
-- [ ] Fixes for custom setups
-  - [ ] System electron
-- [ ] More QuickStart testing and improvements
-- [ ] Make splash compatible with client mod theming
-- [ ] Full custom splashes
-- [X] ThemeSync
-  - [ ] ThemeSync storage rewrite
+## Milestone 3 - complete rewrite
 - [ ] Self-write 100% of code:
   - [ ] Updater
   - [ ] Splash backend
+- [ ] Make splash compatible with client mod theming
+- [ ] Full custom splashes
+
+## Milestone 2 - major improvements over original (recommended for average use)
+- [X] Look into performance optimisations via Chromium flags
+- [X] More config options
+- [X] Fixes for custom setups
+  - [X] System electron
+- [X] More QuickStart testing and improvements
+- [X] ThemeSync
+- [X] Eliminate all NPM dependencies
 
 
-## v1.0
+## Milestone 1 - alternative
 - [X] A bunch of specific minor fixes / features
 - [X] Auto start
 - [X] First run
