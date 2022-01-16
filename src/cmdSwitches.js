@@ -9,7 +9,7 @@ const presets = {
   'memory-ex2': '--process-per-tab',
   'debug': '--show-fps-counter', // Debugging tools
   'disablemediakeys': '--disable-features=HardwareMediaKeyHandling', // Disables media keys (common want?)
-  'battery': '--enable-features=TurnOffStreamingMediaCachingAlways', // Known to have better battery life for Chromium?
+  'battery': '--enable-features=TurnOffStreamingMediaCachingOnBattery', // Known to have better battery life for Chromium?
   'battery-tradeoff': '--force_low_power_gpu' // Improves battery life but with perf tradeoffs?
 };
 
