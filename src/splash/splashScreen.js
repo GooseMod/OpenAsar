@@ -341,7 +341,7 @@ function initSplash(startMinimized = false) {
     destroySplash();
 
     if (newUpdater != null) { // Manually load desktop_core module path for faster requiring
-      require('../utils/u2LoadModulePath')('discord_desktop_core');
+      require('../utils/u2LoadModulePath')();
     }
 
     /* if (newUpdater != null) {
