@@ -1,8 +1,6 @@
 const { shell } = require('electron');
 
-const BLOCKED_URL_PROTOCOLS = ['file:', 'javascript:', 'vbscript:', 'data:', 'about:', 'chrome:', 'ms-cxh:', 'ms-cxh-full:', 'ms-word:']; // From Discord
 const allowedProtocols = [ 'https:', 'http:' ];
-
 exports.saferShellOpenExternal = (url) => {
   let parsed;
 
@@ -10,16 +8,7 @@ exports.saferShellOpenExternal = (url) => {
     parsed = new URL(url);
   } catch (_e) { return Promise.reject(); }
 
-  const protocol = parsed.protocol?.toLowerCase();
-
-  let disallowed = false;
-  if (oaConfig.ssoeAllowlist === false) { // Allow config option to use traditional Discord check for compatibility
-    if (!protocol || BLOCKED_URL_PROTOCOLS.includes(protocol)) disallowed = true;
-  } else {
-    if (!allowedProtocols.includes(protocol)) disallowed = true;
-  }
-
-  if (disallowed) return Promise.reject();
+  if (!allowedProtocols.includes(parsed.protocol?.toLowerCase())) return Promise.reject(); // Only allow some protocols
 
   return shell.openExternal(url);
 };
