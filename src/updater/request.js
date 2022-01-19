@@ -71,4 +71,4 @@ function requestWithMethod(method, options) {
   return nodeRequest(options);
 }
 
-exports.get = requestWithMethod.bind(null, method.toUpperCase());
+exports.get = requestWithMethod.bind(null, 'GET');
