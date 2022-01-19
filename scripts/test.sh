@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo "Packing asar..."
-node scripts/injectPolyfills.js
+./scripts/injectPolyfills.js
 asar pack src app.asar # Package asar
 # asar list app.asar # List asar for debugging / testing
 
