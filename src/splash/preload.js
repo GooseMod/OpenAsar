@@ -6,9 +6,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const oaConfig = JSON.parse(urlParams.get('oaConfig'));
 
 contextBridge.exposeInMainWorld('DiscordSplash', {
-  signalReady: () => {
-    ipcRenderer.send('DISCORD_SPLASH_SCREEN_READY');
-  },
+  signalReady: () => ipcRenderer.send('DISCORD_SPLASH_SCREEN_READY'),
 
   onStateUpdate: callback => {
     ipcRenderer.on('DISCORD_SPLASH_UPDATE_STATE', (_, state) => {
