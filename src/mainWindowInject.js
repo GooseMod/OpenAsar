@@ -75,3 +75,5 @@ const injectGMSettings = async () => {
   )
 };
 injectGMSettings();
+
+window.openasar = {};
