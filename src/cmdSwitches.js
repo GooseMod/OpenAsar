@@ -1,16 +1,9 @@
 const { app } = require('electron');
 
 const presets = {
-  'perf': `--enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --enable-hardware-overlays=single-fullscreen,single-on-top,underlay --enable-features=BackForwardCache:TimeToLiveInBackForwardCacheInSeconds/300/should_ignore_blocklists/true/enable_same_site/true,ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes,UseSkiaRenderer,WebAssemblyLazyCompilation --disable-features=Vulkan`, // Performance
-  'perf-ex': '--enable-quic --enable-features=EnableDrDc,CanvasOopRasterization', // Performance experimental (not known / tested benefit)
-  'perf-ex2': 'auto-detect=false no-proxy-server', // Does this do anything past electron 3.0.1 ? - include as a preset because why not
-  'perf-ex3': '--force_high_performance_gpu​', // Seems to fix lagging for some people using "perf"?
-  'memory-ex': '--process-per-site --renderer-process-limit=2', // "Reducing" memory usage (rough / unknown results)
-  'memory-ex2': '--process-per-tab',
-  'debug': '--show-fps-counter', // Debugging tools
+  'perf': `--enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --enable-hardware-overlays=single-fullscreen,single-on-top,underlay --enable-features=EnableDrDc,CanvasOopRasterization,BackForwardCache:TimeToLiveInBackForwardCacheInSeconds/300/should_ignore_blocklists/true/enable_same_site/true,ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes,UseSkiaRenderer,WebAssemblyLazyCompilation --disable-features=Vulkan --force_high_performance_gpu --enable-quic`, // Performance
   'disablemediakeys': '--disable-features=HardwareMediaKeyHandling', // Disables media keys (common want?)
-  'battery': '--enable-features=TurnOffStreamingMediaCachingOnBattery', // Known to have better battery life for Chromium?
-  'battery-tradeoff': '--force_low_power_gpu' // Improves battery life but with perf tradeoffs?
+  'battery': '--enable-features=TurnOffStreamingMediaCachingOnBattery --force_low_power_gpu' // Known to have better battery life for Chromium?
 };
 
 const combinePresets = (keys) => {
@@ -34,7 +27,7 @@ const combinePresets = (keys) => {
 
 
 module.exports = () => {
-  const preset = oaConfig.cmdPreset || 'perf,perf-ex,perf-ex3,battery'; // Default to most (should default to none?) // 'perf,perf-ex,perf-ex2,battery,memory-ex2'
+  const preset = oaConfig.cmdPreset || 'perf'; // Default to most (should default to none?) // 'perf,perf-ex,perf-ex2,battery,memory-ex2'
   let cmdSwitches = presets[preset] || ''; // Default to blank (no switches)
 
   log('CmdSwitches', 'Preset:', preset);
