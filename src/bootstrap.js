@@ -128,7 +128,6 @@ const startUpdate = () => {
   });
 };
 
-const hasArgvFlag = (flag) => (process.argv || []).slice(1).includes(flag);
 
 module.exports = () => {
   // Paths logging
@@ -140,7 +139,7 @@ getModuleDataPath: ${paths.getModuleDataPath()}
 getInstallPath: ${paths.getInstallPath()}`);
 
   const instanceLock = app.requestSingleInstanceLock();
-  const allowMultiInstance = hasArgvFlag('--multi-instance') || oaConfig.multiInstance === true; // argv flag or config
+  const allowMultiInstance = argv.hasFlag('--multi-instance') || oaConfig.multiInstance === true; // argv flag or config
 
   console.log(instanceLock, allowMultiInstance);
 
