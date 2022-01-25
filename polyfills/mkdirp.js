@@ -1,21 +1,16 @@
 // Minimal wrapper mimicking mkdirp package
 const fs = require('fs');
 
-const async = (path, callback) => { // async
-  log('Mkdirp', 'Async:', path);
-
-  fs.mkdir(path, { recursive: true }, () => { // Ignore errors (already exists)
+const mk = (path, callback) => { // async
+  fs.mkdir(path, { recursive: true }, () => { // Already exists, ignore
     callback();
   });
 };
 
-const sync = (path) => { // sync
-  log('Mkdirp', 'Sync:', path);
-
+mk.sync = (path) => { // sync
   try {
     fs.mkdirSync(path, { recursive: true });
   } catch (e) { } // Already exists, ignore
 };
 
-async.sync = sync;
-module.exports = async;
+module.exports = mk;
