@@ -24,12 +24,10 @@ exports.open = async (zipPath, _options, callback) => {
 
   mkdirSync(extractPath, { recursive: true });
 
-  const proc = execFile('unzipp', ['-o', zipPath.replaceAll('"', ''), '-d', extractPath]);
+  const proc = execFile('unzip', ['-o', zipPath.replaceAll('"', ''), '-d', extractPath]);
   log('Yauzl', 'Spawned');
 
-  proc.stderr.on('data', (data) => {
-    errorOut(data.toString());
-  });
+  proc.stderr.on('data', errorOut);
 
   proc.on('error', (err) => {
     if (err.code === 'ENOENT') {
