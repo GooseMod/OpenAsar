@@ -1,5 +1,5 @@
 // Jank replacement for yauzl by just using unzip where it expects and skipping (speed++, size--, jank++)
-const { spawn } = require('child_process');
+const { execFile } = require('child_process');
 const { mkdirSync } = require('fs');
 const { join, basename } = require('path');
 
@@ -24,7 +24,7 @@ exports.open = async (zipPath, _options, callback) => {
 
   mkdirSync(extractPath, { recursive: true });
 
-  const proc = spawn('unzip', ['-o', `${zipPath.replaceAll('"', '')}`, '-d', `${extractPath}`]);
+  const proc = execFile('unzip', ['-o', `${zipPath.replaceAll('"', '')}`, '-d', `${extractPath}`]);
   log('Yauzl', 'Spawned');
 
   proc.stderr.on('data', (data) => {
