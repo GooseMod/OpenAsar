@@ -1,17 +1,7 @@
 const { shell } = require('electron');
 
-const allowedProtocols = [ 'https:', 'http:' ];
-exports.saferShellOpenExternal = (url) => {
-  let parsed;
-
-  try {
-    parsed = new URL(url);
-  } catch (_e) { return Promise.reject(); }
-
-  if (!allowedProtocols.includes(parsed.protocol?.toLowerCase())) return Promise.reject(); // Only allow some protocols
-
-  return shell.openExternal(url);
-};
+const allowedProtocols = [ 'https', 'http' ]; // Only allow some protocols
+exports.saferShellOpenExternal = (url) => allowedProtocols.includes(url.split(':')[0].toLowerCase()) ? shell.openExternal(url) : Promise.reject();
 
 exports.checkUrlOriginMatches = (url1, url2) => {
   let parse1, parse2;

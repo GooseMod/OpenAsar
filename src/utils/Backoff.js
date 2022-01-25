@@ -34,7 +34,7 @@ module.exports = class Backoff { // Internal library / utility for a class to re
       try {
         callback(); // Run callback
       } finally {
-        this_timeoutId = null; // Stop tracking timeout internally as it's been executed
+        this._timeoutId = null; // Stop tracking timeout internally as it's been executed
       }
     }, this.current);
 

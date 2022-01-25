@@ -456,6 +456,15 @@ function launchSplashWindow(startMinimized) {
   _ipcMain.default.on('SPLASH_SCREEN_READY', () => {
     log('Splash', 'Window declared ready, showing and starting update process');
 
+    if (oaConfig.themeSync !== false) try { // Inject themesync CSS
+      splashWindow.webContents.insertCSS(JSON.parse(_fs.default.readFileSync(_path.default.join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
+    } catch (e) { }
+
+    if (oaConfig.splashText !== false) try {
+      const buildInfo = require('../utils/buildInfo.js');
+      splashWindow.webContents.executeJavaScript(`debug.textContent = '${buildInfo.releaseChannel} ${buildInfo.version}\\nOpenAsar ${oaVersion}'`);
+    } catch (e) { }
+
     if (splashWindow && !startMinimized) {
       splashWindow.show();
     }
@@ -471,13 +480,7 @@ function launchSplashWindow(startMinimized) {
     pathname: _path.default.join(__dirname, 'index.html')
   });
 
-  try {
-    webContentsSend(splashWindow, 'GET_CSS', JSON.parse(_fs.default.readFileSync(_path.default.join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
-  } catch (e) {
-    log('Splash', 'Failed to inject splash CSS');
-  }
-
-  splashWindow.loadURL(splashUrl + '?oaVersion=' + global.oaVersion + '&oaConfig=' + JSON.stringify(oaConfig));
+  splashWindow.loadURL(splashUrl);
 
   log('Splash', `Loading window (with url ${splashUrl})`);
 }

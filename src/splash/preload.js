@@ -17,15 +17,6 @@ contextBridge.exposeInMainWorld('DiscordSplash', {
   openUrl: saferShellOpenExternal,
   quitDiscord: () => ipcRenderer.send('DISCORD_SPLASH_SCREEN_QUIT'),
 
-  getDebugInfo: () => {
-    if (oaConfig.splashText === false) return '';
-
-    const buildInfo = require('../utils/buildInfo');
-
-    return `${buildInfo.releaseChannel} ${buildInfo.version}
-    OpenAsar ${urlParams.get('oaVersion')}`;
-  },
-
   getCSS: callback => oaConfig.themeSync !== false ? ipcRenderer.on('DISCORD_GET_CSS', (_, value) => {
     callback(value);
   }) : {}

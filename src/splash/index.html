@@ -141,12 +141,4 @@
       barFill.style.visibility = '';
     }
   });
-
-  document.querySelector('#debug').textContent = DiscordSplash.getDebugInfo();
-
-  DiscordSplash.getCSS((css) => {
-    const cssInject = document.createElement('style');
-    cssInject.appendChild(document.createTextNode(css));
-    document.body.appendChild(cssInject);
-  });
 </script>
