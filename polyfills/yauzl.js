@@ -24,7 +24,7 @@ exports.open = async (zipPath, _options, callback) => {
 
   mkdirSync(extractPath, { recursive: true });
 
-  const proc = execFile('unzip', ['-o', `${zipPath.replaceAll('"', '')}`, '-d', `${extractPath}`]);
+  const proc = execFile('unzipp', ['-o', zipPath.replaceAll('"', ''), '-d', extractPath]);
   log('Yauzl', 'Spawned');
 
   proc.stderr.on('data', (data) => {
@@ -32,6 +32,11 @@ exports.open = async (zipPath, _options, callback) => {
   });
 
   proc.on('error', (err) => {
+    if (err.code === 'ENOENT') {
+      require('electron').dialog.showErrorBox('Failed Dependency', 'Please install "unzip", exiting');
+      process.exit(1); // Close now
+    }
+
     errorOut(err);
   });
 
