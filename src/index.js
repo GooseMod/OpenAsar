@@ -22,7 +22,7 @@ log('Init', 'Loaded config', oaConfig);
 
 require('./cmdSwitches')();
 
-if (process.argv?.includes('--overlay-host')) {
+if (process.argv.includes('--overlay-host')) {
   const buildInfo = require('./utils/buildInfo');
 
   if (buildInfo.newUpdater) {
