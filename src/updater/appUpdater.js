@@ -13,16 +13,16 @@ const { initSplash, focusWindow, APP_SHOULD_LAUNCH, APP_SHOULD_SHOW, events: spl
 
 exports.update = (startMin, done, show) => {
   if (updater.tryInitUpdater(buildInfo, NEW_UPDATE_ENDPOINT)) {
-    const updater = updater.getUpdater();
+    const inst = updater.getUpdater();
 
-    updater.on('host-updated', () => {
+    inst.on('host-updated', () => {
       autostartUpdate(() => {});
     });
-    updater.on('unhandled-exception', fatal);
-    updater.on(updater.INCONSISTENT_INSTALLER_STATE_ERROR, fatal);
-    updater.on('update-error', handled);
+    inst.on('unhandled-exception', fatal);
+    inst.on(updater.INCONSISTENT_INSTALLER_STATE_ERROR, fatal);
+    inst.on('update-error', handled);
 
-    performFirstRunTasks(updater);
+    performFirstRunTasks(inst);
   } else {
     moduleInit(UPDATE_ENDPOINT, settings, buildInfo);
   }
