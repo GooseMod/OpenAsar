@@ -28,7 +28,7 @@ var _securityUtils = require("../utils/securityUtils");
 
 var _updater = require("../updater/updater");
 
-var _ipcMain = _interopRequireDefault(require("../ipcMain"));
+const ipcMain = _electron.ipcMain;
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
@@ -453,7 +453,7 @@ function launchSplashWindow(startMinimized) {
     });
   }
 
-  _ipcMain.default.on('SPLASH_SCREEN_READY', () => {
+  ipcMain.on('DISCORD_SPLASH_SCREEN_READY', () => {
     log('Splash', 'Window declared ready, showing and starting update process');
 
     if (oaConfig.themeSync !== false) try { // Inject themesync CSS
@@ -470,7 +470,7 @@ function launchSplashWindow(startMinimized) {
     }
   });
 
-  _ipcMain.default.on('SPLASH_SCREEN_QUIT', () => {
+  ipcMain.on('DISCORD_SPLASH_SCREEN_QUIT', () => {
     _electron.app.quit();
   });
 
