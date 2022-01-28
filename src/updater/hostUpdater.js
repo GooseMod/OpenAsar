@@ -28,10 +28,10 @@ class HostLinux extends events.EventEmitter {
     this.emit('checking-for-update');
 
     try {
-      const [, response ] = await new Promise((res) => request.get(this.updateUrl, res));
-      if (response.statusCode === 204) return this.emit('update-not-available');
+      const res = await new Promise((res) => request.get(this.updateUrl, (_e, r) => res(r)));
+      if (res.statusCode === 204) return this.emit('update-not-available');
 
-      const latest = versionParse(JSON.parse(response.body).name);
+      const latest = versionParse(JSON.parse(res.body).name);
 
       if (versionNewer(latest, current)) {
         log('HostLinux', 'Outdated');
