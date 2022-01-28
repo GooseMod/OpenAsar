@@ -1,1 +1,0 @@
-exports.hasFlag = (flag) => process.argv.includes(flag);

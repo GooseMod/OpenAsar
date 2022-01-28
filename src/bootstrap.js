@@ -12,7 +12,6 @@ log('Bootstrap', 'Forcing Electron props');
 app.name = 'discord'; // Force name as sometimes breaks data path even with "discord" name (also fixes kernel?)
 
 const requireNative = require('./utils/requireNative');
-const argv = require('./utils/argv');
 
 const paths = require('./paths');
 global.moduleDataPath = paths.getModuleDataPath(); // Global because discord
@@ -100,7 +99,7 @@ const startCore = () => {
 };
 
 const startUpdate = () => {
-  const startMinimized = argv.hasFlag('--start-minimized');
+  const startMinimized = process.argv.includes('--start-minimized');
   log('Bootstrap', 'Start minimized:', startMinimized);
 
   appUpdater.update(startMinimized, () => {
@@ -139,7 +138,7 @@ getModuleDataPath: ${paths.getModuleDataPath()}
 getInstallPath: ${paths.getInstallPath()}`);
 
   const instanceLock = app.requestSingleInstanceLock();
-  const allowMultiInstance = argv.hasFlag('--multi-instance') || oaConfig.multiInstance === true; // argv flag or config
+  const allowMultiInstance = process.argv.includes('--multi-instance') || oaConfig.multiInstance === true; // argv flag or config
 
   console.log(instanceLock, allowMultiInstance);
 
