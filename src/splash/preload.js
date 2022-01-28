@@ -1,9 +1,7 @@
-const { app, contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 const { saferShellOpenExternal } = require('../utils/securityUtils');
 
-const urlParams = new URLSearchParams(window.location.search);
-const oaConfig = JSON.parse(urlParams.get('oaConfig'));
 
 contextBridge.exposeInMainWorld('DiscordSplash', {
   signalReady: () => ipcRenderer.send('DISCORD_SPLASH_SCREEN_READY'),
@@ -15,9 +13,5 @@ contextBridge.exposeInMainWorld('DiscordSplash', {
   },
 
   openUrl: saferShellOpenExternal,
-  quitDiscord: () => ipcRenderer.send('DISCORD_SPLASH_SCREEN_QUIT'),
-
-  getCSS: callback => oaConfig.themeSync !== false ? ipcRenderer.on('DISCORD_GET_CSS', (_, value) => {
-    callback(value);
-  }) : {}
+  quitDiscord: () => ipcRenderer.send('DISCORD_SPLASH_SCREEN_QUIT')
 });
