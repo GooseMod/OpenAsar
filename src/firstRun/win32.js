@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const paths = require('../paths');
-const squirrel = require('../updater/squirrelUpdate');
+const windowsUtils = require('../utils/windowsUtils');
 const Constants = require('../Constants');
 
 const appPath = path.resolve(process.execPath, '..');
@@ -48,6 +48,8 @@ const updateShortcuts = (updater) => {
   }
 };
 
+const installProtocol = (protocol, callback) => windowsUtils.addToRegistry([['HKCU\\Software\\Classes\\' + protocol, '/ve', '/d', `URL:${protocol} Protocol`], ['HKCU\\Software\\Classes\\' + protocol, '/v', 'URL Protocol'], ['HKCU\\Software\\Classes\\' + protocol + '\\DefaultIcon', '/ve', '/d', '"' + process.execPath + '",-1'], ['HKCU\\Software\\Classes\\' + protocol + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], callback);
+
 exports.performFirstRunTasks = (updater) => {
   log('FirstRun', 'Perform');
 
@@ -63,13 +65,13 @@ exports.performFirstRunTasks = (updater) => {
     log('FirstRun', 'Error updating shortcuts', e);
   }
 
-  squirrel.installProtocol(Constants.APP_PROTOCOL, () => {
-    if (shortcutSuccess) {
-      try {
-        fs.writeFileSync(firstRunCompletePath, 'true');
-      } catch (e) {
-        log('FirstRun', 'Error writing .first-run', e);
-      }
+  installProtocol(Constants.APP_PROTOCOL, () => {
+    if (!shortcutSuccess) return;
+
+    try {
+      fs.writeFileSync(firstRunCompletePath, 'true');
+    } catch (e) {
+      log('FirstRun', 'Error writing .first-run', e);
     }
   });
 };
