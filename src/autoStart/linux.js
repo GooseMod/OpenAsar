@@ -21,8 +21,7 @@ NoDisplay=false
 Name=${appName}
 Icon=${iconPath}
 Comment=Text and voice chat for gamers.
-X-GNOME-Autostart-enabled=true
-`;
+X-GNOME-Autostart-enabled=true`;
 
 exports.install = (callback) => {
   log('AutoStart', 'Install');
