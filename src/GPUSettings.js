@@ -1,6 +1,5 @@
-// Idk why Discord has to use this
 exports.replace = (GPUSettings) => {
-  for (const name of Object.keys(GPUSettings)) {
+  for (const name in GPUSettings) {
     exports[name] = GPUSettings[name];
   }
 };
