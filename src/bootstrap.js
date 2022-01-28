@@ -31,7 +31,7 @@ errorHandler.init();
 const appSettings = require('./appSettings');
 const GPUSettings = require('./GPUSettings');
 const crashReporterSetup = require('./crashReporterSetup');
-const splashScreen = require('./splash/splashScreen');
+const splashScreen = require('./splash');
 const Constants = require('./Constants');
 const autoStart = require('./autoStart');
 
