@@ -1,18 +1,8 @@
-"use strict";
-
-// Too much Rust integration stuff in here.
-
-/* eslint camelcase: 0 */
-const childProcess = require('child_process');
-
+const { spawn } = require('child_process');
 const { app } = require('electron');
-
 const { EventEmitter } = require('events');
-
 const NodeModule = require('module');
-
-const path = require('path');
-
+const { join, resolve, basename } = require('path');
 const { hrtime } = require('process');
 
 const paths = require('../paths');
@@ -22,26 +12,23 @@ const TASK_STATE_COMPLETE = 'Complete';
 const TASK_STATE_FAILED = 'Failed';
 const TASK_STATE_WAITING = 'Waiting';
 const TASK_STATE_WORKING = 'Working';
-const INCONSISTENT_INSTALLER_STATE_ERROR = 'InconsistentInstallerState'; // The dumb linters are mad at each other.
-// eslint-disable-next-line quotes
+const INCONSISTENT_INSTALLER_STATE_ERROR = 'InconsistentInstallerState';
 
 const INVALID_UPDATER_ERROR = "Can't send request to updater because the native updater isn't loaded.";
+
 
 class Updater extends EventEmitter {
   constructor(options) {
     super();
-    let nativeUpdaterModule = options.nativeUpdaterModule;
 
-    if (nativeUpdaterModule == null) {
-      try {
-        // eslint-disable-next-line import/no-unresolved
-        nativeUpdaterModule = require(paths.getExeDir() + '/updater');
-      } catch (e) {
-        log('Updater', 'Failed to require nativeUpdater', e);
+    let nativeUpdaterModule;
+    try {
+      nativeUpdaterModule = options.nativeUpdaterModule ?? require(paths.getExeDir() + '/updater');
+    } catch (e) {
+      log('Updater', 'Failed to require nativeUpdater', e);
 
-        if (e.code === 'MODULE_NOT_FOUND') return;
-        throw e;
-      }
+      if (e.code === 'MODULE_NOT_FOUND') return;
+      throw e;
     }
 
     this.committedHostVersion = null;
@@ -65,9 +52,7 @@ class Updater extends EventEmitter {
   }
 
   _sendRequest(detail, progressCallback = null) {
-    if (!this.valid) {
-      throw new Error(INVALID_UPDATER_ERROR);
-    }
+    if (!this.valid) throw new Error(INVALID_UPDATER_ERROR);
 
     const requestId = this.nextRequestId++;
     return new Promise((resolve, reject) => {
@@ -149,7 +134,7 @@ class Updater extends EventEmitter {
         console.warn('Unknown updater response', detail);
       }
     } catch (e) {
-      console.error('Unhandled exception in updater response handler:', e); // Report the first time this happens, but don't spam.
+      console.error('Unhandled exception in updater response handler:', e);
 
       if (!this.hasEmittedUnhandledException) {
         this.hasEmittedUnhandledException = true;
@@ -175,7 +160,7 @@ class Updater extends EventEmitter {
   _getHostPath() {
     const [major, minor, revision] = this.committedHostVersion;
     const hostVersionStr = `${major}.${minor}.${revision}`;
-    return path.join(this.rootPath, `app-${hostVersionStr}`);
+    return join(this.rootPath, `app-${hostVersionStr}`);
   }
 
   _startCurrentVersionInner(options, versions) {
@@ -185,24 +170,16 @@ class Updater extends EventEmitter {
 
     const hostPath = this._getHostPath();
 
-    const hostExePath = path.join(hostPath, path.basename(process.execPath));
+    const hostExePath = join(hostPath, basename(process.execPath));
 
-    if (path.resolve(hostExePath) != path.resolve(process.execPath) && !(options === null || options === void 0 ? void 0 : options.allowObsoleteHost)) {
+    if (resolve(hostExePath) != resolve(process.execPath) && !(options === null || options === void 0 ? void 0 : options.allowObsoleteHost)) {
       app.once('will-quit', () => {
-        // TODO(eiz): the actual, correct way to do this (win32) is to inherit a
-        // handle to the current process into a new child process which then
-        // waits for that process handle to exit, then runs the new electron.
-        // This requires either implementing a separate updater exe process (big
-        // todo item atm) or likely modifying Electron?
-        //
-        // I intend to do it properly once the new production updater .exe is a
-        // thing.
-        childProcess.spawn(hostExePath, [], {
+        spawn(hostExePath, [], {
           detached: true,
           stdio: 'inherit'
         });
       });
-      console.log(`Restarting from ${path.resolve(process.execPath)} to ${path.resolve(hostExePath)}`);
+      console.log(`Restarting from ${resolve(process.execPath)} to ${resolve(hostExePath)}`);
       app.quit();
       return;
     }
@@ -213,11 +190,11 @@ class Updater extends EventEmitter {
   _commitModulesInner(versions) {
     const hostPath = this._getHostPath();
 
-    const modulesPath = path.join(hostPath, 'modules');
+    const modulesPath = join(hostPath, 'modules');
 
     for (const module in versions.current_modules) {
       const moduleVersion = versions.current_modules[module];
-      const moduleSearchPath = path.join(modulesPath, `${module}-${moduleVersion}`);
+      const moduleSearchPath = join(modulesPath, `${module}-${moduleVersion}`);
 
       if (!this.committedModules.has(module) && NodeModule.globalPaths.indexOf(moduleSearchPath) === -1) {
         this.committedModules.add(module);
@@ -345,9 +322,7 @@ class Updater extends EventEmitter {
         options
       }
     }, progressCallback);
-  } // If the running host is current, adopt the current installed modules and
-  // set up the module search path accordingly. If the running host is not
-  // current, start the new current host and exit this process.
+  }
 
 
   async startCurrentVersion(options) {
@@ -417,8 +392,7 @@ function getUpdaterPlatformName(platform) {
 }
 
 function tryInitUpdater(buildInfo, repositoryUrl) {
-  const rootPath = paths.getInstallPath(); // If we're not running from an actual install directory, don't bother trying
-  // to initialize the updater.
+  const rootPath = paths.getInstallPath();
 
   if (rootPath == null) {
     return false;
