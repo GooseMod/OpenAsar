@@ -2,15 +2,13 @@ const https = require('https');
 const querystring = require("querystring");
 
 // Generic polyfill for "request" npm package, wrapper for https
-const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => new Promise((resolve, reject) => {
+const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => new Promise((resolve) => {
   const fullUrl = `${url}${qs != null ? `?${querystring.stringify(qs)}` : ''}`; // With query string
 
   let req;
   try {
     req = https.request(fullUrl, { method, headers, timeout }, async (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) { // Redirect, recall function
-        return resolve(await nodeReq({ url: res.headers.location, method, headers, timeout, body, stream }));
-      }
+      if (res.statusCode === 301 || res.statusCode === 302) return resolve(await nodeReq({ url: res.headers.location, method, headers, timeout, body, stream }));
 
       resolve(res);
     });
@@ -26,11 +24,6 @@ const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => new Pro
 });
 
 const request = (...args) => {
-  // We have to use ...args because we have to support all of these possible args:
-  // request(url, callback)
-  // request(options, callback)
-  // request(url, options, callback)
-
   let options, callback;
   switch (args.length) {
     case 3: // request(url, options, callback)
