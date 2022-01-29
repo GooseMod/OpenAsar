@@ -10,22 +10,19 @@ const appName = path.basename(process.execPath, '.exe');
 const fullExeName = path.basename(process.execPath);
 const updatePath = path.join(path.dirname(process.execPath), '..', 'Update.exe');
 
+const queuePrefix = [ 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName ];
+
 exports.install = (callback) => {
   log('AutoStart', 'Install');
 
-  let execPath = `${updatePath} --processStart ${fullExeName}`;
-
-  if (settings.get('START_MINIMIZED', false)) { // If start minimized enabled, pass it to Electron via --process-start-args
-    execPath += ' --process-start-args --start-minimized';
-  }
-
-  windowsUtils.addToRegistry([['HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName, '/d', execPath]], callback); // Make reg
+  const execPath = `${updatePath} --processStart ${fullExeName}` + (settings.get('START_MINIMIZED', false) ? ' --process-start-args --start-minimized' : ''); // Add Electron args if start minimized on
+  windowsUtils.addToRegistry([[...queuePrefix, '/d', execPath]], callback); // Make reg
 };
 
 exports.update = (callback) => {
   log('AutoStart', 'Update');
 
-  exports.isInstalled(installed => installed ? exports.install(callback) : callback()); // Reinstall if installed, else leave it (just callback)
+  exports.isInstalled(installed => installed ? exports.install(callback) : callback()); // Reinstall if installed, else just callback
 
   retainAsar(); // Retain OpenAsar
 };
@@ -33,13 +30,7 @@ exports.update = (callback) => {
 exports.uninstall = (callback) => {
   log('AutoStart', 'Uninstall');
 
-  windowsUtils.spawnReg(['delete', 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName, '/f'], (_error, _stdout) => { // Delete reg
-    callback();
-  });
+  windowsUtils.spawnReg(['delete', ...queuePrefix, '/f'], (_error, _stdout) => callback()); // Delete reg
 };
 
-exports.isInstalled = (callback) => {
-  windowsUtils.spawnReg(['query', 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName], (_error, stdout) => { // Check reg
-    callback(stdout.indexOf(appName) > -1);
-  });
-};
+exports.isInstalled = (callback) => windowsUtils.spawnReg(['query', ...queuePrefix], (_error, stdout) => callback(stdout.includes(appName))); // Check reg
