@@ -1,18 +1,16 @@
 const fs = require('fs');
-const path = require('path');
+const { join, resolve, basename } = require('path');
 const paths = require('../paths');
 const windowsUtils = require('../utils/windowsUtils');
 const Constants = require('../Constants');
 
-const appPath = path.resolve(process.execPath, '..');
-const rootPath = path.resolve(appPath, '..');
-const exeFilename = path.basename(process.execPath);
-const updateExe = path.join(rootPath, 'Update.exe');
+const appPath = resolve(process.execPath, '..');
+const rootPath = resolve(appPath, '..');
 
 const iconFile = 'app.ico';
 const copyIconToRoot = () => {
-  const currentPath = path.join(appPath, iconFile);
-  const newPath = path.join(rootPath, iconFile);
+  const currentPath = join(appPath, iconFile);
+  const newPath = join(rootPath, iconFile);
 
   try {
     fs.copyFileSync(currentPath, newPath);
@@ -26,8 +24,8 @@ const copyIconToRoot = () => {
 const updateShortcuts = (updater) => {
   const filename = Constants.APP_NAME_FOR_HUMANS + '.lnk';
   const paths = [
-    path.join(updater.getKnownFolder('desktop'), filename),
-    path.join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, filename)
+    join(updater.getKnownFolder('desktop'), filename),
+    join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, filename)
   ];
 
   const icon = copyIconToRoot();
@@ -36,9 +34,9 @@ const updateShortcuts = (updater) => {
     if (!fs.existsSync(path)) continue; // Don't update already deleted paths
 
     updater.createShortcut({
-      target_path: updateExe,
+      target_path: join(rootPath, 'Update.exe'),
       shortcut_path: path,
-      arguments: `--processStart ${exeFilename}`,
+      arguments: '--processStart ' + basename(process.execPath),
       icon_path: icon,
       icon_index: 0,
       description: Constants.APP_DESCRIPTION,
@@ -48,14 +46,16 @@ const updateShortcuts = (updater) => {
   }
 };
 
-const installProtocol = (protocol, callback) => windowsUtils.addToRegistry([['HKCU\\Software\\Classes\\' + protocol, '/ve', '/d', `URL:${protocol} Protocol`], ['HKCU\\Software\\Classes\\' + protocol, '/v', 'URL Protocol'], ['HKCU\\Software\\Classes\\' + protocol + '\\DefaultIcon', '/ve', '/d', '"' + process.execPath + '",-1'], ['HKCU\\Software\\Classes\\' + protocol + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], callback);
+const installProtocol = (protocol, callback) => {
+  const base = 'HKCU\\Software\\Classes\\' + protocol;
+  windowsUtils.addToRegistry([[base, '/ve', '/d', `URL:${protocol} Protocol`], [base, '/v', 'URL Protocol'], [base + '\\DefaultIcon', '/ve', '/d', '"' + process.execPath + '",-1'], [base + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], callback);
+};
 
 exports.performFirstRunTasks = (updater) => {
   log('FirstRun', 'Perform');
 
-  const flagPath = path.join(paths.getUserDataVersioned(), '.first-run');
-
-  if (fs.existsSync(flagPath)) return; // Already ran first path, skip
+  const flagPath = join(paths.getUserDataVersioned(), '.first-run');
+  if (fs.existsSync(flagPath)) return; // Already done, skip
 
   let shortcutSuccess = false;
   try {
