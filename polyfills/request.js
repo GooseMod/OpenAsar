@@ -53,15 +53,10 @@ const request = (...args) => {
     };
   }
 
-  console.log('[OpenAsar Request Polyfill]', options.url);
-
   const listeners = {};
 
   nodeReq(options).then(async (res) => {
-    const isError = !res.statusCode;
-
-    if (isError) {
-      console.log('[OpenAsar Request Polyfill] Error:', res);
+    if (!res.statusCode) {
       listeners['error']?.(res);
       callback?.(res, null, null);
 
@@ -93,7 +88,7 @@ const request = (...args) => {
 };
 
 for (const m of [ 'get', 'post', 'put', 'patch', 'delete', 'head', 'options' ]) {
-  request[m] = (url, callback) => request({ url, method: m.toUpperCase() }, callback);
+  request[m] = (url, callback) => request({ url, method: m }, callback);
 }
 request.del = request.delete; // Special case
 
