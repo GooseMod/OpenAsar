@@ -44,11 +44,10 @@ jobs:
         git tag nightly
         git push origin nightly
         gh release delete ${{ env.VERSION }} -y
-        gh release create ${{ env.VERSION }} -t "${{ git log -1 --pretty=%B }}" -n "${{ env.BODY }}" ${{ env.FILES }}
+        gh release create ${{ env.VERSION }} -t "$(git log -1 --pretty=%B)" -n "${{ env.BODY }}" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         VERSION: 'nightly'
         NAME: 'Nightly'
-        BODY: Latest Nightly release
         FILES: app.asar minified_testing_dont_use.asar
         # FILES: app.asar
