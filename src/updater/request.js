@@ -55,20 +55,10 @@ const nodeRequest = ({ method, url, headers, qs, timeout, body, stream }) => new
   req.on('error', err => reject(err));
 });
 
-function requestWithMethod(method, options) {
-  if (typeof options === 'string') {
-    options = {
-      url: options
-    };
-  }
+const withMethod = (method, options) => {
+  if (typeof options === 'string') options = { url: options };
 
-  options = { ...options,
-    method
-  };
+  return nodeRequest({ ...options, method });
+};
 
-  log('Updater > Request', method, options.url);
-
-  return nodeRequest(options);
-}
-
-exports.get = requestWithMethod.bind(null, 'GET');
+exports.get = withMethod.bind(null, 'GET');
