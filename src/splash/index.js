@@ -460,7 +460,7 @@ function launchSplashWindow(startMinimized) {
       splashWindow.webContents.insertCSS(JSON.parse(_fs.default.readFileSync(_path.default.join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
     } catch (e) { }
 
-    if (oaConfig.splashText !== false) try {
+    if (oaConfig.splashText === true) try {
       const buildInfo = require('../utils/buildInfo.js');
       splashWindow.webContents.executeJavaScript(`debug.textContent = '${buildInfo.releaseChannel} ${buildInfo.version}\\nOpenAsar ${oaVersion}'`);
     } catch (e) { }

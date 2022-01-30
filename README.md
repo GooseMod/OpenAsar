@@ -25,7 +25,7 @@ You can configure OpenAsar via `settings.json` (found in your Discord app data /
 - `themeSync` (bool, default true) - syncs your modded client's theme with splash theming
 - `autoupdate` (bool, default true) - whether to autoupdate OpenAsar after Discord startup
 - `updatePrompt` (bool, default false) - whether to show update prompt after updating OpenAsar
-- `splashText` (bool, default true) - whether to show bottom right version info text in splash
+- `splashText` (bool, default false) - whether to show bottom right version info text in splash
 
 ### Extra Discord Options
 - `multiInstance` (bool, default false) - whether to enable multi-instance
