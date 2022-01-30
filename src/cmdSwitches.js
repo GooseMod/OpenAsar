@@ -1,6 +1,7 @@
 const { app } = require('electron');
 
 const presets = {
+  'base': '--autoplay-policy=no-user-gesture-required --disable-features=WinRetrieveSuggestionsOnlyOnDemand', // Base Discord
   'perf': `--enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --enable-hardware-overlays=single-fullscreen,single-on-top,underlay --enable-features=EnableDrDc,CanvasOopRasterization,BackForwardCache:TimeToLiveInBackForwardCacheInSeconds/300/should_ignore_blocklists/true/enable_same_site/true,ThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframes,UseSkiaRenderer,WebAssemblyLazyCompilation --disable-features=Vulkan --force_high_performance_gpu --enable-quic`, // Performance
   'disablemediakeys': '--disable-features=HardwareMediaKeyHandling', // Disables media keys (common want?)
   'battery': '--enable-features=TurnOffStreamingMediaCachingOnBattery --force_low_power_gpu' // Known to have better battery life for Chromium?
@@ -13,12 +14,8 @@ const combinePresets = (keys) => {
       const [ key, value ] = cmd.split('=');
 
       if (total[key]) {
-        if (value) {
-          total[key] += ',' + value; // Concat value with , for flags like --enable-features
-        } // Else no value, ignore as it already exists
-      } else {
-        total[key] = value;
-      }
+        if (value) total[key] += ',' + value; // Concat value with , for flags like --enable-features
+      } else total[key] = value;
     }
   }
   
@@ -27,8 +24,8 @@ const combinePresets = (keys) => {
 
 
 module.exports = () => {
-  const preset = oaConfig.cmdPreset || 'perf'; // Default to most (should default to none?) // 'perf,perf-ex,perf-ex2,battery,memory-ex2'
-  let cmdSwitches = presets[preset] || ''; // Default to blank (no switches)
+  const preset = oaConfig.cmdPreset || 'perf'; // Default to perf enhance
+  let cmdSwitches = presets.base + (presets[preset] || '');
 
   log('CmdSwitches', 'Preset:', preset);
 
