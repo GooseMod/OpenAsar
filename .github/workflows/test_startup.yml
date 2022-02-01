@@ -39,5 +39,6 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        DISPLAY=:0 ./DiscordCanary/DiscordCanary
+        xhost local:
+        DISPLAY=:0 ./DiscordCanary/DiscordCanary --enable-logging
         # node scripts/testStartup.js ./DiscordCanary/DiscordCanary
