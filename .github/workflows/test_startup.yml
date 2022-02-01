@@ -10,7 +10,7 @@ on:
     - '.github/workflows/test_startup.yml'
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -39,5 +39,5 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        ./DiscordCanary/DiscordCanary
+        DISPLAY=:0 ./DiscordCanary/DiscordCanary
         # node scripts/testStartup.js ./DiscordCanary/DiscordCanary
