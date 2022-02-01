@@ -7,10 +7,10 @@ on:
     - 'src/**'
     - 'scripts/**'
     - 'polyfills/**'
-    - '.github/workflows/test_startup.yml'
+    - '.github/workflows/**'
 
 jobs:
-  test:
+  test-linux:
     runs-on: ubuntu-latest
 
     steps:

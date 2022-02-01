@@ -1,13 +1,10 @@
 name: Release Nightly
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-    - 'src/**'
-    - 'scripts/**'
-    - 'polyfills/**'
-    - '.github/workflows/release_nightly.yml'
+  workflow_run:
+    workflows: ["Test Startup"]
+    types:
+      - completed'
 
 jobs:
   build:
