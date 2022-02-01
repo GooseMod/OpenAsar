@@ -39,4 +39,4 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        timeout 30s bash -c "xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging" | grep "Installing discord_rpc"
+        timeout 30s bash -c "xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging" | grep -m 1 "Installing discord_rpc"
