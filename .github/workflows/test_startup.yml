@@ -41,6 +41,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install xorg
+        cat /etc/X11/Xwrapper.config
+        echo "allowed_users = anybody" > /etc/X11/Xwrapper.config
         startx
         xhost local:
         DISPLAY=:0 ./DiscordCanary/DiscordCanary --enable-logging
