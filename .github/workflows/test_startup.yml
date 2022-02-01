@@ -39,9 +39,9 @@ jobs:
 
     - name: Setup running deps
       run: |
-        sudo apt-get update
-        sudo apt install xvfb
+        # sudo apt-get update
+        # sudo apt install xvfb
     - name: Check if Discord will startup
       run: |
-        xvfb-run ./DiscordCanary/DiscordCanary --enable-logging
+        xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging
         # node scripts/testStartup.js ./DiscordCanary/DiscordCanary
