@@ -39,6 +39,7 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
+        sudo apt-get install xorg
         startx
         xhost local:
         DISPLAY=:0 ./DiscordCanary/DiscordCanary --enable-logging
