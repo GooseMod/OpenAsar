@@ -39,4 +39,4 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        node scripts/testStartup.js ./DiscordCanary/DiscordCanary
+        timeout 30s bash -c "xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging" | grep "Installing discord_rpc"
