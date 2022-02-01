@@ -13,7 +13,7 @@ const test = () => {
   });
 
   data.stdout.on('data', (data) => {
-    console.log(data.toString();)
+    console.log(data.toString());
   })
 
   proc.on('close', async () => {
