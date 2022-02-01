@@ -28,7 +28,8 @@ const test = () => {
     if (anyOutput) return;
     console.log('detected no output in 5s, retrying...');
     proc.kill();
+    test();
   }, 5000);
 };
 
-while (true) test();
+test();
