@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows: ["Test Startup"]
     types:
-      - completed'
+      - completed
 
 jobs:
   build:
