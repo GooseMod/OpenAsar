@@ -25,7 +25,7 @@ const combinePresets = (keys) => {
 
 module.exports = () => {
   const preset = oaConfig.cmdPreset || 'perf'; // Default to perf enhance
-  let cmdSwitches = presets.base + (presets[preset] || '');
+  let cmdSwitches = presets.base + ' ' + (presets[preset] || '');
 
   log('CmdSwitches', 'Preset:', preset);
 
@@ -42,6 +42,8 @@ module.exports = () => {
     const switches = cmdSwitches.split(' ');
 
     for (const cmd of switches) {
+      if (!cmd) continue;
+
       let [ key, value ] = cmd.split('=');
       key = key.replace('--', ''); // Replace --key with key (?)
 
