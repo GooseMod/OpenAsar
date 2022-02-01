@@ -37,11 +37,6 @@ jobs:
         tar xf discord.tar.gz
         cp app.asar DiscordCanary/resources/app.asar
 
-    - name: Setup running deps
-      run: |
-        # sudo apt-get update
-        # sudo apt install xvfb
     - name: Check if Discord will startup
       run: |
-        xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging
-        # node scripts/testStartup.js ./DiscordCanary/DiscordCanary
+        node scripts/testStartup.js ./DiscordCanary/DiscordCanary
