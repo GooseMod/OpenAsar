@@ -12,9 +12,9 @@ const test = () => {
     }
   });
 
-  data.stdout.on('data', (data) => {
+  proc.stdout.on('data', (data) => {
     console.log(data.toString());
-  })
+  });
 
   proc.on('close', async () => {
     process.exit(success ? 0 : 1);
