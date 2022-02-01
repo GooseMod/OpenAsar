@@ -1,7 +1,7 @@
 const { execFile } = require('child_process');
 
 const test = () => {
-  const proc = execFile('xvfb-run', ['-e', '/dev/stdout', process.argv[2], '--enable-logging']);
+  const proc = execFile('xvfb-run', [process.argv[2], '--enable-logging']);
 
   let success = false;
   proc.stderr.on('data', (data) => {
