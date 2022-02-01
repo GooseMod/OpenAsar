@@ -5,15 +5,15 @@ const test = () => {
 
   let success = false;
   proc.stderr.on('data', (data) => {
-    console.error(data.toString());
-    if (data.toString().includes('FAST CONNECT')) { // Main window JS running, startup success
-      success = true;
-      proc.kill();
-    }
+    console.error('stderr', data.toString());
   });
 
   proc.stdout.on('data', (data) => {
-    console.log(data.toString());
+    console.log('stdout', data.toString());
+    if (data.toString().includes('Installing discord_rpc')) {
+      success = true;
+      setTimeout(() => proc.kill(), 1000);
+    }
   });
 
   proc.on('close', async () => {
