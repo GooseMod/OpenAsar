@@ -1,0 +1,43 @@
+name: Release Nightly
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+    - 'src/**'
+    - 'scripts/**'
+    - 'polyfills/**'
+    - '.github/workflows/test_startup.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js v16.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+
+    - name: Pack base asar
+      run: |
+        npm i -g asar uglify-js
+        bash scripts/injectPolyfills.sh
+        sed -i -e "s/nightly/nightly-$(git rev-parse HEAD | cut -c 1-7)/" src/index.js
+
+        npx asar pack src app.asar
+
+    - name: Download Discord with OpenAsar
+      run: |
+        wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
+        tar xf discord.tar.gz
+        cp app.asar DiscordCanary/resources/app.asar
+
+    - name: Check if Discord will startup
+      run: |
+        ./DiscordCanary/DiscordCanary
+        # node scripts/testStartup.js ./DiscordCanary/DiscordCanary
