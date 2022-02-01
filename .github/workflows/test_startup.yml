@@ -1,4 +1,4 @@
-name: Release Nightly
+name: Test Startup
 
 on:
   push:
@@ -39,6 +39,7 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
+        startx
         xhost local:
         DISPLAY=:0 ./DiscordCanary/DiscordCanary --enable-logging
         # node scripts/testStartup.js ./DiscordCanary/DiscordCanary
