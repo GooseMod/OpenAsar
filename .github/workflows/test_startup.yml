@@ -36,6 +36,7 @@ jobs:
         wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
         tar xf discord.tar.gz
         cp app.asar DiscordCanary/resources/app.asar
+        rm DiscordCanary/resources/app.asar
 
     - name: Check if Discord will startup
       run: |
