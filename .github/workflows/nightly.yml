@@ -1,0 +1,110 @@
+name: Nightly Routine
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+    - 'src/**'
+    - 'scripts/**'
+    - 'polyfills/**'
+    - '.github/workflows/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js v16.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+
+    - name: Pack base asar
+      run: |
+        npm i -g asar uglify-js
+        bash scripts/injectPolyfills.sh
+        sed -i -e "s/nightly/nightly-$(git rev-parse HEAD | cut -c 1-7)/" src/index.js
+
+        npx asar pack src app.asar
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: built-asar
+        path: app.asar
+        retention-days: 1
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+  
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: built-asar
+        path: app.asar
+
+    - name: Setup Node.js v16.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+
+    - name: Cache Client
+      id: cache-client
+      uses: actions/cache@v2
+      with:
+        path: DiscordCanary
+        key: ${{ runner.os }}-client
+
+    - name: Download Client with OpenAsar
+      if: steps.cache-client.outputs.cache-hit != 'true'
+      run: |
+        wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
+        tar xf discord.tar.gz
+
+    - name: Install OpenAsar
+      run: |
+        cp app.asar DiscordCanary/resources/app.asar
+
+    - name: Check if Discord will startup
+      run: |
+        timeout 30s bash -c "xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging" | grep -m 1 "Installing discord_rpc"
+  
+  release:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: built-asar
+        path: app.asar
+
+    - name: GitHub Release
+      run: |
+        git tag -d nightly
+        git push origin --delete nightly
+        git tag nightly
+        git push origin nightly
+        gh release delete ${{ env.VERSION }} -y
+        gh release create ${{ env.VERSION }} -t "Nightly" -n "$(git log -1 --pretty=%B)" ${{ env.FILES }}
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        VERSION: 'nightly'
+        NAME: 'Nightly'
+        #FILES: app.asar minified_testing_dont_use.asar
+        FILES: app.asar
