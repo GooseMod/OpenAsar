@@ -110,6 +110,8 @@ const startUpdate = () => {
   const startMinimized = process.argv.includes('--start-minimized');
   log('Bootstrap', 'Start minimized:', startMinimized);
 
+  paths.cleanOldVersions();
+
   appUpdater.update(startMinimized, () => {
     if (process.env.OPENASAR_NOSTART) {
       log('Bootstrap', 'Found nostart variable, halting bootstrap');
