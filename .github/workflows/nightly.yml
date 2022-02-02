@@ -1,4 +1,4 @@
-name: Nightly Routine
+name: Nightly
 
 on:
   push:
@@ -25,10 +25,10 @@ jobs:
 
     - name: Pack base asar
       run: |
-        npm i -g asar uglify-js
+        npm i -g asar
         bash scripts/injectPolyfills.sh
         sed -i -e "s/nightly/nightly-$(git rev-parse HEAD | cut -c 1-7)/" src/index.js
-
+        rm src/updater/request.js
         npx asar pack src app.asar
 
     - name: Upload artifact
