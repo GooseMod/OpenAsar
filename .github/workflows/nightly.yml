@@ -51,7 +51,11 @@ jobs:
       uses: actions/download-artifact@v2
       with:
         name: built-asar
-        path: app.asar
+        path: artifact
+    
+    - name: Extract artifact
+      run: |
+        cp artifact/app.asar .
 
     - name: Setup Node.js v16.x
       uses: actions/setup-node@v2
