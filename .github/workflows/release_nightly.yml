@@ -28,11 +28,11 @@ jobs:
 
         npx asar pack src app.asar
 
-    - name: Pack minified asar
-      run: |
-        npm i -g esbuild uglify-js minify-json html-minifier
-        bash scripts/minify.sh
-        mv minified.asar minified_testing_dont_use.asar
+    #- name: Pack minified asar
+    #  run: |
+    #    npm i -g esbuild uglify-js minify-json html-minifier
+    #    bash scripts/minify.sh
+    #    mv minified.asar minified_testing_dont_use.asar
 
     - name: GitHub Release
       run: |
@@ -46,5 +46,5 @@ jobs:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         VERSION: 'nightly'
         NAME: 'Nightly'
-        FILES: app.asar minified_testing_dont_use.asar
-        # FILES: app.asar
+        #FILES: app.asar minified_testing_dont_use.asar
+        FILES: app.asar
