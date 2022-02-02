@@ -62,13 +62,6 @@ jobs:
       with:
         node-version: 16.x
 
-    - name: Cache Client
-      id: cache-client
-      uses: actions/cache@v2
-      with:
-        path: DiscordCanary
-        key: ${{ runner.os }}-client
-
     - name: Download Client with OpenAsar
       if: steps.cache-client.outputs.cache-hit != 'true'
       run: |
