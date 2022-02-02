@@ -63,18 +63,18 @@ jobs:
         node-version: 16.x
 
     - name: Download Client with OpenAsar
-      if: steps.cache-client.outputs.cache-hit != 'true'
       run: |
         wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
         tar xf discord.tar.gz
-
-    - name: Install OpenAsar
-      run: |
         cp app.asar DiscordCanary/resources/app.asar
 
     - name: Check if Discord will startup
       run: |
-        timeout 30s bash -c "xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging" | grep -m 1 "Installing discord_rpc"
+        coproc { xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging }
+        grep -m1 "Installing discord_rpc" <&${COPROC[0]}
+        sleep 1
+        [[ $COPROC_PID ]] && kill $COPROC_PID
+      timeout-minutes: 1
   
   release:
     needs: test
