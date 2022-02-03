@@ -1,36 +1,23 @@
 const request = require('request');
 
 const nodeRequest = ({ method, url, headers, qs, timeout, body, stream }) => new Promise((resolve, reject) => {
-  const req = request({
-    method,
-    url,
-    qs,
-    headers,
-    followAllRedirects: true,
-    encoding: null,
-    timeout: timeout ?? 30000,
-    body
-  });
+  const req = request({ method, url, headers, qs, timeout: timeout ?? 30000, body });
 
   req.on('response', (response) => {
-    const totalBytes = parseInt(response.headers['content-length'] || 1, 10);
-    let receivedBytes = 0;
+    const total = parseInt(response.headers['content-length'] || 1, 10);
+    let outOf = 0;
     const chunks = [];
 
     const badStatus = response.statusCode >= 300;    
     if (badStatus) stream = null;
     
     response.on('data', chunk => {
-      if (stream != null) {
-        receivedBytes += chunk.length;
-        stream.write(chunk);
-        return stream.emit('progress', {
-          totalBytes,
-          receivedBytes
-        });
-      }
-    
       chunks.push(chunk);
+
+      if (!stream) return;
+      outOf += chunk.length;
+      stream.write(chunk);
+      stream.emit('progress', { total, outOf });
     });
 
     response.on('end', () => {
@@ -39,26 +26,14 @@ const nodeRequest = ({ method, url, headers, qs, timeout, body, stream }) => new
         return stream.end();
       }
     
-      if (badStatus) {
-        const err = new Error('HTTP Error: Status Code ' + response.statusCode);
-        err.response = response;
-        return reject(err);
-      }
+      if (badStatus) return reject(new Error('Req error:' + response.statusCode));
     
-      resolve({
-        ...response,
-        body: Buffer.concat(chunks)
-      });
+      resolve({ ...response, body: Buffer.concat(chunks) });
     });
   });
 
   req.on('error', err => reject(err));
 });
 
-const withMethod = (method, options) => {
-  if (typeof options === 'string') options = { url: options };
-
-  return nodeRequest({ ...options, method });
-};
-
-exports.get = withMethod.bind(null, 'GET');
+const meth = (method, opt) => nodeRequest({ ...(typeof opt === 'string' ? { url: opt } : opt), method });
+exports.get = meth.bind(null, 'GET');
