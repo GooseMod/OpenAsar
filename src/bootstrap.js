@@ -147,12 +147,7 @@ getResources: ${paths.getResources()}
 getModuleDataPath: ${paths.getModuleDataPath()}
 getInstallPath: ${paths.getInstallPath()}`);
 
-  const instanceLock = app.requestSingleInstanceLock();
-  const allowMultiInstance = process.argv.includes('--multi-instance') || oaConfig.multiInstance === true; // argv flag or config
-
-  console.log(instanceLock, allowMultiInstance);
-
-  if (!instanceLock && !allowMultiInstance) {
+  if (!app.requestSingleInstanceLock() && !(process.argv.includes('--multi-instance') || oaConfig.multiInstance === true)) {
     log('Bootstrap', 'Non-first instance, quitting (multi-instance disabled)');
     return app.quit();
   }
