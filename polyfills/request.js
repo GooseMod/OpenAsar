@@ -58,16 +58,16 @@ const request = (...args) => {
 
     listeners['response']?.(res);
 
-    let body = '';
-
+    let data = [];
     res.on('data', (chunk) => {
-      body += chunk;
+      data.push(chunk);
       listeners['data']?.(chunk);
     });
 
     await new Promise((resolve) => res.on('end', resolve)); // Wait to read full body
 
-    callback?.(undefined, res, body);
+    const buf = Buffer.concat(data);
+    callback?.(undefined, res, options.encoding !== null ? buf.toString() : buf);
   });
 
   const ret = {
