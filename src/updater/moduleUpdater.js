@@ -257,7 +257,7 @@ function init(_endpoint, _settings, _buildInfo) {
   hostUpdater.on('update-downloaded', () => hostOnUpdateDownloaded());
   hostUpdater.on('error', err => hostOnError(err));
   const setFeedURL = hostUpdater.setFeedURL.bind(hostUpdater);
-  remoteBaseURL = `${endpoint}/modules/${buildInfo.releaseChannel}`; // eslint-disable-next-line camelcase
+  remoteBaseURL = `${endpoint}/modules/${buildInfo.releaseChannel}`;
 
   remoteQuery = {
     host_version: buildInfo.version

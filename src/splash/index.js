@@ -90,8 +90,6 @@ const updateBackoff = new _Backoff.default(1000, 30000); // TODO(eiz): some of t
 //
 // Disabled because Rust interop stuff is going on in here.
 
-/* eslint-disable camelcase */
-
 class TaskProgress {
   constructor() {
     this.inProgress = new Map();
@@ -193,7 +191,6 @@ async function updateUntilCurrent() {
     }
   }
 }
-/* eslint-enable camelcase */
 
 const oldCheckForUpdates = () => {
   if (oaConfig.skipStartupUpdateChecks !== true) {
