@@ -1,4 +1,4 @@
-<video loop autoplay src="https://goosemod.com/vid/discord_loading.webm"></video>
+<video loop autoplay src="https://cdn.openasar.dev/discord_loading.webm"></video>
 
 <div id="text">Starting...</div>
 
@@ -13,13 +13,14 @@
     --brand-experiment: #5865F2;
     --header-primary: #fff;
     --text-muted: #72767d;
+    --font-primary: 'Whitney', sans-serif;
   }
 
   @font-face {
     font-family: Whitney;
     font-weight: 400;
     font-style: normal;
-    src: url(https://goosemod.com/font/whitney_400.woff) format("woff");
+    src: url(https://cdn.openasar.dev/whitney_400.woff) format("woff");
   }
 
   html, body {
@@ -40,7 +41,7 @@
   }
 
   * {
-    font-family: 'Whitney', sans-serif;
+    font-family: var(--font-primary);
 
     box-sizing: border-box;
     -webkit-user-select: none;
