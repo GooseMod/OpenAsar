@@ -52,7 +52,7 @@ module.exports = async () => { // (Try) update asar
 
       log('AsarUpdate', 'Piping download response to stream');
       res.pipe(file);
-    })
+    });
 
     file.on('finish', () => {
       file.close();
