@@ -13,6 +13,7 @@ const stripCode = (code) => code
   .replaceAll('typeof ', 'typeof#')
   .replaceAll(' of ', '#of#')
   .replaceAll(' in ', '#in#')
+  .replaceAll('case ', 'case#')
   .replaceAll('await ', 'await#')
   .replaceAll('new ', 'new#')
   .replaceAll('return ', 'return#')
