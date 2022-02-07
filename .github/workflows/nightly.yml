@@ -28,7 +28,7 @@ jobs:
         npm i -g asar
         bash scripts/injectPolyfills.sh
         sed -i -e "s/nightly/nightly-$(git rev-parse HEAD | cut -c 1-7)/" src/index.js
-        # node scripts/strip.js
+        node scripts/strip.js
         npx asar pack src app.asar
 
     - name: Upload artifact
