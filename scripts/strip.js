@@ -22,6 +22,8 @@ const stripCode = (code) => code
   .replaceAll('throw ', 'throw#')
   .replaceAll('async ', 'async#')
   .replaceAll('else ', 'else#')
+  .replaceAll('false', '!!0')
+  .replaceAll('true', '!0')
   .replace(/((['"`])[\s\S]*?\2)|[ \n]/g, (_, g1) => g1 || '')
   .replaceAll('#', ' ')
   .replaceAll('? ?', '??');
