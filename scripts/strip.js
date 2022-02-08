@@ -28,14 +28,23 @@ const stripCode = (code) => code
   .replaceAll('#', ' ')
   .replaceAll('? ?', '??');
 
-const stripFile = (jsPath) => {
-  console.log(jsPath);
-  fs.writeFileSync(jsPath, stripCode(fs.readFileSync(jsPath, 'utf8')));
+const stripJs = (jsPath) => fs.writeFileSync(jsPath, stripCode(fs.readFileSync(jsPath, 'utf8')));
+
+const minJson = (data) => {
+  if (data.description) delete data.description;
+
+  return data;
 };
 
+const stripJson = (path) => fs.writeFileSync(path, JSON.stringify(minJson(JSON.parse(fs.readFileSync(path, 'utf8')))));
+
 const tree = (dirPath) => fs.readdirSync(dirPath).forEach((x) => {
-  if (x.endsWith('.js')) return stripFile(join(dirPath, x));
-  if (!x.includes('.')) return tree(join(dirPath, x));
+  const path = join(dirPath, x);
+  console.log(path);
+
+  if (x.endsWith('.js')) return stripJs(path);
+  if (x.endsWith('.json')) return stripJson(path);
+  if (!x.includes('.')) return tree(path);
 });
 
 tree(join(__dirname, '..', 'src'));
