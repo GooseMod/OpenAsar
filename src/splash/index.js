@@ -320,13 +320,9 @@ function initSplash(startMinimized = false) {
   updateAttempt = 0;
   newUpdater = (0, _updater.getUpdater)();
 
-  if (newUpdater == null) {
-    initOldUpdater();
-  }
+  if (newUpdater == null) initOldUpdater();
 
   launchSplashWindow(startMinimized);
-
-  log('Splash', 'Quickstart config:', process.env.OPENASAR_QUICKSTART || oaConfig.quickstart, '-', process.env.OPENASAR_QUICKSTART, oaConfig.quickstart);
 
   if (newUpdater != null) {
     updateUntilCurrent();
@@ -340,13 +336,6 @@ function initSplash(startMinimized = false) {
     if (newUpdater != null) { // Manually load desktop_core module path for faster requiring
       require('../utils/u2LoadModulePath')();
     }
-
-    /* if (newUpdater != null) {
-      updateUntilCurrent();
-    } else {
-      moduleUpdater.installPendingUpdates();
-      moduleUpdater.setInBackground();
-    } */
 
     launchMainWindow();
     
