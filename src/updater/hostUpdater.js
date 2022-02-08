@@ -1,17 +1,10 @@
 const { app, autoUpdater } = require('electron');
 const events = require('events');
 
-const request = require('request');
+const { get } = require('request');
 
-const versionParse = (s) => s.split('.').map((x) => parseInt(x));
-const versionNewer = (a, b) => a.some((x, i) => {
-  const y = b[i];
-  if (x == undefined) return false;
-  if (y == undefined) return true;
-
-  if (x === y) return undefined;
-  return x > b[i];
-});
+const vParse = (s) => s.split('.').map((x) => parseInt(x));
+const vNewer = (a, b) => a.some((x, i) => x === b[i] ? undefined : (x > b[i]));
 
 class HostLinux extends events.EventEmitter {
   setFeedURL(url) {
@@ -24,18 +17,18 @@ class HostLinux extends events.EventEmitter {
   }
 
   async checkForUpdates() {
-    const current = versionParse(app.getVersion());
+    const current = vParse(app.getVersion());
     this.emit('checking-for-update');
 
     try {
-      const res = await new Promise((res) => request.get(this.updateUrl, (_e, r) => res(r)));
+      const [ res, body ] = await new Promise((res) => get(this.updateUrl, (_e, r, b) => res([r, b])));
       if (res.statusCode === 204) return this.emit('update-not-available');
 
-      const latest = versionParse(JSON.parse(res.body).name);
+      const latest = vParse(JSON.parse(body).name);
 
-      if (versionNewer(latest, current)) {
+      if (vNewer(latest, current)) {
         log('HostLinux', 'Outdated');
-        return this.emit('update-manually', latestVerStr);
+        return this.emit('update-manually', latest.join('.'));
       }
 
       log('HostLinux', 'Not outdated');
