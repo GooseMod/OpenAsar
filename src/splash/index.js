@@ -192,19 +192,6 @@ async function updateUntilCurrent() {
   }
 }
 
-const oldCheckForUpdates = () => {
-  if (oaConfig.skipStartupUpdateChecks !== true) {
-    moduleUpdater.checkForUpdates();
-  } else {
-    log('Splash', 'Skipping startup update checking (enabled)');
-
-    modulesListeners[UPDATE_CHECK_FINISHED]({
-      succeeded: true,
-      updateCount: 0
-    });
-  }
-};
-
 function initOldUpdater() {
   modulesListeners = {};
   addModulesListener(CHECKING_FOR_UPDATES, () => {
@@ -213,8 +200,7 @@ function initOldUpdater() {
   });
   addModulesListener(UPDATE_CHECK_FINISHED, ({
     succeeded,
-    updateCount,
-    manualRequired
+    updateCount
   }) => {
     stopUpdateTimeout();
 
@@ -228,7 +214,6 @@ function initOldUpdater() {
     }
   });
   addModulesListener(DOWNLOADING_MODULE, ({
-    name,
     current,
     total
   }) => {
@@ -240,17 +225,13 @@ function initOldUpdater() {
     updateSplashState(DOWNLOADING_UPDATES);
   });
   addModulesListener(DOWNLOADING_MODULE_PROGRESS, ({
-    name,
     progress
   }) => {
     splashState.progress = progress;
     updateSplashState(DOWNLOADING_UPDATES);
   });
   addModulesListener(DOWNLOADED_MODULE, ({
-    name,
-    current,
-    total,
-    succeeded
+    name
   }) => {
     delete splashState.progress;
 
@@ -259,7 +240,6 @@ function initOldUpdater() {
     }
   });
   addModulesListener(DOWNLOADING_MODULES_FINISHED, ({
-    succeeded,
     failed
   }) => {
     if (failed > 0) {
@@ -275,9 +255,8 @@ function initOldUpdater() {
       });
     }
   });
-  addModulesListener(NO_PENDING_UPDATES, () => oldCheckForUpdates());
+  addModulesListener(NO_PENDING_UPDATES, () => moduleUpdater.checkForUpdates());
   addModulesListener(INSTALLING_MODULE, ({
-    name,
     current,
     total
   }) => {
@@ -288,22 +267,14 @@ function initOldUpdater() {
     updateSplashState(INSTALLING_UPDATES);
   });
   addModulesListener(INSTALLED_MODULE, ({
-    name,
-    current,
-    total,
-    succeeded
   }) => delete splashState.progress);
   addModulesListener(INSTALLING_MODULE_PROGRESS, ({
-    name,
     progress
   }) => {
     splashState.progress = progress;
     updateSplashState(INSTALLING_UPDATES);
   });
-  addModulesListener(INSTALLING_MODULES_FINISHED, ({
-    succeeded,
-    failed
-  }) => oldCheckForUpdates());
+  addModulesListener(INSTALLING_MODULES_FINISHED, () => moduleUpdater.checkForUpdates());
   addModulesListener(UPDATE_MANUALLY, ({
     newVersion
   }) => {
