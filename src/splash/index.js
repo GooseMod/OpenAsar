@@ -427,10 +427,6 @@ function launchSplashWindow(startMinimized) {
     }
   });
 
-  ipcMain.on('DISCORD_SPLASH_SCREEN_QUIT', () => {
-    _electron.app.quit();
-  });
-
   const splashUrl = _url.default.format({
     protocol: 'file',
     slashes: true,
