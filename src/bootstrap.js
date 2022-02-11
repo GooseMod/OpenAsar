@@ -20,8 +20,6 @@ switch (process.platform) { // Discord forces these
 app.name = 'discord'; // Force name as sometimes breaks
 app.allowRendererProcessReuse = false;
 
-const requireNative = require('./utils/requireNative');
-
 const paths = require('./paths');
 global.moduleDataPath = paths.getModuleDataPath(); // Global because discord
 app.setPath('userData', paths.getUserData()); // Set userData properly because electron
@@ -51,7 +49,7 @@ if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAccele
 
 let desktopCore;
 const startCore = () => {
-  desktopCore = requireNative('discord_desktop_core');
+  desktopCore = require('discord_desktop_core');
   log('Bootstrap', 'Required desktop_core:', desktopCore);
 
   desktopCore.startup({

@@ -31,7 +31,7 @@ if (process.argv.includes('--overlay-host')) {
     require('./updater/moduleUpdater').initPathsOnly(buildInfo);
   }
 
-  require('./utils/requireNative')('discord_overlay2/standalone_host.js')
+  require('discord_overlay2/standalone_host.js')
 } else {
   const bootstrap = require('./bootstrap');
 
