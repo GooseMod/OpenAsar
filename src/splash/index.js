@@ -377,6 +377,7 @@ function launchSplashWindow(startMinimized) {
     resizable: false,
     center: true,
     show: false,
+    backgroundColor: '#2f3136',
     webPreferences: {
       nodeIntegration: false,
       enableRemoteModule: false,
@@ -399,21 +400,20 @@ function launchSplashWindow(startMinimized) {
     });
   }
 
-  ipcMain.on('DISCORD_SPLASH_SCREEN_READY', () => {
-    log('Splash', 'Window declared ready, showing and starting update process');
+  const win = splashWindow;
+  const wc = win.webContents;
 
+  wc.once('dom-ready', () => {
     if (oaConfig.themeSync !== false) try { // Inject themesync CSS
-      splashWindow.webContents.insertCSS(JSON.parse(_fs.default.readFileSync(_path.default.join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
+      wc.insertCSS(JSON.parse(_fs.default.readFileSync(_path.default.join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
     } catch (e) { }
 
     if (oaConfig.splashText === true) try {
       const buildInfo = require('../utils/buildInfo.js');
-      splashWindow.webContents.executeJavaScript(`debug.textContent = '${buildInfo.releaseChannel} ${buildInfo.version}\\nOpenAsar ${oaVersion}'`);
+      wc.executeJavaScript(`debug.textContent = '${buildInfo.releaseChannel} ${buildInfo.version}\\nOpenAsar ${oaVersion}'`);
     } catch (e) { }
 
-    if (splashWindow && !startMinimized) {
-      splashWindow.show();
-    }
+    if (!startMinimized) win.once('ready-to-show', () => win.show());
   });
 
   const splashUrl = _url.default.format({
@@ -422,7 +422,7 @@ function launchSplashWindow(startMinimized) {
     pathname: _path.default.join(__dirname, 'index.html')
   });
 
-  splashWindow.loadURL(splashUrl);
+  win.loadURL(splashUrl);
 
   log('Splash', `Loading window (with url ${splashUrl})`);
 }

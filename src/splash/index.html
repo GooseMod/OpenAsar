@@ -106,8 +106,6 @@
   const barContainer = document.querySelector('#bar-container');
   const barFill = document.querySelector('#bar-fill');
 
-  DiscordSplash.signalReady();
-
   DiscordSplash.onStateUpdate(({ status, current, total, progress, seconds }) => {
     let statusText = status.replaceAll('-', ' ');
     let showProgress = false;
