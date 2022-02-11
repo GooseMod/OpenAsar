@@ -24,8 +24,6 @@ var moduleUpdater = _interopRequireWildcard(require("../updater/moduleUpdater"))
 
 var paths = _interopRequireWildcard(require("../paths"));
 
-var _securityUtils = require("../utils/securityUtils");
-
 var _updater = require("../updater/updater");
 
 const ipcMain = _electron.ipcMain;
@@ -388,15 +386,6 @@ function launchSplashWindow(startMinimized) {
   };
   splashWindow = new _electron.BrowserWindow(windowConfig); // prevent users from dropping links to navigate in splash window
   log('Splash', 'Created BrowserWindow');
-
-  splashWindow.webContents.on('will-navigate', e => e.preventDefault());
-  splashWindow.webContents.on('new-window', (e, windowURL) => {
-    e.preventDefault();
-    (0, _securityUtils.saferShellOpenExternal)(windowURL); // exit, but delay half a second because openExternal is about to fire
-    // some events to things that are freed by app.quit.
-
-    setTimeout(_electron.app.quit, 500);
-  });
 
   if (process.platform !== 'darwin') {
     // citron note: this causes a crash on quit while the window is open on osx

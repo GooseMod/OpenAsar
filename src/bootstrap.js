@@ -65,9 +65,6 @@ const startCore = () => {
     GPUSettings,
     updater,
     crashReporterSetup,
-
-    // OpenCore additionals (non-standard)
-    securityUtils: require('./utils/securityUtils.js')
   });
 
   const i = setImmediate(() => {
