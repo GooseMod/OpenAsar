@@ -559,10 +559,10 @@ async function processDownloadQueue() {
 
   const stream = _fs.default.createWriteStream(moduleZipPath);
 
-  stream.on('progress', ({
-    receivedBytes: newReceivedBytes,
+  stream.on('progress', ([
+    newReceivedBytes,
     totalBytes
-  }) => {
+  ]) => {
     receivedBytes = newReceivedBytes;
     const newProgress = Math.min(Math.floor(100 * (receivedBytes / totalBytes)), 100);
 

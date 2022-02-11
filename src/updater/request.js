@@ -17,7 +17,7 @@ const nodeRequest = ({ method, url, headers, qs, timeout, body, stream }) => new
       if (!stream) return;
       outOf += chunk.length;
       stream.write(chunk);
-      stream.emit('progress', { total, outOf });
+      stream.emit('progress', [ outOf, total ]);
     });
 
     response.on('end', () => {
