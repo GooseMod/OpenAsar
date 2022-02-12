@@ -63,12 +63,7 @@ const startCore = () => {
   });
 
   const i = setImmediate(() => {
-    log('MainWindowInject', 'Attempting to get main window');
-
     if (!global.mainWindowId) return;
-
-    log('MainWindowInject', 'Success, adding dom-ready handler');
-
     clearInterval(i);
 
     const bw = BrowserWindow.fromId(global.mainWindowId);
@@ -79,8 +74,6 @@ const startCore = () => {
         splashScreen.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
         donePageReady = true;
       }
-
-      log('MainWindowInject', 'dom-ready triggered, injecting JS');
 
       const cmdSwitches = require('./cmdSwitches');
 
