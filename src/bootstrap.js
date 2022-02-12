@@ -18,7 +18,6 @@ switch (process.platform) { // Discord forces these
 }
 
 app.name = 'discord'; // Force name as sometimes breaks
-app.allowRendererProcessReuse = false;
 
 const paths = require('./paths');
 global.moduleDataPath = paths.getModuleDataPath(); // Global because discord
