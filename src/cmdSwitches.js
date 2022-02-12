@@ -47,7 +47,6 @@ module.exports = () => {
       key = key.replace('--', ''); // Replace --key with key (?)
 
       app.commandLine.appendSwitch(key, value);
-      log('CmdSwitches', 'Appended switch', key, value);
     }
   }
 }
