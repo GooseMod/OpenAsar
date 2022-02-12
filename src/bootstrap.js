@@ -4,8 +4,6 @@ const { join } = require('path');
 
 const Constants = require('./Constants');
 
-log('Bootstrap', 'Forcing Electron props');
-
 switch (process.platform) { // Discord forces these
   case 'linux':
     process.env.PULSE_LATENCY_MSEC = process.env.PULSE_LATENCY_MSEC ?? 30;
@@ -102,15 +100,11 @@ const startCore = () => {
 
 const startUpdate = () => {
   const startMinimized = process.argv.includes('--start-minimized');
-  log('Bootstrap', 'Start minimized:', startMinimized);
 
   paths.cleanOldVersions();
 
   appUpdater.update(startMinimized, () => {
-    if (process.env.OPENASAR_NOSTART) {
-      log('Bootstrap', 'Found nostart variable, halting bootstrap');
-      return;
-    }
+    if (process.env.OPENASAR_NOSTART) return;
 
     startCore();
   }, () => {
@@ -125,7 +119,7 @@ const startUpdate = () => {
       try {
         asarUpdate();
       } catch (e) {
-        log('AsarUpdate', 'Failed to update', e);
+        log('AsarUpdate', 'Failed', e);
       }
     }, 1000);
   });
@@ -133,16 +127,8 @@ const startUpdate = () => {
 
 
 module.exports = () => {
-  // Paths logging
-  log('Paths', `Init! Returns:
-getUserData: ${paths.getUserData()}
-getUserDataVersioned: ${paths.getUserDataVersioned()}
-getResources: ${paths.getResources()}
-getModuleDataPath: ${paths.getModuleDataPath()}
-getInstallPath: ${paths.getInstallPath()}`);
-
   if (!app.requestSingleInstanceLock() && !(process.argv.includes('--multi-instance') || oaConfig.multiInstance === true)) {
-    log('Bootstrap', 'Non-first instance, quitting (multi-instance disabled)');
+    log('Bootstrap', 'Non-first instance');
     return app.quit();
   }
 
