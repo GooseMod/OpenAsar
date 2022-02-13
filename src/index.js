@@ -2,15 +2,14 @@ const log = require('./utils/log');
 global.log = log; // Make log global for easy usage everywhere
 global.oaVersion = 'nightly';
 
-log('Init', 'OpenAsar v' + oaVersion);
+log('Init', 'OpenAsar', oaVersion);
 
 log('Init', 'Resources Path:', process.resourcesPath);
 if (process.resourcesPath.startsWith('/usr/lib/electron')) { // Using system electron, fix process.resourcesPath
   log('Init', 'Detected System Electron, fixing paths');
   global.systemElectron = true;
 
-  const { join } = require('path');
-  process.resourcesPath = join(__dirname, '..');
+  process.resourcesPath = require('path').join(__dirname, '..');
 
   log('Init', 'Resources Path:', process.resourcesPath);
 }
@@ -31,9 +30,7 @@ if (process.argv.includes('--overlay-host')) {
     require('./updater/moduleUpdater').initPathsOnly(buildInfo);
   }
 
-  require('discord_overlay2/standalone_host.js')
+  require('discord_overlay2/standalone_host.js');
 } else {
-  const bootstrap = require('./bootstrap');
-
-  bootstrap(); // Start bootstrap
+  require('./bootstrap')(); // Start bootstrap
 }
