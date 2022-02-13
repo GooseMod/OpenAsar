@@ -11,4 +11,4 @@ cp app.asar /opt/discord-canary/resources/app.asar # Overwrite app.asar for Linu
 echo "Running discord..."
 echo ""
 
-discord-canary # Run it
+discord-canary "$@" # Run it
