@@ -78,7 +78,7 @@ const updateSplashState = (status) => splashWindow && splashWindow.webContents.s
 
 
 const launchSplashWindow = (startMinimized) => {
-  const windowConfig = {
+  splashWindow = new BrowserWindow({
     width: 300,
     height: process.platform === 'darwin' ? 300 : 350,
     transparent: false,
@@ -90,9 +90,8 @@ const launchSplashWindow = (startMinimized) => {
     webPreferences: {
       preload: join(__dirname, 'preload.js')
     }
-  };
+  });
 
-  splashWindow = new BrowserWindow(windowConfig);
   const win = splashWindow;
   const wc = win.webContents;
 
