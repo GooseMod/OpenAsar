@@ -15,7 +15,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
 
     this.lastModified = this.getLastModified();
 
-    log('AppSettings', 'Loaded settings.json with path', this.path, 'with settings', this.settings, 'and last modified', this.lastModified);
+    log('AppSettings', this.path, this.settings);
   }
 
   getLastModified() {
@@ -36,7 +36,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
 
   save() {
     if (this.lastModified && this.lastModified !== this.getLastModified()) { // File was last modified after Settings was made, so was externally edited therefore we don't save over
-      log('AppSettings', 'Refusing to save settings.json due to last modified date mismatch');
+      log('AppSettings', 'Modified date mismatch');
       return;
     }
 
@@ -53,7 +53,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
 
       log('AppSettings', 'Saved', this.path);
     } catch (e) {
-      log('AppSettings', 'Failed to save', this.path, e);
+      log('AppSettings', 'Failed', this.path, e);
     }
   }
 
