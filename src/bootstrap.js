@@ -30,12 +30,8 @@ log('BuildInfo', 'Loaded build info', buildInfo);
 const errorHandler = require('./errorHandler');
 errorHandler.init();
 
-// Just required for startup
-const appSettings = require('./appSettings');
-const GPUSettings = require('./GPUSettings');
-const crashReporterSetup = require('./crashReporterSetup');
 const splashScreen = require('./splash');
-const autoStart = require('./autoStart');
+const appSettings = require('./appSettings');
 
 const updater = require('./updater/updater');
 const moduleUpdater = require('./updater/moduleUpdater');
@@ -47,19 +43,19 @@ if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAccele
 let desktopCore;
 const startCore = () => {
   desktopCore = require('discord_desktop_core');
-  log('Bootstrap', 'Required desktop_core:', desktopCore);
+  log('Bootstrap', 'Required core');
 
   desktopCore.startup({
     paths,
     splashScreen,
     moduleUpdater,
-    autoStart,
     buildInfo,
     appSettings,
     Constants,
-    GPUSettings,
     updater,
-    crashReporterSetup,
+    GPUSettings: require('./GPUSettings'),
+    autoStart: require('./autoStart'),
+    crashReporterSetup: require('./crashReporterSetup'),
   });
 
   const i = setImmediate(() => {
@@ -101,7 +97,7 @@ const startUpdate = () => {
 
     startCore();
   }, () => {
-    log('Bootstrap', 'Setting main window visible');
+    log('Bootstrap', 'Main window visible');
     desktopCore.setMainWindowVisible(!startMinimized);
 
     setTimeout(() => { // Try to update our asar
