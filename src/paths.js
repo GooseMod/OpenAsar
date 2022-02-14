@@ -28,12 +28,8 @@ exports.init = () => {}; // Stub as we setup on require
 
 exports.cleanOldVersions = () => {
   if (!installPath) return;
-  log('Paths', 'Cleaning old app dirs...');
 
   for (const x of fs.readdirSync(installPath)) {
-    if (x.startsWith('app-') && !x.includes(buildInfo.version)) {
-      log('Paths', 'Removing', x);
-      fs.rmSync(join(installPath, x), { recursive: true, force: true });
-    }
+    if (x.startsWith('app-') && !x.includes(buildInfo.version)) fs.rmSync(join(installPath, x), { recursive: true, force: true });
   }
 };
