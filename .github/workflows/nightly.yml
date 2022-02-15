@@ -95,7 +95,7 @@ jobs:
         git push origin --delete nightly
         git tag nightly
         git push origin nightly
-        gh release delete ${{ env.VERSION }} -y
+        gh release delete ${{ env.VERSION }} -y || true
         gh release create ${{ env.VERSION }} -t "Nightly" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
