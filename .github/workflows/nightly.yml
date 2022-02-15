@@ -15,8 +15,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
 
     - name: Setup Node.js v16.x
       uses: actions/setup-node@v2
@@ -44,8 +42,6 @@ jobs:
   
     steps:
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
 
     - name: Retrieve artifact
       uses: actions/download-artifact@v2
@@ -82,8 +78,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
 
     - name: Retrieve artifact
       uses: actions/download-artifact@v2
@@ -102,7 +96,7 @@ jobs:
         git tag nightly
         git push origin nightly
         gh release delete ${{ env.VERSION }} -y
-        gh release create ${{ env.VERSION }} -t "Nightly" -n "$(git rev-parse HEAD | cut -c 0-7) | $(git log -1 --pretty=%B)" ${{ env.FILES }}
+        gh release create ${{ env.VERSION }} -t "Nightly" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         VERSION: 'nightly'
