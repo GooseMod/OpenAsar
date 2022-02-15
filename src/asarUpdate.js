@@ -18,7 +18,7 @@ const getAsarHash = () => crypto.createHash('sha512').update(fs.readFileSync(asa
 module.exports = async () => { // (Try) update asar
   log('AsarUpdate', 'Updating...');
 
-  if (!oaVersion.startsWith('nightly-')) return log('AsarUpdate', 'Non-standard version');
+  // if (!oaVersion.startsWith('nightly-')) return log('AsarUpdate', 'Non-standard version');
 
   const asarUrl = downloadUrls[channel];
 
@@ -50,10 +50,7 @@ module.exports = async () => { // (Try) update asar
     });
   });
 
-  if (!downloadSuccess) {
-    log('AsarUpdate', 'Download error');
-    return;
-  }
+  if (!downloadSuccess || fs.readFileSync(downloadPath, 'utf8').startsWith('<Error>')) return log('AsarUpdate', 'Download error');
 
   const copySuccess = await new Promise((res) => {
     try {
