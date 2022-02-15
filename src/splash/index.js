@@ -172,7 +172,6 @@ class UIProgress { // Generic class to track updating and sent states to splash
       return true;
     }
   }
-
 }
 
 const updateUntilCurrent = async () => {
@@ -221,13 +220,11 @@ const updateUntilCurrent = async () => {
       }
     } catch (e) {
       log('Splash', 'Update failed', e);
-      await new Promise(res => {
-        scheduleNextUpdate(res);
-        sendState(UPDATE_FAILURE);
-      });
+      sendState(UPDATE_FAILURE);
+      await new Promise(res => scheduleNextUpdate(res));
     }
   }
-}
+};
 
 const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   const add = (event, listener) => {
