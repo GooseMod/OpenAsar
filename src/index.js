@@ -7,11 +7,9 @@ log('Init', 'OpenAsar', oaVersion);
 if (process.resourcesPath.startsWith('/usr/lib/electron')) global.systemElectron = true; // Using system electron, flag for other places
 process.resourcesPath = require('path').join(__dirname, '..'); // Force resourcesPath for system electron
 
-const appSettings = require('./appSettings');
-global.oaConfig = appSettings.getSettings().get('openasar', {});
+require('./paths').init();
 
-log('Init', 'Loaded config', oaConfig);
-
+global.oaConfig = require('./appSettings').getSettings().get('openasar', {});
 require('./cmdSwitches')();
 
 if (process.argv.includes('--overlay-host')) { // If overlay

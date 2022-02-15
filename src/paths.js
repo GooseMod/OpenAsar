@@ -4,16 +4,7 @@ const { app } = require('electron');
 
 const buildInfo = require('./utils/buildInfo');
 
-
-const appDir = 'discord' + (buildInfo.releaseChannel === 'stable' ? '' : buildInfo.releaseChannel); // Clean channel naming up later to util?
-const userData = join(app.getPath('appData'), appDir);
-const userDataVersioned = join(userData, buildInfo.version);
-
-const exeDir = dirname(app.getPath('exe'));
-const installPath = /^app-[0-9]+\.[0-9]+\.[0-9]+/.test(basename(exeDir)) ? join(exeDir, '..') : null;
-
-const moduleData = buildInfo.newUpdater ? join(userData, 'module_data') : join(userDataVersioned, 'modules');
-const resourcesPath = join(process.resourcesPath);
+let userData, userDataVersioned, resourcesPath, moduleData, exeDir, installPath;
 
 exports.getUserData = () => userData;
 exports.getUserDataVersioned = () => userDataVersioned;
@@ -24,7 +15,18 @@ exports.getInstallPath = () => installPath;
 
 exports.getExeDir = () => exeDir;
 
-exports.init = () => {}; // Stub as we setup on require
+
+exports.init = () => {
+  const appDir = 'discord' + (buildInfo.releaseChannel === 'stable' ? '' : buildInfo.releaseChannel); // Clean channel naming up later to util?
+  userData = join(app.getPath('appData'), appDir);
+  userDataVersioned = join(userData, buildInfo.version);
+
+  exeDir = dirname(app.getPath('exe'));
+  if (basename(exeDir).startsWith('app-')) installPath = join(exeDir, '..');
+
+  moduleData = buildInfo.newUpdater ? join(userData, 'module_data') : join(userDataVersioned, 'modules');
+  resourcesPath = join(process.resourcesPath);
+};
 
 exports.cleanOldVersions = () => {
   if (!installPath) return;
