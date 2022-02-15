@@ -4,14 +4,17 @@ const _events = require('events');
 const { BrowserWindow, app } = require('electron');
 
 const paths = require('../paths');
-const Backoff = require('../utils/Backoff');
 const moduleUpdater = require("../updater/moduleUpdater");
 const updater = require("../updater/updater");
 
 let splashState = {};
+let modulesListeners = {};
 let launchedMainWindow = false;
 let updateAttempt = 0;
 let restartRequired = false;
+let splashWindow;
+let updateTimeout;
+let newUpdater;
 
 
 exports.initSplash = (startMinimized = false) => {
@@ -19,7 +22,7 @@ exports.initSplash = (startMinimized = false) => {
 
   newUpdater = updater.getUpdater();
 
-  if (newUpdater == null) initOldUpdater();
+  if (newUpdater == null) initModuleUpdater();
 
   launchSplashWindow(startMinimized);
 
@@ -50,7 +53,7 @@ exports.pageReady = () => destroySplash() || process.nextTick(() => events.emit(
 const destroySplash = () => {
   log('Splash', 'Destroy');
 
-  stopUpdateTimeout();
+  v1_timeoutStop();
   if (!splashWindow) return;
 
   splashWindow.setSkipTaskbar(true);
@@ -66,7 +69,7 @@ const destroySplash = () => {
 const launchMainWindow = () => {
   log('Splash', 'Launch main');
 
-  removeModulesListeners();
+  for (const e in modulesListeners) moduleUpdater.events.removeListener(e, modulesListeners[e]); // Remove updater v1 listeners
 
   if (!launchedMainWindow && splashWindow != null) {
     launchedMainWindow = true;
@@ -74,7 +77,7 @@ const launchMainWindow = () => {
   }
 };
 
-const updateSplashState = (status) => splashWindow && splashWindow.webContents.send('SPLASH_STATE', { status, ...splashState });
+const sendState = (status) => splashWindow && splashWindow.webContents.send('SPLASH_STATE', { status, ...splashState });
 
 
 const launchSplashWindow = (startMinimized) => {
@@ -113,29 +116,6 @@ const launchSplashWindow = (startMinimized) => {
 };
 
 
-const addModulesListener = (event, listener) => {
-  if (newUpdater) return;
-  modulesListeners[event] = listener;
-  moduleUpdater.events.addListener(event, listener);
-};
-
-const removeModulesListeners = () => {
-  if (newUpdater) return;
-  for (const e in modulesListeners) moduleUpdater.events.removeListener(e, modulesListeners[e]);
-};
-
-const startUpdateTimeout = () => !updateTimeout && (updateTimeout = setTimeout(() => scheduleUpdateCheck(), 10000));
-const stopUpdateTimeout = () => updateTimeout && clearTimeout(updateTimeout) && (updateTimeout = null);
-
-const scheduleUpdateCheck = () => {
-  updateAttempt++;
-
-  const wait = Math.min(updateAttempt * 10, 60);
-  splashState.seconds = wait;
-  setTimeout(() => moduleUpdater.checkForUpdates(), retryInSeconds * 1000);
-};
-
-
 const CHECKING_FOR_UPDATES = 'checking-for-updates';
 const UPDATE_CHECK_FINISHED = 'update-check-finished';
 const UPDATE_FAILURE = 'update-failure';
@@ -160,167 +140,145 @@ exports.APP_SHOULD_LAUNCH = APP_SHOULD_LAUNCH;
 exports.APP_SHOULD_SHOW = APP_SHOULD_SHOW;
 exports.events = events;
 
-let splashWindow;
-let modulesListeners;
-let updateTimeout;
-let newUpdater;
-const updateBackoff = new Backoff(1000, 30000);
-
-class TaskProgress {
+class UIProgress { // Generic class to track updating and sent states to splash
   constructor() {
-    this.inProgress = new Map();
-    this.finished = new Set();
-    this.allTasks = new Set();
+    Object.assign(this, {
+      progress: new Map(),
+      done: new Set(),
+      total: new Set()
+    });
   }
 
-  recordProgress(progress, task) {
-    this.allTasks.add(task.package_sha256);
+  record(id, state, percent) {
+    this.total.add(id);
 
-    if (progress.state !== updater.TASK_STATE_WAITING) {
-      this.inProgress.set(task.package_sha256, progress.percent);
+    if (state !== updater.TASK_STATE_WAITING) {
+      this.progress.set(id, percent);
 
-      if (progress.state === updater.TASK_STATE_COMPLETE) {
-        this.finished.add(task.package_sha256);
-      }
+      if (state === updater.TASK_STATE_COMPLETE) this.done.add(id);
     }
   }
 
-  updateSplashState(newState) {
-    if (this.inProgress.size > 0 && this.inProgress.size > this.finished.size) {
-      let totalPercent = 0;
-
-      for (const item of this.inProgress.values()) {
-        totalPercent += item;
-      }
-
-      totalPercent /= this.allTasks.size;
+  sendState(id) {
+    if (this.progress.size > 0 && this.progress.size > this.done.size) {
       splashState = {
-        current: this.finished.size + 1,
-        total: this.allTasks.size,
-        progress: totalPercent
+        current: this.done.size + 1,
+        total: this.total.size,
+        progress: [...this.progress.values()].reduce((a, x) => a + x, 0) / this.total.size
       };
-      updateSplashState(newState);
+
+      sendState(id);
+
       return true;
     }
-
-    return false;
   }
 
 }
 
-async function updateUntilCurrent() {
+const updateUntilCurrent = async () => {
   const retryOptions = {
     skip_host_delta: false,
     skip_module_delta: {}
   };
 
   while (true) {
-    updateSplashState(CHECKING_FOR_UPDATES);
+    sendState(CHECKING_FOR_UPDATES);
 
     try {
       let installedAnything = false;
-      const downloads = new TaskProgress();
-      const installs = new TaskProgress();
-      await newUpdater.updateToLatestWithOptions(retryOptions, progress => {
-        const task = progress.task;
-        const downloadTask = task.HostDownload || task.ModuleDownload;
-        const installTask = task.HostInstall || task.ModuleInstall;
+      const downloads = new UIProgress();
+      const installs = new UIProgress();
+
+      await newUpdater.updateToLatestWithOptions(retryOptions, ({ task, state, percent }) => {
+        const download = task.HostDownload || task.ModuleDownload;
+        const install = task.HostInstall || task.ModuleInstall;
+
         installedAnything = true;
 
-        if (downloadTask != null) {
-          downloads.recordProgress(progress, downloadTask);
-        }
+        if (download != null) downloads.record(download.package_sha256, state, percent);
 
-        if (installTask != null) {
-          installs.recordProgress(progress, installTask);
+        if (!downloads.sendState(DOWNLOADING_UPDATES)) installs.sendState(INSTALLING_UPDATES);
 
-          if (progress.state.Failed != null) {
-            if (task.HostInstall != null) {
-              retryOptions.skip_host_delta = true;
-            } else if (task.ModuleInstall != null) {
-              retryOptions.skip_module_delta[installTask.version.module.name] = true;
-            }
-          }
-        }
+        if (install == null) return;
+        
+        installs.record(install.package_sha256, state, percent);
 
-        if (!downloads.updateSplashState(DOWNLOADING_UPDATES)) {
-          installs.updateSplashState(INSTALLING_UPDATES);
+        if (task.HostInstall != null) {
+          retryOptions.skip_host_delta = true;
+        } else if (task.ModuleInstall != null) {
+          retryOptions.skip_module_delta[install.version.module.name] = true;
         }
       });
 
       if (!installedAnything) {
+        sendState(LAUNCHING);
+
         await newUpdater.startCurrentVersion();
         newUpdater.setRunningInBackground();
         newUpdater.collectGarbage();
-        launchMainWindow();
-        updateBackoff.succeed();
-        updateSplashState(LAUNCHING);
-        return;
+
+        return launchMainWindow();
       }
     } catch (e) {
-      console.error('Update failed', e);
-      await new Promise(resolve => {
-        const delayMs = updateBackoff.fail(resolve);
-        splashState.seconds = Math.round(delayMs / 1000);
-        updateSplashState(UPDATE_FAILURE);
+      log('Splash', 'Update failed', e);
+      await new Promise(res => {
+        scheduleNextUpdate(res);
+        sendState(UPDATE_FAILURE);
       });
     }
   }
 }
 
-function initOldUpdater() {
-  modulesListeners = {};
-  addModulesListener(CHECKING_FOR_UPDATES, () => {
-    startUpdateTimeout();
-    updateSplashState(CHECKING_FOR_UPDATES);
+const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
+  const add = (event, listener) => {
+    modulesListeners[event] = listener;
+    moduleUpdater.events.addListener(event, listener);
+  };
+
+  const addBasic = (ev, key, ui = ev) => add(ev, (e) => {
+    splashState[key] = e[key];
+    sendState(ui);
   });
-  addModulesListener(UPDATE_CHECK_FINISHED, ({
-    succeeded,
-    updateCount
-  }) => {
-    stopUpdateTimeout();
+  
+  const callbackCheck = () => moduleUpdater.checkForUpdates();
+
+  const callbackProgress = (e) => {
+    delete splashState.progress;
+    if (e.name === 'host') restartRequired = true;
+  };
+
+  const handleFail = () => {
+    scheduleNextUpdate();
+    sendState(UPDATE_FAILURE);
+  };
+
+  add(CHECKING_FOR_UPDATES, () => {
+    v1_timeoutStart();
+    sendState(CHECKING_FOR_UPDATES);
+  });
+
+  add(UPDATE_CHECK_FINISHED, ({ succeeded, updateCount }) => {
+    v1_timeoutStop();
 
     if (!succeeded) {
-      scheduleUpdateCheck();
-      updateSplashState(UPDATE_FAILURE);
+      handleFail();
     } else if (updateCount === 0) {
       moduleUpdater.setInBackground();
       launchMainWindow();
-      updateSplashState(LAUNCHING);
+      sendState(LAUNCHING);
     }
   });
-  addModulesListener(DOWNLOADING_MODULE, ({
-    current,
-    total
-  }) => {
-    stopUpdateTimeout();
-    splashState = {
-      current,
-      total
-    };
-    updateSplashState(DOWNLOADING_UPDATES);
-  });
-  addModulesListener(DOWNLOADING_MODULE_PROGRESS, ({
-    progress
-  }) => {
-    splashState.progress = progress;
-    updateSplashState(DOWNLOADING_UPDATES);
-  });
-  addModulesListener(DOWNLOADED_MODULE, ({
-    name
-  }) => {
-    delete splashState.progress;
 
-    if (name === 'host') {
-      restartRequired = true;
-    }
+  add(DOWNLOADING_MODULE, ({ current, total }) => {
+    v1_timeoutStop();
+
+    splashState = { current, total };
+    sendState(DOWNLOADING_UPDATES);
   });
-  addModulesListener(DOWNLOADING_MODULES_FINISHED, ({
-    failed
-  }) => {
+
+  add(DOWNLOADING_MODULES_FINISHED, ({ failed }) => {
     if (failed > 0) {
-      scheduleUpdateCheck();
-      updateSplashState(UPDATE_FAILURE);
+      handleFail();
     } else {
       process.nextTick(() => {
         if (restartRequired) {
@@ -331,30 +289,30 @@ function initOldUpdater() {
       });
     }
   });
-  addModulesListener(NO_PENDING_UPDATES, () => moduleUpdater.checkForUpdates());
-  addModulesListener(INSTALLING_MODULE, ({
-    current,
-    total
-  }) => {
-    splashState = {
-      current,
-      total
-    };
-    updateSplashState(INSTALLING_UPDATES);
+  
+  add(INSTALLING_MODULE, ({ current, total }) => {
+    splashState = { current, total };
+    sendState(INSTALLING_UPDATES);
   });
-  addModulesListener(INSTALLED_MODULE, ({
-  }) => delete splashState.progress);
-  addModulesListener(INSTALLING_MODULE_PROGRESS, ({
-    progress
-  }) => {
-    splashState.progress = progress;
-    updateSplashState(INSTALLING_UPDATES);
-  });
-  addModulesListener(INSTALLING_MODULES_FINISHED, () => moduleUpdater.checkForUpdates());
-  addModulesListener(UPDATE_MANUALLY, ({
-    newVersion
-  }) => {
-    splashState.newVersion = newVersion;
-    updateSplashState(UPDATE_MANUALLY);
-  });
-}
+
+  add(DOWNLOADED_MODULE, callbackProgress);
+  add(INSTALLED_MODULE, callbackProgress);
+
+  add(INSTALLING_MODULES_FINISHED, callbackCheck);
+  add(NO_PENDING_UPDATES, callbackCheck);
+
+  addBasic(DOWNLOADING_MODULE_PROGRESS, 'progress', DOWNLOADING_UPDATES);
+  addBasic(INSTALLING_MODULE_PROGRESS, 'progress', INSTALLING_UPDATES);
+  addBasic(UPDATE_MANUALLY, 'newVersion');
+};
+
+const v1_timeoutStart = () => !updateTimeout && (updateTimeout = setTimeout(scheduleNextUpdate, 10000));
+const v1_timeoutStop = () => updateTimeout && (updateTimeout = clearTimeout(updateTimeout));
+
+const scheduleNextUpdate = (callback = moduleUpdater.checkForUpdates) => { // Used by v1 and v2, default to v1 as used more widely in it
+  updateAttempt++;
+
+  const wait = Math.min(updateAttempt * 10, 60);
+  splashState.seconds = wait;
+  setTimeout(callback, wait * 1000);
+};
