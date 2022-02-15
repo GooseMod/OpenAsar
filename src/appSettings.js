@@ -1,7 +1,7 @@
-const Settings = require('./utils/Settings');
-const paths = require('./paths');
+let settings;
 
-const settings = new Settings(paths.getUserData());
-
-exports.getSettings = () => settings;
-exports.init = () => {}; // Stub as we setup on require
+exports.getSettings = () => {
+  if (!settings) settings = new (require('./utils/Settings'))(require('./paths').getUserData());
+  return settings;
+};
+exports.init = () => {};
