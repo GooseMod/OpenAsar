@@ -4,17 +4,8 @@ const { join } = require('path');
 
 const Constants = require('./Constants');
 
-switch (process.platform) { // Discord forces these
-  case 'linux':
-    process.env.PULSE_LATENCY_MSEC = process.env.PULSE_LATENCY_MSEC ?? 30;
-
-    break;
-  case 'win32':
-    app.setAppUserModelId(Constants.APP_ID);
-
-    break;
-}
-
+process.env.PULSE_LATENCY_MSEC = process.env.PULSE_LATENCY_MSEC ?? 30;
+app.setAppUserModelId(Constants.APP_ID);
 app.name = 'discord'; // Force name as sometimes breaks
 
 const paths = require('./paths');
@@ -87,7 +78,7 @@ const startCore = () => {
   });
 };
 
-const startUpdate = () => {
+const startUpdate = async () => {
   const startMinimized = process.argv.includes('--start-minimized');
 
   paths.cleanOldVersions();
@@ -111,6 +102,10 @@ const startUpdate = () => {
         log('AsarUpdate', 'Failed', e);
       }
     }, 1000);
+
+    if (process.argv.includes('--config') || !oaConfig.setup) {
+      require('./config')();
+    }
   });
 };
 
