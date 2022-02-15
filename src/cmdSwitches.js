@@ -31,10 +31,6 @@ module.exports = () => {
   if (preset.includes(',')) cmdSwitches = combinePresets(preset.split(','));
 
   if (cmdSwitches) {
-    cmdSwitches = `--flag-switches-begin ` + cmdSwitches + ` --flag-switches-end`; // Probably unneeded for Chromium / Electron manual flags but add anyway
-
-    log('CmdSwitches', 'Switches:', cmdSwitches);
-
     module.exports.cmd = cmdSwitches;
     module.exports.preset = preset;
 
