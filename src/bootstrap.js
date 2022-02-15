@@ -102,10 +102,6 @@ const startUpdate = async () => {
         log('AsarUpdate', 'Failed', e);
       }
     }, 1000);
-
-    if (process.argv.includes('--config') || !oaConfig.setup) {
-      require('./config')();
-    }
   });
 };
 
