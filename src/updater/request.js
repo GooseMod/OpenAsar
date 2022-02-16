@@ -1,7 +1,9 @@
 const request = require('request');
 
-const nodeRequest = ({ method, url, headers, qs, timeout, body, stream }) => new Promise((resolve, reject) => {
-  const req = request({ method, url, headers, qs, timeout: timeout ?? 30000, body });
+const nodeRequest = (opts) => new Promise((resolve, reject) => {
+  const { stream, timeout } = opts;
+
+  const req = request({ ...opts, timeout: timeout ?? 30000 });
 
   req.on('response', (response) => {
     const total = parseInt(response.headers['content-length'] || 1, 10);
@@ -26,7 +28,7 @@ const nodeRequest = ({ method, url, headers, qs, timeout, body, stream }) => new
         return stream.end();
       }
     
-      if (badStatus) return reject(new Error('Req error:' + response.statusCode));
+      if (badStatus) return reject(new Error('Req fail'));
     
       resolve({ ...response, body: Buffer.concat(chunks) });
     });
