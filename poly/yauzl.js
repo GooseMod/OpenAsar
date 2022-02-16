@@ -6,7 +6,6 @@ const { join, basename } = require('path');
 exports.open = async (zipPath, _options, callback) => {
   const extractPath = join(global.moduleDataPath, basename(zipPath).split('.')[0].split('-')[0]);
   const listeners = [];
-  log('Yauzl', 'Zip path:', zipPath, 'Extract path:', extractPath);
 
   const errorOut = (err) => {
     listeners.error(err);
@@ -24,8 +23,7 @@ exports.open = async (zipPath, _options, callback) => {
 
   mkdirSync(extractPath, { recursive: true });
 
-  const proc = execFile('unzip', ['-o', zipPath.replaceAll('"', ''), '-d', extractPath]);
-  log('Yauzl', 'Spawned');
+  const proc = execFile('unzip', ['-q', '-o', zipPath.replaceAll('"', ''), '-d', extractPath]);
 
   proc.stderr.on('data', errorOut);
 
@@ -39,7 +37,6 @@ exports.open = async (zipPath, _options, callback) => {
   });
 
   proc.on('close', async () => {
-    log('Yauzl', 'Closed');
     listeners.end();
   });
 };
