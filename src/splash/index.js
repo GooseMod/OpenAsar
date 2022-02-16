@@ -141,7 +141,12 @@ exports.APP_SHOULD_SHOW = APP_SHOULD_SHOW;
 exports.events = events;
 
 class UIProgress { // Generic class to track updating and sent states to splash
-  constructor() {
+  constructor(stateId) {
+    this.stateId = stateId;
+    this.reset();
+  }
+
+  reset() {
     Object.assign(this, {
       progress: new Map(),
       done: new Set(),
@@ -159,7 +164,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
     }
   }
 
-  sendState(id) {
+  sendState() {
     if (this.progress.size > 0 && this.progress.size > this.done.size) {
       splashState = {
         current: this.done.size + 1,
@@ -167,7 +172,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
         progress: [...this.progress.values()].reduce((a, x) => a + x, 0) / this.total.size
       };
 
-      sendState(id);
+      sendState(this.stateId);
 
       return true;
     }
@@ -185,8 +190,8 @@ const updateUntilCurrent = async () => {
 
     try {
       let installedAnything = false;
-      const downloads = new UIProgress();
-      const installs = new UIProgress();
+      const downloads = new UIProgress(DOWNLOADING_UPDATES);
+      const installs = new UIProgress(INSTALLING_UPDATES);
 
       await newUpdater.updateToLatestWithOptions(retryOptions, ({ task, state, percent }) => {
         const download = task.HostDownload || task.ModuleDownload;
@@ -196,7 +201,7 @@ const updateUntilCurrent = async () => {
 
         if (download != null) downloads.record(download.package_sha256, state, percent);
 
-        if (!downloads.sendState(DOWNLOADING_UPDATES)) installs.sendState(INSTALLING_UPDATES);
+        if (!downloads.sendState()) installs.sendState();
 
         if (install == null) return;
         
@@ -239,10 +244,8 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   
   const callbackCheck = () => moduleUpdater.checkForUpdates();
 
-  const callbackProgress = (e) => {
-    delete splashState.progress;
-    if (e.name === 'host') restartRequired = true;
-  };
+  const downloads = new UIProgress(DOWNLOADING_UPDATES);
+  const installs = new UIProgress(INSTALLING_UPDATES);
 
   const handleFail = () => {
     scheduleNextUpdate();
@@ -254,8 +257,21 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     sendState(CHECKING_FOR_UPDATES);
   });
 
+  let currentId, currentTotal = 1;
+  const updateTotal = (newTotal) => {
+    for (let i = currentTotal; i <= newTotal; i++) {
+      downloads.record(i, 'Waiting', 0);
+      installs.record(i, 'Waiting', 0);
+    }
+
+    currentTotal = newTotal;
+  };
+
   add(UPDATE_CHECK_FINISHED, ({ succeeded, updateCount }) => {
     v1_timeoutStop();
+
+    installs.reset();
+    downloads.reset();
 
     if (!succeeded) {
       handleFail();
@@ -269,8 +285,8 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   add(DOWNLOADING_MODULE, ({ current, total }) => {
     v1_timeoutStop();
 
-    splashState = { current, total };
-    sendState(DOWNLOADING_UPDATES);
+    if (total !== currentTotal) updateTotal(total);
+    currentId = current;
   });
 
   add(DOWNLOADING_MODULES_FINISHED, ({ failed }) => {
@@ -287,19 +303,32 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     }
   });
   
-  add(INSTALLING_MODULE, ({ current, total }) => {
-    splashState = { current, total };
-    sendState(INSTALLING_UPDATES);
+  add(INSTALLING_MODULE, ({ current }) => {
+    currentId = current;
+
+    installs.record(currentId, '', 0);
+    installs.sendState();
   });
 
-  add(DOWNLOADED_MODULE, callbackProgress);
-  add(INSTALLED_MODULE, callbackProgress);
+  const segmentCallback = (tracker) => (({ name }) => {
+    tracker.record(currentId, 'Complete', 100);
+    if (name === 'host') restartRequired = true;
+  });
+
+  add(DOWNLOADED_MODULE, segmentCallback(downloads));
+  add(INSTALLED_MODULE, segmentCallback(installs));
 
   add(INSTALLING_MODULES_FINISHED, callbackCheck);
   add(NO_PENDING_UPDATES, callbackCheck);
 
-  addBasic(DOWNLOADING_MODULE_PROGRESS, 'progress', DOWNLOADING_UPDATES);
-  addBasic(INSTALLING_MODULE_PROGRESS, 'progress', INSTALLING_UPDATES);
+  const progressCallback = (tracker) => (({ progress }) => {
+    tracker.record(currentId, '', progress);
+    tracker.sendState();
+  });
+
+  add(DOWNLOADING_MODULE_PROGRESS, progressCallback(downloads));
+  add(INSTALLING_MODULE_PROGRESS, progressCallback(installs));
+
   addBasic(UPDATE_MANUALLY, 'newVersion');
 };
 
