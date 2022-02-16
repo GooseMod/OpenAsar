@@ -72,6 +72,8 @@ const launchMainWindow = () => {
   for (const e in modulesListeners) moduleUpdater.events.removeListener(e, modulesListeners[e]); // Remove updater v1 listeners
 
   if (!launchedMainWindow && splashWindow != null) {
+    sendState(LAUNCHING);
+
     launchedMainWindow = true;
     events.emit(APP_SHOULD_LAUNCH);
   }
@@ -157,10 +159,10 @@ class UIProgress { // Generic class to track updating and sent states to splash
   record(id, state, percent) {
     this.total.add(id);
 
-    if (state !== updater.TASK_STATE_WAITING) {
+    if (state !== 'Waiting') {
       this.progress.set(id, percent);
 
-      if (state === updater.TASK_STATE_COMPLETE) this.done.add(id);
+      if (state === 'Complete') this.done.add(id);
     }
   }
 
@@ -199,13 +201,14 @@ const updateUntilCurrent = async () => {
 
         installedAnything = true;
 
-        if (download != null) downloads.record(download.package_sha256, state, percent);
+        const simpleRecord = (tracker, x) => tracker.record(x.package_sha256, state, percent);
+
+        if (download != null) simpleRecord(downloads, download);
 
         if (!downloads.send()) installs.send();
 
         if (install == null) return;
-        
-        installs.record(install.package_sha256, state, percent);
+        simpleRecord(installs, install);
 
         if (task.HostInstall != null) {
           retryOptions.skip_host_delta = true;
@@ -215,8 +218,6 @@ const updateUntilCurrent = async () => {
       });
 
       if (!installedAnything) {
-        sendState(LAUNCHING);
-
         await newUpdater.startCurrentVersion();
         newUpdater.setRunningInBackground();
         newUpdater.collectGarbage();
@@ -278,7 +279,6 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     } else if (updateCount === 0) {
       moduleUpdater.setInBackground();
       launchMainWindow();
-      sendState(LAUNCHING);
     }
   });
 
