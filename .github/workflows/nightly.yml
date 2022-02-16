@@ -6,7 +6,7 @@ on:
     paths:
     - 'src/**'
     - 'scripts/**'
-    - 'polyfills/**'
+    - 'poly/**'
     - '.github/workflows/**'
 
 jobs:
