@@ -1,17 +1,13 @@
 const request = require('request');
 const fs = require('original-fs'); // Use original-fs, not Electron's modified fs
 const crypto = require('crypto');
-const electron = require('electron');
+const { dialog, app } = require('electron');
 const { join } = require('path');
 
 const asarPath = join(require.main.filename, '..');
-const downloadPath = join(require.main.filename, '..', '..', 'app.asar.download');
+const downloadPath = join(asarPath, '..', 'app.asar.download');
 
-const downloadUrls = {
-  nightly: 'https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar'
-};
-
-const channel = 'nightly';
+const asarUrl = 'https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar';
 
 const getAsarHash = () => crypto.createHash('sha512').update(fs.readFileSync(asarPath)).digest('hex');
 
@@ -19,8 +15,6 @@ module.exports = async () => { // (Try) update asar
   log('AsarUpdate', 'Updating...');
 
   if (!oaVersion.startsWith('nightly-')) return log('AsarUpdate', 'Non-standard version');
-
-  const asarUrl = downloadUrls[channel];
 
   const originalHash = getAsarHash();
 
@@ -73,7 +67,7 @@ Original: ${originalHash}
 New: ${newHash}`);
 
   if (changed && oaConfig.updatePrompt === true) {
-    const { response } = await electron.dialog.showMessageBox(null, {
+    const { response } = await dialog.showMessageBox(null, {
       message: 'Updated OpenAsar',
       detail: `Restart required to use new version.`,
       buttons: ['Restart Now', 'Later'],
@@ -81,8 +75,8 @@ New: ${newHash}`);
     });
 
     if (response === 0) {
-      electron.app.relaunch();
-      electron.app.exit();
+      app.relaunch();
+      app.exit();
     }
   }
 };
