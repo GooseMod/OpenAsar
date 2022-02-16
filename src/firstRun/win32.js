@@ -69,7 +69,7 @@ exports.performFirstRunTasks = (updater) => {
     if (!shortcutSuccess) return;
 
     try {
-      fs.writeFileSync(firstRunCompletePath, 'true');
+      fs.writeFileSync(flagPath, 'true');
     } catch (e) {
       log('FirstRun', 'Error writing .first-run', e);
     }
