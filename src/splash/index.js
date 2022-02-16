@@ -164,7 +164,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
     }
   }
 
-  sendState() {
+  send() {
     if (this.progress.size > 0 && this.progress.size > this.done.size) {
       splashState = {
         current: this.done.size + 1,
@@ -201,7 +201,7 @@ const updateUntilCurrent = async () => {
 
         if (download != null) downloads.record(download.package_sha256, state, percent);
 
-        if (!downloads.sendState()) installs.sendState();
+        if (!downloads.send()) installs.send();
 
         if (install == null) return;
         
@@ -293,13 +293,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     if (failed > 0) {
       handleFail();
     } else {
-      process.nextTick(() => {
-        if (restartRequired) {
-          moduleUpdater.quitAndInstallUpdates();
-        } else {
-          moduleUpdater.installPendingUpdates();
-        }
-      });
+      process.nextTick(() => moduleUpdater[restartRequired ? 'quitAndInstallUpdates' : 'installPendingUpdates']());
     }
   });
   
@@ -307,7 +301,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     currentId = current;
 
     installs.record(currentId, '', 0);
-    installs.sendState();
+    installs.send();
   });
 
   const segmentCallback = (tracker) => (({ name }) => {
@@ -323,7 +317,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
 
   const progressCallback = (tracker) => (({ progress }) => {
     tracker.record(currentId, '', progress);
-    tracker.sendState();
+    tracker.send();
   });
 
   add(DOWNLOADING_MODULE_PROGRESS, progressCallback(downloads));
