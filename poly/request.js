@@ -1,9 +1,8 @@
 const https = require('https');
-const querystring = require("querystring");
 
 // Generic polyfill for "request" npm package, wrapper for https
 const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => new Promise((resolve) => {
-  const fullUrl = `${url}${qs != null ? `?${querystring.stringify(qs)}` : ''}`; // With query string
+  const fullUrl = `${url}${qs != null ? `?${(new URLSearchParams(qs)).toString()}` : ''}`; // With query string
 
   let req;
   try {
