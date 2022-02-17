@@ -79,7 +79,11 @@ const launchMainWindow = () => {
   }
 };
 
-const sendState = (status) => splashWindow && splashWindow.webContents.send('SPLASH_STATE', { status, ...splashState });
+const sendState = (status) => {
+  try {
+    splashWindow.webContents.send('SPLASH_STATE', { status, ...splashState });
+  } catch (_e) {}
+};
 
 
 const launchSplashWindow = (startMinimized) => {
