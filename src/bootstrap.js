@@ -1,6 +1,8 @@
-const { app } = require('electron');
+const { app, session } = require('electron');
 const { readFileSync } = require('fs');
 const { join } = require('path');
+
+const request = require("request");
 
 const Constants = require('./Constants');
 
@@ -28,6 +30,16 @@ const autoStart = require('./autoStart');
 
 let desktopCore;
 const startCore = () => {
+  if (oaConfig.removeCSP) {
+    session.defaultSession.webRequest.onHeadersReceived(({ responseHeaders }, callback) => {
+      for (const header in responseHeaders)
+        if (header.toLowerCase().startsWith("content-security-policy"))
+          delete responseHeaders[header];
+
+      callback({ responseHeaders });
+    })
+  }
+
   app.on('browser-window-created', (e, bw) => { // Main window injection
     bw.webContents.on('dom-ready', () => {
       splash.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
@@ -39,6 +51,9 @@ const startCore = () => {
           .replaceAll('<channel>', channel)
           .replaceAll('<hash>', hash || 'custom')
       );
+
+      if (oaConfig.jsInject) 
+        bw.webContents.executeJavaScript(oaConfig.jsInject)
     });
   });
 
