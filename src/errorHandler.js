@@ -1,28 +1,23 @@
 const { app, dialog } = require("electron");
 
 exports.init = () => {
-  process.on('uncaughtException', error => {
-    const stack = error.stack ? error.stack : String(error);
-    const message = `Uncaught exception:\n${stack}`;
-    console.warn(message);
+  process.on('uncaughtException', err => {
+    const stack = err.stack ?? String(err);
+    console.warn(stack);
 
-    // _electron.dialog.showErrorBox('A JavaScript error occurred in the main process', message);
+    // dialog.showErrorBox('A JavaScript error occurred in the main process', message);
   });
-
-  log('ErrorHandler', 'Inited');
 };
 
 
 exports.fatal = (err) => {
-  const options = {
+  log('ErrorHandler', 'Fatal:', err);
+
+  dialog.showMessageBox(null, {
     type: 'error',
     message: 'A fatal Javascript error occured',
-    detail: err && err.stack ? err.stack : String(err)
-  };
-
-  dialog.showMessageBox(null, options).then(() => app.quit());
-
-  log('ErrorHandler', 'Fatal:', err);
+    detail: err?.stack ?? String(err)
+  }).then(() => app.quit());
 };
 
 exports.handled = (err) => {
