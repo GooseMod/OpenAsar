@@ -46,34 +46,4 @@ el.appendChild(document.createTextNode(css));
 document.body.appendChild(el);
 
 
-const injectGMSettings = async () => {
-  const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
-
-  await sleep(3000);
-  if (!window.goosemod) return;
-
-  goosemod.settings.items.unshift(
-    ['item', 'OpenAsar', ['',
-      {
-        type: 'header',
-        text: 'Info'
-      },
-
-      {
-        type: 'text',
-        text: 'Version',
-        subtext: 'Channel: <oa_version_channel>\nHash: <oa_version_hash>'
-      },
-
-      {
-        type: 'text',
-        text: 'Cmd',
-        subtext: 'Preset: <oa_cmd_preset>\nCmd: <oa_cmd_full>'
-      }
-    ], undefined, false],
-    ['separator']
-  )
-};
-injectGMSettings();
-
 window.openasar = {};

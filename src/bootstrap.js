@@ -62,16 +62,12 @@ const startCore = () => {
         donePageReady = true;
       }
 
-      const cmdSwitches = require('./cmdSwitches');
-
       let injectJs = readFileSync(join(__dirname, 'mainWindowInject.js'), 'utf8');
 
       const [ version1, version2 ] = oaVersion.split('-'); // Split via -
       injectJs = injectJs
         .replaceAll('<oa_version_channel>', version1[0].toUpperCase() + version1.substring(1).toLowerCase())
-        .replaceAll('<oa_version_hash>', version2 || 'custom')
-        .replaceAll('<oa_cmd_preset>', cmdSwitches.preset)
-        .replaceAll('<oa_cmd_full>', cmdSwitches.cmd);
+        .replaceAll('<oa_version_hash>', version2 || 'custom');
 
       bw.webContents.executeJavaScript(injectJs);
     });
