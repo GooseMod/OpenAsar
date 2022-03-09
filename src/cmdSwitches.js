@@ -6,43 +6,22 @@ const presets = {
   'battery': '--enable-features=TurnOffStreamingMediaCachingOnBattery --force_low_power_gpu' // Known to have better battery life for Chromium?
 };
 
-const combinePresets = (keys) => {
-  let total = {};
-  for (const pre of keys) {
-    for (const cmd of presets[pre].split(' ')) {
-      const [ key, value ] = cmd.split('=');
+const combinePresets = (...keys) => Object.values(keys.reduce((acc, x) => {
+  for (const cmd of presets[x].split(' ')) {
+    if (!cmd) continue;
 
-      if (total[key]) {
-        if (value) total[key] += ',' + value; // Concat value with , for flags like --enable-features
-      } else total[key] = value;
-    }
+    const [ key, value ] = cmd.split('=');
+
+    if (!acc[key]) acc[key] = [key];
+    acc[key].push(value);
   }
-  
-  return Object.keys(total).reduce((acc, x) => acc += (x + (total[x] ? ('=' + total[x]) : '') + ' '), '');
-};
+
+  return acc;
+}, {}));
 
 
 module.exports = () => {
-  const preset = oaConfig.cmdPreset || 'perf'; // Default to perf enhance
-  let cmdSwitches = presets.base + ' ' + (presets[preset] || '');
-
-  log('CmdSwitches', 'Preset:', preset);
-
-  if (preset.includes(',')) cmdSwitches = combinePresets(preset.split(','));
-
-  if (cmdSwitches) {
-    module.exports.cmd = cmdSwitches;
-    module.exports.preset = preset;
-
-    const switches = cmdSwitches.split(' ');
-
-    for (const cmd of switches) {
-      if (!cmd) continue;
-
-      let [ key, value ] = cmd.split('=');
-      key = key.replace('--', ''); // Replace --key with key (?)
-
-      app.commandLine.appendSwitch(key, value);
-    }
+  for (const [ key, ...values ] of combinePresets('base', ...(oaConfig.cmdPreset || 'perf').split(','))) {
+    app.commandLine.appendSwitch(key.replace('--', ''), values.join(','));
   }
 }
