@@ -13,11 +13,9 @@ const spawn = (cmd, args, callback = (() => {})) => {
     callback(e, stdout);
   }
 
-  process.stdout.on('data', data => {
-    stdout += data;
-  });
+  process.stdout.on('data', data => stdout += data);
 
-  process.on('error', err => { callback(err, stdout); });
+  process.on('error', err => callback(err, stdout));
 
   process.on('exit', (code, signal) => {
     let err = null;
@@ -34,10 +32,8 @@ const spawn = (cmd, args, callback = (() => {})) => {
 
 const spawnReg = (args, callback) => spawn(regExePath, args, callback);
 
-const addToRegistry = (queue, callback) => {
-  if (queue.length === 0) {
-    return callback && callback();
-  }
+const addToRegistry = (queue, callback = (() => {})) => {
+  if (queue.length === 0) return callback();
 
   const args = queue.shift();
   args.unshift('add');
