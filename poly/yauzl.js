@@ -36,7 +36,5 @@ exports.open = async (zipPath, _options, callback) => {
     errorOut(err);
   });
 
-  proc.on('close', async () => {
-    listeners.end();
-  });
+  proc.on('close', () => listeners.end());
 };
