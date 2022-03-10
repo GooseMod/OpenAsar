@@ -26,7 +26,7 @@ setInterval(() => {
 
 const css = `
 [class^="socialLinks-"] + [class^="info-"] [class^="colorMuted-"]:nth-last-child(2)::after {
-  content: " | OpenAsar <oa_version_hash>";
+  content: " | OpenAsar <hash>";
   display: inline;
   text-transform: none;
 }

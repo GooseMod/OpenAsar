@@ -62,14 +62,13 @@ const startCore = () => {
         donePageReady = true;
       }
 
-      let injectJs = readFileSync(join(__dirname, 'mainWindowInject.js'), 'utf8');
+      const [ channel, hash ] = oaVersion.split('-'); // Split via -
 
-      const [ version1, version2 ] = oaVersion.split('-'); // Split via -
-      injectJs = injectJs
-        .replaceAll('<oa_version_channel>', version1[0].toUpperCase() + version1.substring(1).toLowerCase())
-        .replaceAll('<oa_version_hash>', version2 || 'custom');
-
-      bw.webContents.executeJavaScript(injectJs);
+      bw.webContents.executeJavaScript(
+        readFileSync(join(__dirname, 'mainWindowInject.js'), 'utf8')
+          .replaceAll('<channel>', channel)
+          .replaceAll('<hash>', hash || 'custom')
+      );
     });
   });
 };
