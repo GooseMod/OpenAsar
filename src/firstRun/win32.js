@@ -1,7 +1,8 @@
 const fs = require('fs');
 const { join, resolve, basename } = require('path');
+
 const paths = require('../paths');
-const windowsUtils = require('../utils/windowsUtils');
+const registry = require('../utils/registry');
 const Constants = require('../Constants');
 
 const appPath = resolve(process.execPath, '..');
@@ -48,7 +49,7 @@ const updateShortcuts = (updater) => {
 
 const installProtocol = (protocol, callback) => {
   const base = 'HKCU\\Software\\Classes\\' + protocol;
-  windowsUtils.addToRegistry([[base, '/ve', '/d', `URL:${protocol} Protocol`], [base, '/v', 'URL Protocol'], [base + '\\DefaultIcon', '/ve', '/d', '"' + process.execPath + '",-1'], [base + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], callback);
+  registry.add([[base, '/ve', '/d', `URL:${protocol} Protocol`], [base, '/v', 'URL Protocol'], [base + '\\DefaultIcon', '/ve', '/d', '"' + process.execPath + '",-1'], [base + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], callback);
 };
 
 exports.performFirstRunTasks = (updater) => {

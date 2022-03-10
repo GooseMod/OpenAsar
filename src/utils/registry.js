@@ -4,7 +4,7 @@ const { join } = require('path');
 const sr = process.env.SystemRoot;
 const regExePath = join(sr || '', sr ? 'System32' : '', 'reg.exe'); // %SystemRoot%\System32\reg.exe OR reg.exe if SR is undefined
 
-const spawn = (cmd, args, callback = (() => {})) => {
+const _spawn = (cmd, args, callback = (() => {})) => {
   let process, stdout = '';
 
   try {
@@ -20,16 +20,19 @@ const spawn = (cmd, args, callback = (() => {})) => {
   process.on('exit', (code, signal) => callback(code !== 0 ? new Error('Spawn returned: ' + signal ?? code) : null, stdout));
 };
 
-const spawnReg = (args, callback) => spawn(regExePath, args, callback);
+const spawn = (args, callback) => _spawn(regExePath, args, callback);
 
-const addToRegistry = (queue, callback = (() => {})) => {
+const add = (queue, callback = (() => {})) => {
   const args = queue.shift();
   if (!args) return callback();
 
   args.unshift('add');
   args.push('/f');
 
-  return spawnReg(args, () => addToRegistry(queue, callback));
+  return spawnReg(args, () => add(queue, callback));
 };
 
-module.exports = { spawn, spawnReg, addToRegistry };
+module.exports = {
+  spawn,
+  add
+};

@@ -1,6 +1,6 @@
 const path = require('path');
 
-const windowsUtils = require('../utils/windowsUtils');
+const registry = require('../utils/registry');
 const retainAsar = require('./retainAsar');
 
 const appSettings = require('../appSettings');
@@ -16,7 +16,7 @@ exports.install = (callback) => {
   log('AutoStart', 'Install');
 
   const execPath = `${updatePath} --processStart ${fullExeName}` + (settings.get('START_MINIMIZED', false) ? ' --process-start-args --start-minimized' : ''); // Add Electron args if start minimized on
-  windowsUtils.addToRegistry([[...queuePrefix, '/d', execPath]], callback); // Make reg
+  registry.add([[...queuePrefix, '/d', execPath]], callback); // Make reg
 };
 
 exports.update = (callback) => {
@@ -30,7 +30,7 @@ exports.update = (callback) => {
 exports.uninstall = (callback) => {
   log('AutoStart', 'Uninstall');
 
-  windowsUtils.spawnReg(['delete', ...queuePrefix, '/f'], (_error, _stdout) => callback()); // Delete reg
+  registry.spawn(['delete', ...queuePrefix, '/f'], (_error, _stdout) => callback()); // Delete reg
 };
 
-exports.isInstalled = (callback) => windowsUtils.spawnReg(['query', ...queuePrefix], (_error, stdout) => callback(stdout.includes(appName))); // Check reg
+exports.isInstalled = (callback) => registry.spawn(['query', ...queuePrefix], (_error, stdout) => callback(stdout.includes(appName))); // Check reg
