@@ -13,7 +13,7 @@ exports.update = (startMin, done, show) => {
 
     inst.on('host-updated', () => require('../autoStart').update(() => {}));
     inst.on('unhandled-exception', fatal);
-    inst.on(updater.INCONSISTENT_INSTALLER_STATE_ERROR, fatal);
+    inst.on('InconsistentInstallerState', fatal);
     inst.on('update-error', handled);
 
     require('../firstRun').performFirstRunTasks(inst);
