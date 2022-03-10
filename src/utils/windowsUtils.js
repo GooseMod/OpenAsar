@@ -1,11 +1,11 @@
 const child_process = require('child_process');
 const { join } = require('path');
 
-const regExePath = process.env.SystemRoot ? join(process.env.SystemRoot, 'System32', 'reg.exe') : 'reg.exe';
+const sr = process.env.SystemRoot;
+const regExePath = join(sr || '', sr ? 'System32' : '', 'reg.exe'); // %SystemRoot%\System32\reg.exe OR reg.exe if SR is undefined
 
 const spawn = (cmd, args, callback = (() => {})) => {
-  let stdout = '';
-  let process;
+  let process, stdout = '';
 
   try {
     process = child_process.spawn(cmd, args);
@@ -17,27 +17,18 @@ const spawn = (cmd, args, callback = (() => {})) => {
 
   process.on('error', err => callback(err, stdout));
 
-  process.on('exit', (code, signal) => {
-    let err = null;
-    if (code !== 0) {
-      err = new Error('Command failed: ' + (signal || code));
-
-      err.code = err.code || code;
-      err.stdout = err.stdout || stdout;
-    }
-
-    callback(err, stdout);
-  });
+  process.on('exit', (code, signal) => callback(code !== 0 ? new Error('Spawn returned: ' + signal ?? code) : null, stdout));
 };
 
 const spawnReg = (args, callback) => spawn(regExePath, args, callback);
 
 const addToRegistry = (queue, callback = (() => {})) => {
-  if (queue.length === 0) return callback();
-
   const args = queue.shift();
+  if (!args) return callback();
+
   args.unshift('add');
   args.push('/f');
+
   return spawnReg(args, () => addToRegistry(queue, callback));
 };
 
