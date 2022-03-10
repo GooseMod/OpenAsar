@@ -35,9 +35,7 @@ exports.initSplash = (startMinimized = false) => {
   if (process.env.OPENASAR_QUICKSTART || oaConfig.quickstart) setTimeout(() => {
     destroySplash();
 
-    if (newUpdater != null) { // Manually load desktop_core module path for faster requiring
-      require('../utils/u2LoadModulePath')();
-    }
+    if (newUpdater != null) require('../utils/u2QuickLoad'); // Manually load desktop_core module path for faster requiring
 
     launchMainWindow();
     

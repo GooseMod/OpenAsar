@@ -13,7 +13,7 @@ global.oaConfig = require('./appSettings').getSettings().get('openasar', {});
 require('./cmdSwitches')();
 
 if (process.argv.includes('--overlay-host')) { // If overlay
-  require('./utils/u2LoadModulePath')(); // Manually load updater 2 module paths (all modules)
+  require('./utils/u2QuickLoad'); // Manually load updater 2 module paths (all modules)
   require('discord_overlay2/standalone_host.js'); // Start overlay
 } else {
   require('./bootstrap')(); // Start bootstrap
