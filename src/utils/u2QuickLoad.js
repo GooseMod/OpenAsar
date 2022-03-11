@@ -4,10 +4,7 @@ const Module = require('module');
 
 const paths = require('../paths');
 
-
-const modulesDir = join(paths.getExeDir(), 'modules');
-const moduleDirs = readdirSync(modulesDir);
-
-for (const dir of moduleDirs) { // General (load all)
-  Module.globalPaths.push(join(modulesDir, dir));
+const base = join(paths.getExeDir(), 'modules');
+for (const dir of readdirSync(base)) {
+  Module.globalPaths.push(join(base, dir));
 }
