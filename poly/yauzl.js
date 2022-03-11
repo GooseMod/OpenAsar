@@ -1,10 +1,9 @@
 // Jank replacement for yauzl by just using unzip where it expects and skipping (speed++, size--, jank++)
 const { execFile } = require('child_process');
-const { mkdirSync } = require('fs');
-const { join, basename } = require('path');
+const mkdirp = require('mkdirp');
 
-exports.open = async (zipPath, _options, callback) => {
-  const extractPath = join(global.moduleDataPath, basename(zipPath).split('.')[0].split('-')[0]);
+exports.open = async (zipPath, _opts, callback) => {
+  const extractPath = `${global.moduleDataPath}/${zipPath.split('/').pop().split('.')[0].split('-')[0])}`;
   const listeners = [];
 
   const errorOut = (err) => {
@@ -21,9 +20,9 @@ exports.open = async (zipPath, _options, callback) => {
     close: () => {}
   });
 
-  mkdirSync(extractPath, { recursive: true });
+  mkdirp.sync(extractPath);
 
-  const proc = execFile('unzip', ['-q', '-o', zipPath.replaceAll('"', ''), '-d', extractPath]);
+  const proc = execFile('unzip', ['-q', '-o', zipPath, '-d', extractPath]);
 
   proc.stderr.on('data', errorOut);
 
