@@ -24,27 +24,28 @@ const copyIconToRoot = () => {
 
 const updateShortcuts = (updater) => {
   const filename = Constants.APP_NAME_FOR_HUMANS + '.lnk';
-  const paths = [
+
+  const icon_path = copyIconToRoot();
+
+  for (const shortcut_path of [
     join(updater.getKnownFolder('desktop'), filename),
     join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, filename)
-  ];
-
-  const icon = copyIconToRoot();
-
-  for (const path of paths) {
+  ]) {
     if (!fs.existsSync(path)) continue; // Don't update already deleted paths
 
     updater.createShortcut({
       target_path: join(rootPath, 'Update.exe'),
-      shortcut_path: path,
+      shortcut_path,
       arguments: '--processStart ' + basename(process.execPath),
-      icon_path: icon,
+      icon_path,
       icon_index: 0,
       description: Constants.APP_DESCRIPTION,
       app_user_model_id: Constants.APP_ID,
       working_directory: appPath
     });
   }
+
+  return true;
 };
 
 exports.performFirstRunTasks = (updater) => {
@@ -55,8 +56,7 @@ exports.performFirstRunTasks = (updater) => {
 
   let shortcutSuccess = false;
   try {
-    updateShortcuts(updater);
-    shortcutSuccess = true;
+    shortcutSuccess = updateShortcuts(updater);
   } catch (e) {
     log('FirstRun', 'Error updating shortcuts', e);
   }
