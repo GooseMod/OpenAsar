@@ -47,11 +47,6 @@ const updateShortcuts = (updater) => {
   }
 };
 
-const installProtocol = (protocol, callback) => {
-  const base = 'HKCU\\Software\\Classes\\' + protocol;
-  registry.add([[base, '/ve', '/d', `URL:${protocol} Protocol`], [base, '/v', 'URL Protocol'], [base + '\\DefaultIcon', '/ve', '/d', '"' + process.execPath + '",-1'], [base + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], callback);
-};
-
 exports.performFirstRunTasks = (updater) => {
   log('FirstRun', 'Perform');
 
@@ -66,7 +61,7 @@ exports.performFirstRunTasks = (updater) => {
     log('FirstRun', 'Error updating shortcuts', e);
   }
 
-  installProtocol(Constants.APP_PROTOCOL, () => {
+  registry.installProtocol(Constants.APP_PROTOCOL, () => {
     if (!shortcutSuccess) return;
 
     try {
