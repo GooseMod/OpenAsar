@@ -1,6 +1,5 @@
 const { join } = require('path');
 const fs = require('fs');
-const _events = require('events');
 const { BrowserWindow, app } = require('electron');
 
 const paths = require('../paths');
@@ -12,9 +11,7 @@ let modulesListeners = {};
 let launchedMainWindow = false;
 let updateAttempt = 0;
 let restartRequired = false;
-let splashWindow;
-let updateTimeout;
-let newUpdater;
+let splashWindow, updateTimeout, newUpdater;
 
 
 exports.initSplash = (startMinimized = false) => {
@@ -138,7 +135,7 @@ const INSTALLING_MODULES_FINISHED = 'installing-modules-finished';
 const UPDATE_MANUALLY = 'update-manually';
 const APP_SHOULD_LAUNCH = 'APP_SHOULD_LAUNCH';
 const APP_SHOULD_SHOW = 'APP_SHOULD_SHOW';
-const events = new _events.EventEmitter();
+const events = new (require('events').EventEmitter)();
 
 exports.APP_SHOULD_LAUNCH = APP_SHOULD_LAUNCH;
 exports.APP_SHOULD_SHOW = APP_SHOULD_SHOW;
