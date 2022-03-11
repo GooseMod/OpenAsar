@@ -8,8 +8,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
     try {
       this.lastSaved = readFileSync(this.path);
       this.settings = JSON.parse(this.lastSaved);
-    } catch (_e) {
-      this.lastSaved = '';
+    } catch (e) {
       this.settings = {};
     }
 
@@ -35,10 +34,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
   }
 
   save() {
-    if (this.lastModified && this.lastModified !== this.getLastModified()) { // File was last modified after Settings was made, so was externally edited therefore we don't save over
-      log('AppSettings', 'Modified date mismatch');
-      return;
-    }
+    if (this.lastModified && this.lastModified !== this.getLastModified()) return; // File was last modified after Settings was made, so was externally edited therefore we don't save over
 
     try {
       const toSave = JSON.stringify(this.settings, null, 2);
