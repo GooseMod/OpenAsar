@@ -22,7 +22,7 @@ const spawn = (args, callback) => {
 };
 
 const add = (queue, callback) => {
-  const args = queue.shift();
+  let args = queue.shift();
   if (!args) return callback();
 
   args = [ 'add', ...args, '/f' ];
