@@ -31,7 +31,7 @@ const updateShortcuts = (updater) => {
     join(updater.getKnownFolder('desktop'), filename),
     join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, filename)
   ]) {
-    if (!fs.existsSync(path)) continue; // Don't update already deleted paths
+    if (!fs.existsSync(shortcut_path)) continue; // Don't update already deleted paths
 
     updater.createShortcut({
       target_path: join(rootPath, 'Update.exe'),
