@@ -1,4 +1,4 @@
-const path = require('path');
+const { join, basename, dirname } = require('path');
 
 const registry = require('../utils/registry');
 const retainAsar = require('./retainAsar');
@@ -6,9 +6,9 @@ const retainAsar = require('./retainAsar');
 const appSettings = require('../appSettings');
 const settings = appSettings.getSettings();
 
-const appName = path.basename(process.execPath, '.exe');
-const fullExeName = path.basename(process.execPath);
-const updatePath = path.join(path.dirname(process.execPath), '..', 'Update.exe');
+const appName = basename(process.execPath, '.exe');
+const fullExeName = basename(process.execPath);
+const updatePath = join(dirname(process.execPath), '..', 'Update.exe');
 
 const queuePrefix = [ 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName ];
 
