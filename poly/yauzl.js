@@ -3,7 +3,7 @@ const { execFile } = require('child_process');
 const mkdirp = require('mkdirp');
 
 exports.open = async (zipPath, _opts, callback) => {
-  const extractPath = `${global.moduleDataPath}/${zipPath.split('/').pop().split('.')[0].split('-')[0])}`;
+  const extractPath = `${global.moduleDataPath}/${zipPath.split('/').pop().split('.')[0].split('-')[0]}`;
   const listeners = [];
 
   const errorOut = (err) => {
