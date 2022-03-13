@@ -37,13 +37,13 @@ exports.initSplash = (startMinimized = false) => {
     launchMainWindow();
     
     setTimeout(() => {
-      events.emit(APP_SHOULD_SHOW);
+      events.emit('APP_SHOULD_SHOW');
     }, 100);
   }, 300);
 };
 
 exports.focusWindow = () => splashWindow?.focus?.();
-exports.pageReady = () => destroySplash() || process.nextTick(() => events.emit(APP_SHOULD_SHOW));
+exports.pageReady = () => destroySplash() || process.nextTick(() => events.emit('APP_SHOULD_SHOW'));
 
 const destroySplash = () => {
   log('Splash', 'Destroy');
@@ -67,10 +67,10 @@ const launchMainWindow = () => {
   for (const e in modulesListeners) moduleUpdater.events.removeListener(e, modulesListeners[e]); // Remove updater v1 listeners
 
   if (!launchedMainWindow && splashWindow != null) {
-    sendState(LAUNCHING);
+    sendState('starting');
 
     launchedMainWindow = true;
-    events.emit(APP_SHOULD_LAUNCH);
+    events.emit('APP_SHOULD_LAUNCH');
   }
 };
 
@@ -117,32 +117,14 @@ const launchSplashWindow = (startMinimized) => {
 
 
 const CHECKING_FOR_UPDATES = 'checking-for-updates';
-const UPDATE_CHECK_FINISHED = 'update-check-finished';
-const UPDATE_FAILURE = 'update-failure';
-const LAUNCHING = 'launching';
-const DOWNLOADING_MODULE = 'downloading-module';
-const DOWNLOADING_UPDATES = 'downloading-updates';
-const DOWNLOADING_MODULES_FINISHED = 'downloading-modules-finished';
-const DOWNLOADING_MODULE_PROGRESS = 'downloading-module-progress';
-const DOWNLOADED_MODULE = 'downloaded-module';
-const NO_PENDING_UPDATES = 'no-pending-updates';
-const INSTALLING_MODULE = 'installing-module';
-const INSTALLING_UPDATES = 'installing-updates';
-const INSTALLED_MODULE = 'installed-module';
-const INSTALLING_MODULE_PROGRESS = 'installing-module-progress';
-const INSTALLING_MODULES_FINISHED = 'installing-modules-finished';
-const UPDATE_MANUALLY = 'update-manually';
-const APP_SHOULD_LAUNCH = 'APP_SHOULD_LAUNCH';
-const APP_SHOULD_SHOW = 'APP_SHOULD_SHOW';
-const events = new (require('events').EventEmitter)();
 
-exports.APP_SHOULD_LAUNCH = APP_SHOULD_LAUNCH;
-exports.APP_SHOULD_SHOW = APP_SHOULD_SHOW;
-exports.events = events;
+const events = exports.events = new (require('events').EventEmitter)();
+
 
 class UIProgress { // Generic class to track updating and sent states to splash
-  constructor(stateId) {
-    this.stateId = stateId;
+  constructor(st) {
+    this.stateId = st ? 'installing' : 'downloading';
+
     this.reset();
   }
 
@@ -157,11 +139,8 @@ class UIProgress { // Generic class to track updating and sent states to splash
   record(id, state, percent) {
     this.total.add(id);
 
-    if (state !== 'Waiting') {
-      this.progress.set(id, percent);
-
-      if (state === 'Complete') this.done.add(id);
-    }
+    if (state !== 'Waiting') this.progress.set(id, percent);
+    if (state === 'Complete') this.done.add(id);
   }
 
   send() {
@@ -190,8 +169,8 @@ const updateUntilCurrent = async () => {
 
     try {
       let installedAnything = false;
-      const downloads = new UIProgress(DOWNLOADING_UPDATES);
-      const installs = new UIProgress(INSTALLING_UPDATES);
+      const downloads = new UIProgress(0);
+      const installs = new UIProgress(1);
 
       await newUpdater.updateToLatestWithOptions(retryOptions, ({ task, state, percent }) => {
         const download = task.HostDownload || task.ModuleDownload;
@@ -224,7 +203,7 @@ const updateUntilCurrent = async () => {
       }
     } catch (e) {
       log('Splash', 'Update failed', e);
-      sendState(UPDATE_FAILURE);
+      sendState('fail');
       await new Promise(res => scheduleNextUpdate(res));
     }
   }
@@ -243,12 +222,12 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   
   const callbackCheck = () => moduleUpdater.checkForUpdates();
 
-  const downloads = new UIProgress(DOWNLOADING_UPDATES);
-  const installs = new UIProgress(INSTALLING_UPDATES);
+  const downloads = new UIProgress(0);
+  const installs = new UIProgress(1);
 
   const handleFail = () => {
     scheduleNextUpdate();
-    sendState(UPDATE_FAILURE);
+    sendState('fail');
   };
 
   add(CHECKING_FOR_UPDATES, () => {
@@ -266,7 +245,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     currentTotal = newTotal;
   };
 
-  add(UPDATE_CHECK_FINISHED, ({ succeeded, updateCount }) => {
+  add('update-check-finished', ({ succeeded, updateCount }) => {
     v1_timeoutStop();
 
     installs.reset();
@@ -280,14 +259,14 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     }
   });
 
-  add(DOWNLOADING_MODULE, ({ current, total }) => {
+  add('downloading-module', ({ current, total }) => {
     v1_timeoutStop();
 
     if (total !== currentTotal) updateTotal(total);
     currentId = current;
   });
 
-  add(DOWNLOADING_MODULES_FINISHED, ({ failed }) => {
+  add('downloading-modules-finished', ({ failed }) => {
     if (failed > 0) {
       handleFail();
     } else {
@@ -295,7 +274,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     }
   });
   
-  add(INSTALLING_MODULE, ({ current }) => {
+  add('installing-module', ({ current }) => {
     currentId = current;
 
     installs.record(currentId, '', 0);
@@ -307,21 +286,21 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     if (name === 'host') restartRequired = true;
   });
 
-  add(DOWNLOADED_MODULE, segmentCallback(downloads));
-  add(INSTALLED_MODULE, segmentCallback(installs));
+  add('downloaded-module', segmentCallback(downloads));
+  add('installed-module', segmentCallback(installs));
 
-  add(INSTALLING_MODULES_FINISHED, callbackCheck);
-  add(NO_PENDING_UPDATES, callbackCheck);
+  add('installing-modules-finished', callbackCheck);
+  add('no-pending-updates', callbackCheck);
 
   const progressCallback = (tracker) => (({ progress }) => {
     tracker.record(currentId, '', progress);
     tracker.send();
   });
 
-  add(DOWNLOADING_MODULE_PROGRESS, progressCallback(downloads));
-  add(INSTALLING_MODULE_PROGRESS, progressCallback(installs));
+  add('downloading-module-progress', progressCallback(downloads));
+  add('installing-module-progress', progressCallback(installs));
 
-  addBasic(UPDATE_MANUALLY, 'newVersion');
+  addBasic('update-manually', 'newVersion');
 };
 
 const v1_timeoutStart = () => !updateTimeout && (updateTimeout = setTimeout(scheduleNextUpdate, 10000));

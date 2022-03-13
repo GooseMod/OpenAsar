@@ -2,7 +2,7 @@
 
 <div id="text">Starting...</div>
 
-<div id="bar-container"><div id="bar-fill"></div></div>
+<div id="barContainer"><div id="barFill"></div></div>
 
 <div id="debug"></div>
 
@@ -64,7 +64,7 @@
     width: 100%;
   }
 
-  #bar-container, #bar-fill {
+  #barContainer, #barFill {
     width: 180px;
     height: 8px;
 
@@ -73,14 +73,14 @@
     visibility: hidden;
   }
 
-  #bar-container {
+  #barContainer {
     background-color: var(--background-secondary);
 
     position: relative;
     margin-top: 12px;
   }
 
-  #bar-fill {
+  #barFill {
     background-color: var(--brand-experiment);
     width: 0;
   }
@@ -98,28 +98,19 @@
 </style>
 
 <script>
-  const text = document.querySelector('#text');
-
-  const barContainer = document.querySelector('#bar-container');
-  const barFill = document.querySelector('#bar-fill');
-
   Splash.onState(({ status, current, total, progress, seconds }) => {
     let statusText = status.replaceAll('-', ' ');
     let showProgress = false;
 
     switch (status) {
-      case 'downloading-updates': // X of Y states
-      case 'installing-updates':
-        statusText = statusText.slice(0, -1) + ` ${current} of ${total}`; // Remove "s" and concat
+      case 'downloading': // X of Y states
+      case 'installing':
+        statusText = statusText + ` update ${current} of ${total}`; // Remove "s" and concat
         showProgress = true;
         break;
 
-      case 'update-failure': // Custom for update failure, include retry and reorder text
+      case 'fail': // Custom for update failure, include retry and reorder text
         statusText = `Update Failed - Retrying in ${seconds}`;
-        break;
-
-      case 'launching':
-        statusText = 'Starting...';
         break;
     }
 

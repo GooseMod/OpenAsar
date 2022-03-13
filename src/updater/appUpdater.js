@@ -22,8 +22,8 @@ exports.update = (startMin, done, show) => {
   }
 
   splash.initSplash(startMin);
-  splash.events.once(splash.APP_SHOULD_LAUNCH, done);
-  splash.events.once(splash.APP_SHOULD_SHOW, show);
+  splash.events.once('APP_SHOULD_LAUNCH', done);
+  splash.events.once('APP_SHOULD_SHOW', show);
 };
 
 exports.focusSplash = () => splash.focusWindow();
