@@ -1,23 +1,16 @@
 let lastBgPrimary = '';
 const themesync = async () => {
   const getVar = (name, el = document.body) => el && (getComputedStyle(el).getPropertyValue(name) || getVar(name, el.parentElement))?.trim();
-  const getFontSource = (font) => {
-    const san = (x) => x.replaceAll('\"', '').replaceAll("\'", '');
-    const sanFont = san(font);
-
-    return [...document.styleSheets].map((x) => !(x.href && x.href.includes('discord.com/assets')) && [...x.rules].find((y) => (y.cssText.startsWith('@font-face') && san(y.style.fontFamily) === sanFont) || (y.href?.includes?.(sanFont.replaceAll(' ', '+'))))).find((x) => x).cssText.replaceAll('\\"', '"');
-  };
 
   const bgPrimary = getVar('--background-primary');
   if (!bgPrimary || bgPrimary === '#36393f' || bgPrimary === lastBgPrimary) return; // Default primary bg or same as last
   lastBgPrimary = bgPrimary;
 
   const vars = [ '--background-primary', '--background-secondary', '--brand-experiment', '--header-primary', '--text-muted' ];
-  const font = getVar('font-family');
 
   let cached = await DiscordNative.userDataCache.getCached() || {};
 
-  const value = (!font.startsWith('Whitney,') ? getFontSource(font) : '') + ` body { ${vars.reduce((acc, x) => acc += `${x}: ${getVar(x)};`, '')} --font-primary: ${font}; }`;
+  const value = `body { ${vars.reduce((acc, x) => acc += `${x}: ${getVar(x)}; `, '')} }`;
   const pastValue = cached['openasarSplashCSS'];
   cached['openasarSplashCSS'] = value;
 
