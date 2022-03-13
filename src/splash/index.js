@@ -76,7 +76,7 @@ const launchMainWindow = () => {
 
 const sendState = (status) => {
   try {
-    splashWindow.webContents.send('SPLASH_STATE', { status, ...splashState });
+    splashWindow.webContents.send('state', { status, ...splashState });
   } catch (_e) {}
 };
 
