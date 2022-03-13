@@ -59,6 +59,7 @@ const startCore = () => {
     bw.webContents.on('dom-ready', () => {
       if (!donePageReady) { // Only run once
         splashScreen.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
+
         donePageReady = true;
       }
 
@@ -87,16 +88,17 @@ const startUpdate = async () => {
     desktopCore.setMainWindowVisible(!startMinimized);
 
     setTimeout(() => { // Try to update our asar
-      if (oaConfig.autoupdate === false) return; // If autoupdate disabled, don't update
+      const config = require('./config');
+      if (oaConfig.setup !== true || process.argv.includes('--config')) config.open();
 
-      const asarUpdate = require('./asarUpdate');
-
-      try {
-        asarUpdate();
-      } catch (e) {
-        log('AsarUpdate', 'Failed', e);
+      if (oaConfig.autoupdate !== false) { // If autoupdate disabled, don't update
+        try {
+          require('./asarUpdate')();
+        } catch (e) {
+          log('AsarUpdate', 'Failed', e);
+        }
       }
-    }, 1000);
+    }, 3000);
   });
 };
 
