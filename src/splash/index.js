@@ -85,7 +85,6 @@ const launchSplashWindow = (startMinimized) => {
   splashWindow = new BrowserWindow({
     width: 300,
     height: process.platform === 'darwin' ? 300 : 350,
-    transparent: false,
     frame: false,
     resizable: false,
     center: true,
