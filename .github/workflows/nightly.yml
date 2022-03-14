@@ -70,7 +70,7 @@ jobs:
         grep -m1 "Installing discord_rpc" <&${COPROC[0]}
         sleep 1
         [[ $COPROC_PID ]] && kill $COPROC_PID
-      timeout-minutes: 1
+      timeout-minutes: 3
   
   release:
     needs: test
