@@ -17,25 +17,22 @@ class HostLinux extends events.EventEmitter {
   }
 
   async checkForUpdates() {
-    const current = vParse(app.getVersion());
     this.emit('checking-for-update');
 
     try {
-      const [ res, body ] = await new Promise((res) => get(this.updateUrl, (_e, r, b) => res([r, b])));
-      if (res.statusCode === 204) return this.emit('update-not-available');
+      const current = vParse(app.getVersion());
 
-      const latest = vParse(JSON.parse(body).name);
+      get(this.updateUrl, (_e, res, body) => {
+        if (res.statusCode === 204) return this.emit('update-not-available');
+        const latest = vParse(JSON.parse(body).name);
 
-      if (vNewer(latest, current)) {
-        log('HostLinux', 'Outdated');
-        return this.emit('update-manually', latest.join('.'));
-      }
+        if (vNewer(latest, current)) return this.emit('update-manually', latest.join('.'));
 
-      log('HostLinux', 'Not outdated');
-      this.emit('update-not-available');
-    } catch (err) {
-      log('HostLinux', 'Error', this.updateUrl, err.message);
-      this.emit('error', err);
+        this.emit('update-not-available');
+      });
+    } catch (e) {
+      log('HostLinux', 'Error', e);
+      this.emit('error', e);
     }
   }
 }
@@ -43,12 +40,10 @@ class HostLinux extends events.EventEmitter {
 
 switch (process.platform) {
   case 'darwin':
-    exports.default = autoUpdater;
+    module.exports = autoUpdater;
     break;
 
   case 'linux':
-    exports.default = new HostLinux();
+    module.exports = new HostLinux();
     break;
 }
-
-module.exports = exports.default;
