@@ -2,12 +2,11 @@ const https = require('https');
 
 // Generic polyfill for "request" npm package, wrapper for https
 const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => new Promise((resolve) => {
-  const fullUrl = `${url}${qs != null ? `?${(new URLSearchParams(qs)).toString()}` : ''}`; // With query string
-
   let req;
   try {
-    req = https.request(fullUrl, { method, headers, timeout }, async (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) return resolve(await nodeReq({ url: res.headers.location, method, headers, timeout, body, stream }));
+    req = https.request(url + (qs != null ? `?${(new URLSearchParams(qs)).toString()}` : ''), { method, headers, timeout }, async (res) => {
+      const loc = res.headers.location;
+      if (loc) return resolve(await nodeReq({ url: loc, method, headers, timeout, body, stream }));
 
       resolve(res);
     });
@@ -50,9 +49,7 @@ const request = (...args) => {
   nodeReq(options).then(async (res) => {
     if (!res.statusCode) {
       listeners['error']?.(res);
-      callback?.(res, null, null);
-
-      return;
+      return callback?.(res, null, null);
     }
 
     listeners['response']?.(res);
