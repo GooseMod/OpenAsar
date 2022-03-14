@@ -696,88 +696,30 @@ function processUnzipQueue() {
 
   let succeeded = true;
 
-  const extractRoot = _path.default.join(moduleInstallPath, queuedModule.name);
-
   logger.log(`Installing ${queuedModule.name}@${queuedModule.version} from ${queuedModule.zipfile}`);
 
   const processZipfile = (err, zipfile) => {
-    if (err) {
-      onError(err, null);
-      return;
-    }
+    if (err) return onError(err);
 
     const totalEntries = zipfile.entryCount;
     let processedEntries = 0;
-    zipfile.on('entry', entry => {
+    zipfile.on('entry', () => {
       processedEntries += 1;
       const percent = Math.min(Math.floor(processedEntries / totalEntries * 100), 100);
       events.append({
         type: INSTALLING_MODULE_PROGRESS,
         name: queuedModule.name,
         progress: percent
-      }); // skip directories
-
-      if (/\/$/.test(entry.fileName)) {
-        zipfile.readEntry();
-        return;
-      }
-
-      zipfile.openReadStream(entry, (err, stream) => {
-        if (err) {
-          onError(err, zipfile);
-          return;
-        }
-
-        stream.on('error', e => onError(e, zipfile));
-        (0, _mkdirp.default)(_path.default.join(extractRoot, _path.default.dirname(entry.fileName)), err => {
-          if (err) {
-            onError(err, zipfile);
-            return;
-          } // [adill] createWriteStream via original-fs is broken in Electron 4.0.0-beta.6 with .asar files
-          // so we unzip to a temporary filename and rename it afterwards
-
-
-          const tempFileName = _path.default.join(extractRoot, entry.fileName + '.tmp');
-
-          const finalFileName = _path.default.join(extractRoot, entry.fileName);
-
-          const writeStream = originalFs.createWriteStream(tempFileName);
-          writeStream.on('error', e => {
-            stream.destroy();
-
-            try {
-              originalFs.unlinkSync(tempFileName);
-            } catch (err) {}
-
-            onError(e, zipfile);
-          });
-          writeStream.on('finish', () => {
-            try {
-              originalFs.unlinkSync(finalFileName);
-            } catch (err) {}
-
-            try {
-              originalFs.renameSync(tempFileName, finalFileName);
-            } catch (err) {
-              onError(err, zipfile);
-              return;
-            }
-
-            zipfile.readEntry();
-          });
-          stream.pipe(writeStream);
-        });
       });
     });
-    zipfile.on('error', err => {
-      onError(err, zipfile);
-    });
+
+    zipfile.on('error', onError);
+
     zipfile.on('end', () => {
       if (!succeeded) return;
       installedModules[queuedModule.name].installedVersion = queuedModule.version;
       finishModuleUnzip(queuedModule, succeeded);
     });
-    zipfile.readEntry();
   };
 
   try {
@@ -786,7 +728,7 @@ function processUnzipQueue() {
       autoClose: true
     }, processZipfile);
   } catch (err) {
-    onError(err, null);
+    onError(err);
   }
 }
 
