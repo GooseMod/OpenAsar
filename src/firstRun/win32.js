@@ -23,29 +23,33 @@ const copyIconToRoot = () => {
 };
 
 const updateShortcuts = (updater) => {
-  const filename = Constants.APP_NAME_FOR_HUMANS + '.lnk';
+  try {
+    const filename = Constants.APP_NAME_FOR_HUMANS + '.lnk';
 
-  const icon_path = copyIconToRoot();
+    const icon_path = copyIconToRoot();
 
-  for (const shortcut_path of [
+    for (const shortcut_path of [
     join(updater.getKnownFolder('desktop'), filename),
     join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, filename)
-  ]) {
-    if (!fs.existsSync(shortcut_path)) continue; // Don't update already deleted paths
+    ]) {
+      if (!fs.existsSync(shortcut_path)) continue; // Don't update already deleted paths
 
-    updater.createShortcut({
-      target_path: join(rootPath, 'Update.exe'),
-      shortcut_path,
-      arguments: '--processStart ' + basename(process.execPath),
-      icon_path,
-      icon_index: 0,
-      description: Constants.APP_DESCRIPTION,
-      app_user_model_id: Constants.APP_ID,
-      working_directory: appPath
-    });
+      updater.createShortcut({
+        target_path: join(rootPath, 'Update.exe'),
+        shortcut_path,
+        arguments: '--processStart ' + basename(process.execPath),
+        icon_path,
+        icon_index: 0,
+        description: Constants.APP_DESCRIPTION,
+        app_user_model_id: Constants.APP_ID,
+        working_directory: appPath
+      });
+    }
+
+    return true;
+  } catch (e) {
+    log('FirstRun', 'Shortcuts error', e);
   }
-
-  return true;
 };
 
 exports.performFirstRunTasks = (updater) => {
@@ -54,12 +58,7 @@ exports.performFirstRunTasks = (updater) => {
   const flagPath = join(paths.getUserDataVersioned(), '.first-run');
   if (fs.existsSync(flagPath)) return; // Already done, skip
 
-  let shortcutSuccess = false;
-  try {
-    shortcutSuccess = updateShortcuts(updater);
-  } catch (e) {
-    log('FirstRun', 'Error updating shortcuts', e);
-  }
+  const shortcutSuccess = updateShortcuts(updater);
 
   registry.installProtocol(Constants.APP_PROTOCOL, () => {
     if (!shortcutSuccess) return;
