@@ -1,23 +1,22 @@
 const paths = require('../paths');
 const { join } = require('path');
-const { copyFileSync, readdirSync } = require('original-fs'); // Use original-fs, not Electron's modified fs
+const fs = require('original-fs'); // Use original-fs, not Electron's modified fs
 
 module.exports = () => {
   log('RetainAsar', 'Trying...');
 
-  const currentAsarPath = join(require.main.filename, '..');
+  const current = join(require.main.filename, '..');
 
   const installDir = paths.getInstallPath();
 
-  const nextAppDir = readdirSync(installDir).reverse().find((x) => x.startsWith('app-1'));
-  const nextAppResources = join(installDir, nextAppDir, 'resources');
-  const nextAsarPath = join(nextAppResources, 'app.asar');
-  const backupAsarPath = join(nextAppResources, 'app.asar.backup');
+  const nextRes = join(installDir, fs.readdirSync(installDir).reverse().find((x) => x.startsWith('app-1')), 'resources');
+  const next = join(nextRes, 'app.asar');
+  const backup = join(nextRes, 'app.asar.backup');
 
-  if (nextAsarPath === currentAsarPath) return;
+  if (next === current) return;
 
-  copyFileSync(nextAsarPath, backupAsarPath);
-  copyFileSync(currentAsarPath, nextAsarPath);
+  fs.copyFileSync(next, backup);
+  fs.copyFileSync(current, next);
 
   log('RetainAsar', 'Done');
 };
