@@ -29,8 +29,8 @@ const updateShortcuts = (updater) => {
     const icon_path = copyIconToRoot();
 
     for (const shortcut_path of [
-    join(updater.getKnownFolder('desktop'), filename),
-    join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, filename)
+      join(updater.getKnownFolder('desktop'), filename),
+      join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, filename)
     ]) {
       if (!fs.existsSync(shortcut_path)) continue; // Don't update already deleted paths
 
