@@ -136,30 +136,6 @@ class UIProgress { // Generic class to track updating and sent states to splash
     });
   }
 
-  /* record(id, state, percent) {
-    this.total.add(id);
-
-    if (state !== 'Waiting') this.progress.set(id, percent);
-    if (state === 'Complete') this.done.add(id);
-  }
-
-  send() {
-    if (this.stateId === 'downloading') {
-      console.log(this.progress);
-      // console.log([...this.progress.values()]);
-    // if (this.progress.size > 0 && this.progress.size > this.done.size) {
-      splashState = {
-        // current: this.done.size + 1,
-        // total: this.total.size,
-        progress: [...this.progress.values()].reduce((a, x) => a + x, 0) / this.total.size
-      };
-
-      sendState(this.stateId);
-
-      return true;
-    }
-  } */
-
   record(id, state, current, outOf) {
     this.total.add(id);
 
