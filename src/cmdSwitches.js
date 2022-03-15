@@ -6,22 +6,20 @@ const presets = {
   'battery': '--enable-features=TurnOffStreamingMediaCachingOnBattery --force_low_power_gpu' // Known to have better battery life for Chromium?
 };
 
-const combinePresets = (...keys) => Object.values(keys.reduce((acc, x) => {
-  for (const cmd of (presets[x] || '').split(' ')) {
-    if (!cmd) continue;
-
-    const [ key, value ] = cmd.split('=');
-
-    if (!acc[key]) acc[key] = [key];
-    acc[key].push(value);
-  }
-
-  return acc;
-}, {}));
-
 
 module.exports = () => {
-  for (const [ key, ...values ] of combinePresets('base', ...(oaConfig.cmdPreset || 'perf').split(','))) {
+  for (const [ key, ...values ] of Object.values([ 'base', ...(oaConfig.cmdPreset || 'perf').split(',') ].reduce((acc, x) => {
+    for (const cmd of (presets[x] || '').split(' ')) {
+      if (!cmd) continue;
+  
+      const [ key, value ] = cmd.split('=');
+  
+      if (!acc[key]) acc[key] = [key];
+      acc[key].push(value);
+    }
+  
+    return acc;
+  }, {}))) {
     app.commandLine.appendSwitch(key.replace('--', ''), values.join(','));
   }
-}
+};
