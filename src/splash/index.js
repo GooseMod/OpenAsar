@@ -257,10 +257,8 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
 
   add('downloading-modules-finished', ({ failed }) => {
     progressState = 'installing';
-    if (failed > 0) {
-      handleFail();
-    } else if (restartRequired) moduleUpdater.quitAndInstallUpdates();
-    // process.nextTick(() => moduleUpdater[restartRequired ? 'quitAndInstallUpdates' : 'installPendingUpdates']());
+    if (failed > 0) handleFail();
+      else if (restartRequired) moduleUpdater.quitAndInstallUpdates();
   });
   
   add('installing-module', ({ name }) => {
@@ -278,11 +276,11 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   add('installing-modules-finished', callbackCheck);
   add('no-pending-updates', callbackCheck);
 
-  // add('downloading-module-progress', progressCallback(downloads));
+
   add('downloading-module-progress', ({ name, recv, total }) => {
     downloads.record(name, '', recv, total);
   });
-  // add('installing-module-progress', progressCallback(installs));
+
   add('installing-module-progress', ({ name, entries, total }) => {
     installs.record(name, '', entries, total);
   });
