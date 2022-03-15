@@ -1,909 +1,453 @@
-"use strict";
+const { join } = require('path');
+const fs = require('fs');
+const mkdirp = require('mkdirp');
+const yauzl = require('yauzl');
+const Module = require('module');
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.initPathsOnly = initPathsOnly;
-exports.init = init;
-exports.checkForUpdates = checkForUpdates;
-exports.setInBackground = setInBackground;
-exports.quitAndInstallUpdates = quitAndInstallUpdates;
-exports.isInstalled = isInstalled;
-exports.getInstalled = getInstalled;
-exports.install = install;
-exports.installPendingUpdates = installPendingUpdates;
-exports.supportsEventObjects = exports.events = exports.NO_PENDING_UPDATES = exports.INSTALLING_MODULE_PROGRESS = exports.INSTALLING_MODULE = exports.INSTALLING_MODULES_FINISHED = exports.DOWNLOADED_MODULE = exports.UPDATE_MANUALLY = exports.DOWNLOADING_MODULES_FINISHED = exports.DOWNLOADING_MODULE_PROGRESS = exports.DOWNLOADING_MODULE = exports.UPDATE_CHECK_FINISHED = exports.INSTALLED_MODULE = exports.CHECKING_FOR_UPDATES = void 0;
-
-var _fs = _interopRequireDefault(require("fs"));
-
-var _path = _interopRequireDefault(require("path"));
-
-var _module = _interopRequireDefault(require("module"));
-
-var _events = require("events");
-
-var _mkdirp = _interopRequireDefault(require("mkdirp"));
-
-var _process = require("process");
-
-var _yauzl = _interopRequireDefault(require("yauzl"));
-
-var _Backoff = _interopRequireDefault(require("../utils/Backoff"));
-
-var paths = _interopRequireWildcard(require("../paths"));
-
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-// Manages additional module installation and management.
-// We add the module folder path to require() lookup paths here.
-// undocumented node API
-const originalFs = require('original-fs'); // events
-
-
-const CHECKING_FOR_UPDATES = 'checking-for-updates';
-exports.CHECKING_FOR_UPDATES = CHECKING_FOR_UPDATES;
-const INSTALLED_MODULE = 'installed-module';
-exports.INSTALLED_MODULE = INSTALLED_MODULE;
-const UPDATE_CHECK_FINISHED = 'update-check-finished';
-exports.UPDATE_CHECK_FINISHED = UPDATE_CHECK_FINISHED;
-const DOWNLOADING_MODULE = 'downloading-module';
-exports.DOWNLOADING_MODULE = DOWNLOADING_MODULE;
-const DOWNLOADING_MODULE_PROGRESS = 'downloading-module-progress';
-exports.DOWNLOADING_MODULE_PROGRESS = DOWNLOADING_MODULE_PROGRESS;
-const DOWNLOADING_MODULES_FINISHED = 'downloading-modules-finished';
-exports.DOWNLOADING_MODULES_FINISHED = DOWNLOADING_MODULES_FINISHED;
-const UPDATE_MANUALLY = 'update-manually';
-exports.UPDATE_MANUALLY = UPDATE_MANUALLY;
-const DOWNLOADED_MODULE = 'downloaded-module';
-exports.DOWNLOADED_MODULE = DOWNLOADED_MODULE;
-const INSTALLING_MODULES_FINISHED = 'installing-modules-finished';
-exports.INSTALLING_MODULES_FINISHED = INSTALLING_MODULES_FINISHED;
-const INSTALLING_MODULE = 'installing-module';
-exports.INSTALLING_MODULE = INSTALLING_MODULE;
-const INSTALLING_MODULE_PROGRESS = 'installing-module-progress';
-exports.INSTALLING_MODULE_PROGRESS = INSTALLING_MODULE_PROGRESS;
-const NO_PENDING_UPDATES = 'no-pending-updates'; // settings
-
-exports.NO_PENDING_UPDATES = NO_PENDING_UPDATES;
-const ALWAYS_ALLOW_UPDATES = 'ALWAYS_ALLOW_UPDATES';
-const SKIP_HOST_UPDATE = 'SKIP_HOST_UPDATE';
-const SKIP_MODULE_UPDATE = 'SKIP_MODULE_UPDATE';
-const ALWAYS_BOOTSTRAP_MODULES = 'ALWAYS_BOOTSTRAP_MODULES';
-const USE_LOCAL_MODULE_VERSIONS = 'USE_LOCAL_MODULE_VERSIONS';
-
-class Events extends _events.EventEmitter {
-  constructor() {
-    super();
-    this.history = [];
-  }
-
-  append(evt) {
-    evt.now = String(_process.hrtime.bigint());
-
-    if (this._eventIsInteresting(evt)) {
-      this.history.push(evt);
-    }
-
-    process.nextTick(() => this.emit(evt.type, evt));
-  }
-
-  _eventIsInteresting(evt) {
-    return evt.type !== DOWNLOADING_MODULE_PROGRESS && evt.type !== INSTALLING_MODULE_PROGRESS;
-  }
-
-}
-
-class LogStream {
-  constructor(logPath) {
-    try {
-      this.logStream = _fs.default.createWriteStream(logPath, {
-        flags: 'a'
-      });
-    } catch (e) {
-      console.error(`Failed to create ${logPath}: ${String(e)}`);
-    }
-  }
-
-  log(message) {
-    message = `[Modules] ${message}`;
-    console.log(message);
-
-    if (this.logStream) {
-      this.logStream.write(message);
-      this.logStream.write('\r\n');
-    }
-  }
-
-  end() {
-    if (this.logStream) {
-      this.logStream.end();
-      this.logStream = null;
-    }
-  }
-
-}
-
+const paths = require('../paths');
 const request = require('./request');
 
-const REQUEST_TIMEOUT = 15000;
-const backoff = new _Backoff.default(1000, 20000);
-const events = new Events();
-exports.events = events;
-const supportsEventObjects = true;
-exports.supportsEventObjects = supportsEventObjects;
-let logger;
-let locallyInstalledModules;
-let moduleInstallPath;
-let installedModulesFilePath;
-let moduleDownloadPath;
-let bootstrapping;
-let hostUpdater;
-let hostUpdateAvailable;
-let skipHostUpdate;
-let skipModuleUpdate;
-let checkingForUpdates;
-let remoteBaseURL;
-let remoteQuery;
-let settings;
-let remoteModuleVersions;
-let installedModules;
-let download;
-let unzip;
-let newInstallInProgress;
-let localModuleVersionsFilePath;
-let updatable;
-let bootstrapManifestFilePath;
-let runningInBackground = false;
+const events = exports.events = new (require('events').EventEmitter)();
 
-function initPathsOnly(_buildInfo) {
-  if (locallyInstalledModules || moduleInstallPath) {
-    return;
-  } // If we have `localModulesRoot` in our buildInfo file, we do not fetch modules
-  // from remote, and rely on our locally bundled ones.
-  // Typically used for development mode, or private builds.
+let settings,
+  bootstrapping = false,
+  skipHost, skipModule,
+  remote = {},
+  installed = {},
+  downloading, installing,
+  basePath, manifestPath, downloadPath, bootstrapPath,
+  hostUpdater,
+  baseUrl, baseQuery,
+  inBackground,
+  checking, hostAvail;
 
+const resetTracking = () => {
+  const base = {
+    done: 0,
+    total: 0,
+    fail: 0
+  };
 
-  locallyInstalledModules = _buildInfo.localModulesRoot != null;
+  downloading = Object.assign({}, base);
+  installing = Object.assign({}, base);
+};
 
-  if (locallyInstalledModules) {
-    if (_module.default.globalPaths.indexOf(_buildInfo.localModulesRoot) === -1) {
-      _module.default.globalPaths.push(_buildInfo.localModulesRoot);
-    }
-  } else {
-    moduleInstallPath = _path.default.join(paths.getUserDataVersioned(), 'modules');
+exports.init = (endpoint, _settings, buildInfo) => {
+  log('Modules', 'Init');
 
-    if (_module.default.globalPaths.indexOf(moduleInstallPath) === -1) {
-      _module.default.globalPaths.push(moduleInstallPath);
-    }
-  }
-}
-
-function init(_endpoint, _settings, _buildInfo) {
-  const endpoint = _endpoint;
   settings = _settings;
-  const buildInfo = _buildInfo;
-  updatable = buildInfo.version != '0.0.0' && !buildInfo.debug || settings.get(ALWAYS_ALLOW_UPDATES);
-  initPathsOnly(buildInfo);
-  logger = new LogStream(_path.default.join(paths.getUserData(), 'modules.log'));
-  bootstrapping = false;
-  hostUpdateAvailable = false;
-  checkingForUpdates = false;
-  skipHostUpdate = settings.get(SKIP_HOST_UPDATE) || !updatable;
-  skipModuleUpdate = settings.get(SKIP_MODULE_UPDATE) || locallyInstalledModules || !updatable;
-  localModuleVersionsFilePath = _path.default.join(paths.getUserData(), 'local_module_versions.json');
-  bootstrapManifestFilePath = _path.default.join(paths.getResources(), 'bootstrap', 'manifest.json');
-  installedModules = {};
-  remoteModuleVersions = {};
-  newInstallInProgress = {};
-  download = {
-    // currently downloading
-    active: false,
-    // {name, version}
-    queue: [],
-    // current queue index being downloaded
-    next: 0,
-    // download failure count
-    failures: 0
-  };
-  unzip = {
-    // currently unzipping
-    active: false,
-    // {name, version, zipfile}
-    queue: [],
-    // current queue index being unzipped
-    next: 0,
-    // unzip failure count
-    failures: 0
-  };
-  logger.log(`Modules initializing`);
-  logger.log(`Distribution: ${locallyInstalledModules ? 'local' : 'remote'}`);
-  logger.log(`Host updates: ${skipHostUpdate ? 'disabled' : 'enabled'}`);
-  logger.log(`Module updates: ${skipModuleUpdate ? 'disabled' : 'enabled'}`);
 
-  if (!locallyInstalledModules) {
-    installedModulesFilePath = _path.default.join(moduleInstallPath, 'installed.json');
-    moduleDownloadPath = _path.default.join(moduleInstallPath, 'pending');
+  skipHost = settings.get('SKIP_HOST_UPDATE');
+  skipModule = settings.get('SKIP_MODULE_UPDATE');
 
-    _mkdirp.default.sync(moduleDownloadPath);
+  basePath = join(paths.getUserDataVersioned(), 'modules');
+  manifestPath = join(basePath, 'installed.json');
+  downloadPath = join(basePath, 'pending');
+  bootstrapPath = join(paths.getResources(), 'bootstrap', 'manifest.json');
 
-    logger.log(`Module install path: ${moduleInstallPath}`);
-    logger.log(`Module installed file path: ${installedModulesFilePath}`);
-    logger.log(`Module download path: ${moduleDownloadPath}`);
-    let failedLoadingInstalledModules = false;
+  resetTracking();
 
-    try {
-      installedModules = JSON.parse(_fs.default.readFileSync(installedModulesFilePath));
-    } catch (err) {
-      failedLoadingInstalledModules = true;
-    }
+  Module.globalPaths.push(basePath);
 
-    cleanDownloadedModules(installedModules);
-    bootstrapping = failedLoadingInstalledModules || settings.get(ALWAYS_BOOTSTRAP_MODULES);
-  }
+  // Purge pending
+  fs.rmSync(downloadPath, { recursive: true, force: true });
+  mkdirp.sync(downloadPath);
 
-  hostUpdater = require('./hostUpdater'); // TODO: hostUpdater constants
+  log('Modules', 'Base:', basePath);
+  log('Modules', 'Manifest:', manifestPath);
+  log('Modules', 'Download:', downloadPath);
 
-  hostUpdater.on('checking-for-update', () => events.append({
-    type: CHECKING_FOR_UPDATES
-  }));
-  hostUpdater.on('update-available', () => hostOnUpdateAvailable());
-  hostUpdater.on('update-progress', progress => hostOnUpdateProgress(progress));
-  hostUpdater.on('update-not-available', () => hostOnUpdateNotAvailable());
-  hostUpdater.on('update-manually', newVersion => hostOnUpdateManually(newVersion));
-  hostUpdater.on('update-downloaded', () => hostOnUpdateDownloaded());
-  hostUpdater.on('error', err => hostOnError(err));
-  const setFeedURL = hostUpdater.setFeedURL.bind(hostUpdater);
-  remoteBaseURL = `${endpoint}/modules/${buildInfo.releaseChannel}`;
-
-  remoteQuery = {
-    host_version: buildInfo.version
-  };
-
-  switch (process.platform) {
-    case 'darwin':
-      setFeedURL(`${endpoint}/updates/${buildInfo.releaseChannel}?platform=osx&version=${buildInfo.version}`);
-      remoteQuery.platform = 'osx';
-      break;
-
-    case 'win32':
-      // Squirrel for Windows can't handle query params
-      // https://github.com/Squirrel/Squirrel.Windows/issues/132
-      setFeedURL(`${endpoint}/updates/${buildInfo.releaseChannel}`);
-      remoteQuery.platform = 'win';
-      break;
-
-    case 'linux':
-      setFeedURL(`${endpoint}/updates/${buildInfo.releaseChannel}?platform=linux&version=${buildInfo.version}`);
-      remoteQuery.platform = 'linux';
-      break;
-  }
-}
-
-function cleanDownloadedModules(installedModules) {
   try {
-    const entries = _fs.default.readdirSync(moduleDownloadPath) || [];
-    entries.forEach(entry => {
-      const entryPath = _path.default.join(moduleDownloadPath, entry);
-
-      let isStale = true;
-
-      for (const moduleName of Object.keys(installedModules)) {
-        if (entryPath === installedModules[moduleName].updateZipfile) {
-          isStale = false;
-          break;
-        }
-      }
-
-      if (isStale) {
-        _fs.default.unlinkSync(_path.default.join(moduleDownloadPath, entry));
-      }
-    });
-  } catch (err) {
-    logger.log('Could not clean downloaded modules');
-    logger.log(err.stack);
+    installed = JSON.parse(fs.readFileSync(manifestPath));
+  } catch (e) {
+    bootstrapping = true;
   }
-}
 
-function hostOnUpdateAvailable() {
-  logger.log(`Host update is available.`);
-  hostUpdateAvailable = true;
-  events.append({
-    type: UPDATE_CHECK_FINISHED,
-    succeeded: true,
-    updateCount: 1,
-    manualRequired: false
-  });
-  events.append({
-    type: DOWNLOADING_MODULE,
-    name: 'host',
-    current: 1,
-    total: 1,
-    foreground: !runningInBackground
-  });
-}
+  hostUpdater = require('./hostUpdater');
 
-function hostOnUpdateProgress(progress) {
-  logger.log(`Host update progress: ${progress}%`);
-  events.append({
-    type: DOWNLOADING_MODULE_PROGRESS,
-    name: 'host',
-    progress: progress
-  });
-}
+  hostUpdater.on('checking-for-update', () => events.emit('checking-for-updates'));
 
-function hostOnUpdateNotAvailable() {
-  logger.log(`Host is up to date.`);
-
-  if (!skipModuleUpdate) {
-    checkForModuleUpdates();
-  } else {
-    events.append({
-      type: UPDATE_CHECK_FINISHED,
+  hostUpdater.on('update-available', () => {
+    log('Modules', 'Host available');
+  
+    hostAvail = true;
+    events.emit('update-check-finished', {
       succeeded: true,
-      updateCount: 0,
+      updateCount: 1,
       manualRequired: false
     });
-  }
-}
-
-function hostOnUpdateManually(newVersion) {
-  logger.log(`Host update is available. Manual update required!`);
-  hostUpdateAvailable = true;
-  checkingForUpdates = false;
-  events.append({
-    type: UPDATE_MANUALLY,
-    newVersion: newVersion
-  });
-  events.append({
-    type: UPDATE_CHECK_FINISHED,
-    succeeded: true,
-    updateCount: 1,
-    manualRequired: true
-  });
-}
-
-function hostOnUpdateDownloaded() {
-  logger.log(`Host update downloaded.`);
-  checkingForUpdates = false;
-  events.append({
-    type: DOWNLOADED_MODULE,
-    name: 'host',
-    current: 1,
-    total: 1,
-    succeeded: true
-  });
-  events.append({
-    type: DOWNLOADING_MODULES_FINISHED,
-    succeeded: 1,
-    failed: 0
-  });
-}
-
-function hostOnError(err) {
-  logger.log(`Host update failed: ${err}`); // [adill] osx unsigned builds will fire this code signing error inside setFeedURL and
-  // if we don't do anything about it hostUpdater.checkForUpdates() will never respond.
-
-  if (err && String(err).indexOf('Could not get code signature for running application') !== -1) {
-    console.warn('Skipping host updates due to code signing failure.');
-    skipHostUpdate = true;
-  }
-
-  checkingForUpdates = false;
-
-  if (!hostUpdateAvailable) {
-    events.append({
-      type: UPDATE_CHECK_FINISHED,
-      succeeded: false,
-      updateCount: 0,
-      manualRequired: false
-    });
-  } else {
-    events.append({
-      type: DOWNLOADED_MODULE,
+  
+    events.emit('downloading-module', {
       name: 'host',
       current: 1,
       total: 1,
-      succeeded: false
+      foreground: !inBackground
     });
-    events.append({
-      type: DOWNLOADING_MODULES_FINISHED,
-      succeeded: 0,
-      failed: 1
+  });
+
+  hostUpdater.on('update-progress', progress => events.emit('downloading-module-progress', { name: 'host', progress }));
+
+  hostUpdater.on('update-not-available', hostPassed);
+
+  hostUpdater.on('update-manually', (v) => {
+    log('Modules', 'Host manual');
+    checking = false;
+  
+    events.emit('update-manually', {
+      newVersion: v
     });
-  }
-}
-
-function checkForUpdates() {
-  if (checkingForUpdates) return;
-  checkingForUpdates = true;
-  hostUpdateAvailable = false;
-
-  if (skipHostUpdate) {
-    events.append({
-      type: CHECKING_FOR_UPDATES
+  
+    events.emit('update-check-finished', {
+      succeeded: true,
+      updateCount: 1,
+      manualRequired: true
     });
-    hostOnUpdateNotAvailable();
-  } else {
-    logger.log('Checking for host updates.');
-    hostUpdater.checkForUpdates();
-  }
-} // Indicates that the initial update process is complete and that future updates
-// are background updates. This merely affects the content of the events sent to
-// the app so that analytics can correctly attribute module download/installs
-// depending on whether they were ui-blocking or not.
+  });
 
+  hostUpdater.on('update-downloaded', () => {
+    checking = false;
 
-function setInBackground() {
-  runningInBackground = true;
-}
+    events.emit('downloaded-module', {
+      name: 'host',
+      current: 1,
+      total: 1,
+      succeeded: true
+    });
 
-function getRemoteModuleName(name) {
-  if (process.platform === 'win32' && process.arch === 'x64') {
-    return `${name}.x64`;
-  }
+    events.emit('downloading-modules-finished', {
+      succeeded: 1,
+      failed: 0
+    });
+  });
 
-  return name;
-}
+  hostUpdater.on('error', () => {
+    log('Modules', 'Host error');
 
-async function checkForModuleUpdates() {
-  const query = { ...remoteQuery,
-    _: Math.floor(Date.now() / 1000 / 60 / 5)
+    checking = false;
+    // die
+  });
+
+  const remotePlat = process.platform === 'darwin' ? 'osx' : 'linux';
+  hostUpdater.setFeedURL.bind(hostUpdater)(`${endpoint}/updates/${buildInfo.releaseChannel}?platform=${remotePlat}&version=${buildInfo.version}`);
+
+  baseUrl = `${endpoint}/modules/${buildInfo.releaseChannel}`;
+  baseQuery = {
+    host_version: buildInfo.version,
+    platform: remotePlat
   };
-  const url = `${remoteBaseURL}/versions.json`;
-  logger.log(`Checking for module updates at ${url}`);
-  let response;
+};
+
+const hostPassed = () => {
+  log('Modules', 'Host good');
+
+  if (skipModule) return events.emit('update-check-finished', {
+    succeeded: true,
+    updateCount: 0,
+    manualRequired: false
+  });
+
+  checkModules();
+};
+
+const checkModules = async () => {
+  hostAvail = false;
+
+  const qs = {
+    ...baseQuery,
+    _: Math.floor(Date.now() / 300000) // 5 min intervals
+  };
+  const url = baseUrl + '/versions.json';
+
+  log('Modules', 'Checking @', url);
+
+  let resp;
 
   try {
-    response = await request.get({
-      url,
-      qs: query,
-      timeout: REQUEST_TIMEOUT
-    });
-    checkingForUpdates = false;
-  } catch (err) {
-    checkingForUpdates = false;
-    logger.log(`Failed fetching module versions: ${String(err)}`);
-    events.append({
-      type: UPDATE_CHECK_FINISHED,
+    resp = await request.get({ url, qs, timeout: 15000 });
+    checking = false;
+  } catch (e) {
+    log('Modules', 'Check failed', e);
+
+    return events.emit('update-check-finished', {
       succeeded: false,
       updateCount: 0,
       manualRequired: false
     });
-    return;
   }
 
-  remoteModuleVersions = JSON.parse(response.body);
+  remote = JSON.parse(resp.body);
 
-  if (settings.get(USE_LOCAL_MODULE_VERSIONS)) {
-    try {
-      remoteModuleVersions = JSON.parse(_fs.default.readFileSync(localModuleVersionsFilePath));
-      console.log('Using local module versions: ', remoteModuleVersions);
-    } catch (err) {
-      console.warn('Failed to parse local module versions: ', err);
+  const todo = [];
+  for (const name in installed) {
+    const inst = installed[name].installedVersion;
+    const rem = remote[name];
+
+    if (inst !== rem) {
+      log('Modules', 'Update:', `${name}@${rem}`, `[installed: ${inst}]`, `[remote: ${rem}]`);
+      todo.push({ name, version: rem });
     }
   }
 
-  const updatesToDownload = [];
-
-  for (const moduleName of Object.keys(installedModules)) {
-    const installedModule = installedModules[moduleName];
-    const installed = installedModule.installedVersion;
-
-    if (installed === null) {
-      continue;
-    }
-
-    const update = installedModule.updateVersion || 0;
-    const remote = remoteModuleVersions[getRemoteModuleName(moduleName)] || 0;
-
-    if (installed !== remote && update !== remote) {
-      logger.log(`Module update available: ${moduleName}@${remote} [installed: ${installed}]`);
-      updatesToDownload.push({
-        name: moduleName,
-        version: remote
-      });
-    }
-  }
-
-  events.append({
-    type: UPDATE_CHECK_FINISHED,
+  events.emit('update-check-finished', {
     succeeded: true,
-    updateCount: updatesToDownload.length,
+    updateCount: todo.length,
     manualRequired: false
   });
+  
+  if (todo.length === 0) return log('Modules', 'Nothing todo');
 
-  if (updatesToDownload.length === 0) {
-    logger.log(`No module updates available.`);
-  } else {
-    updatesToDownload.forEach(e => addModuleToDownloadQueue(e.name, e.version));
-  }
-}
+  for (const mod of todo) downloadModule(mod.name, mod.version);
+};
 
-function addModuleToDownloadQueue(name, version, authToken) {
-  download.queue.push({
+const downloadModule = async (name, ver) => {
+  downloading.total++;
+  events.emit('downloading-module', {
     name,
-    version,
-    authToken
+    current: downloading.total,
+    total: downloading.total,
+    foreground: !inBackground
   });
-  process.nextTick(() => processDownloadQueue());
-}
 
-async function processDownloadQueue() {
-  if (download.active) return;
-  if (download.queue.length === 0) return;
-  download.active = true;
-  const queuedModule = download.queue[download.next];
-  download.next += 1;
-  events.append({
-    type: DOWNLOADING_MODULE,
-    name: queuedModule.name,
-    current: download.next,
-    total: download.queue.length,
-    foreground: !runningInBackground
+  const url = baseUrl + '/' + name + '/' + ver;
+
+  const path = join(downloadPath, name + '-' + ver + '.zip');
+  const stream = fs.createWriteStream(path);
+
+  let received = 0, progress = 0;
+  stream.on('progress', ([recv, total]) => {
+    received = recv;
+    const nProgress = Math.min(100, Math.floor(100 * (recv / total)));
+
+    if (progress === nProgress) return;
+
+    progress = nProgress;
+    events.emit('downloading-module-progress', {
+      name,
+      progress,
+      recv,
+      total
+    });
   });
-  let progress = 0;
-  let receivedBytes = 0;
-  const url = `${remoteBaseURL}/${encodeURIComponent(getRemoteModuleName(queuedModule.name))}/${encodeURIComponent(queuedModule.version)}`;
-  logger.log(`Fetching ${queuedModule.name}@${queuedModule.version} from ${url}`);
-  const headers = {};
 
-  if (queuedModule.authToken) {
-    headers['Authorization'] = queuedModule.authToken;
-  }
+  log('Modules', 'Downloading', `${name}@${ver}`, 'from', url, 'to', path);
 
-  const moduleZipPath = _path.default.join(moduleDownloadPath, `${queuedModule.name}-${queuedModule.version}.zip`);
-
-  const stream = _fs.default.createWriteStream(moduleZipPath);
-
-  stream.on('progress', ([
-    newReceivedBytes,
-    totalBytes
-  ]) => {
-    receivedBytes = newReceivedBytes;
-    const newProgress = Math.min(Math.floor(100 * (receivedBytes / totalBytes)), 100);
-
-    if (progress !== newProgress) {
-      progress = newProgress;
-      logger.log(`Streaming ${queuedModule.name}@${queuedModule.version} to ${moduleZipPath}: ${progress}%`);
-      events.append({
-        type: DOWNLOADING_MODULE_PROGRESS,
-        name: queuedModule.name,
-        progress: progress
-      });
-    }
-  });
-  logger.log(`Streaming ${queuedModule.name}@${queuedModule.version} to ${moduleZipPath}`);
-
+  let success = false;
   try {
-    const response = await request.get({
+    const resp = await request.get({
       url,
-      qs: remoteQuery,
-      headers,
-      timeout: REQUEST_TIMEOUT,
+      qs: baseQuery,
+      timeout: 15000,
       stream
     });
-    finishModuleDownload(queuedModule.name, queuedModule.version, moduleZipPath, receivedBytes, response.statusCode === 200);
-  } catch (err) {
-    logger.log(`Failed fetching module ${queuedModule.name}@${queuedModule.version}: ${String(err)}`);
-    finishModuleDownload(queuedModule.name, queuedModule.version, null, receivedBytes, false);
-  }
-}
 
-function commitInstalledModules() {
-  const data = JSON.stringify(installedModules, null, 2);
-
-  _fs.default.writeFileSync(installedModulesFilePath, data);
-}
-
-function finishModuleDownload(name, version, zipfile, receivedBytes, succeeded) {
-  if (!installedModules[name]) {
-    installedModules[name] = {};
+    success = resp.statusCode === 200;
+  } catch (e) {
+    log('Modules', 'Fetch errored', e);
   }
 
-  if (succeeded) {
-    installedModules[name].updateVersion = version;
-    installedModules[name].updateZipfile = zipfile;
-    commitInstalledModules();
-  } else {
-    download.failures += 1;
-  }
+  if (!installed[name]) installed[name] = {};
 
-  events.append({
-    type: DOWNLOADED_MODULE,
+  if (success) commitManifest();
+    else downloading.fail++;
+
+  events.emit('downloaded-module', {
     name: name,
-    current: download.next,
-    total: download.queue.length,
-    succeeded: succeeded,
-    receivedBytes: receivedBytes
+    current: downloading.total,
+    total: downloading.total,
+    succeeded: success,
+    receivedBytes: received
   });
 
-  if (download.next >= download.queue.length) {
-    const successes = download.queue.length - download.failures;
-    logger.log(`Finished module downloads. [success: ${successes}] [failure: ${download.failures}]`);
-    events.append({
-      type: DOWNLOADING_MODULES_FINISHED,
+
+  downloading.done++;
+
+  if (downloading.done === downloading.total) {
+    const successes = downloading.total - downloading.fail;
+    log('Modules', 'Done downloads', `[success: ${successes}]`, `[failure: ${downloading.fail}]`);
+
+    events.emit('downloading-modules-finished', {
       succeeded: successes,
-      failed: download.failures
+      failed: downloading.fail
     });
-    download.queue = [];
-    download.next = 0;
-    download.failures = 0;
-    download.active = false;
-  } else {
-    const continueDownloads = () => {
-      download.active = false;
-      processDownloadQueue();
-    };
-
-    if (succeeded) {
-      backoff.succeed();
-      process.nextTick(continueDownloads);
-    } else {
-      logger.log(`Waiting ${Math.floor(backoff.current)}ms before next download.`);
-      backoff.fail(continueDownloads);
-    }
   }
 
-  if (newInstallInProgress[name]) {
-    addModuleToUnzipQueue(name, version, zipfile);
-  }
-}
+  installModule(name, ver, path);
+};
 
-function addModuleToUnzipQueue(name, version, zipfile) {
-  unzip.queue.push({
+const installModule = (name, ver, path) => {
+  const currentVer = installed[name]?.installedVersion;
+
+  installing.total++;
+  events.emit('installing-module', {
     name,
-    version,
-    zipfile
+    current: installing.total,
+    total: installing.total,
+    foreground: !inBackground,
+    oldVersion: currentVer,
+    newVersion: ver
   });
-  process.nextTick(() => processUnzipQueue());
-}
 
-function processUnzipQueue() {
-  if (unzip.active) return;
-  if (unzip.queue.length === 0) return;
-  unzip.active = true;
-  const queuedModule = unzip.queue[unzip.next];
-  const installedModule = installedModules[queuedModule.name];
-  const installedVersion = installedModule != null ? installedModule.installedVersion : null;
-  unzip.next += 1;
-  events.append({
-    type: INSTALLING_MODULE,
-    name: queuedModule.name,
-    current: unzip.next,
-    total: unzip.queue.length,
-    foreground: !runningInBackground,
-    oldVersion: installedVersion,
-    newVersion: queuedModule.version
-  });
-  let hasErrored = false;
+  log('Modules', 'Installing', `${name}@${ver}`, 'from', path);
 
-  const onError = (error, zipfile) => {
-    if (hasErrored) return;
-    hasErrored = true;
-    logger.log(`Failed installing ${queuedModule.name}@${queuedModule.version}: ${String(error)}`);
-    succeeded = false;
+  let success = true, hasError = false;
 
-    if (zipfile) {
-      zipfile.close();
-    }
+  const handleErr = (e) => {
+    if (hasError) return;
+    hasError = true;
 
-    finishModuleUnzip(queuedModule, succeeded);
+    log('Modules', 'Failed install', `${name}@${ver}`, e);
+
+    success = false;
+    finishInstall(name, ver, success);
   };
 
-  let succeeded = true;
+  const processZipfile = (e, zip) => {
+    if (e) return handleErr(e);
 
-  logger.log(`Installing ${queuedModule.name}@${queuedModule.version} from ${queuedModule.zipfile}`);
+    const total = zip.entryCount;
+    let entries = 0;
+    zip.on('entry', () => {
+      entries++;
+      const progress = Math.min(100, Math.floor(entries / total * 100));
 
-  const processZipfile = (err, zipfile) => {
-    if (err) return onError(err);
-
-    const totalEntries = zipfile.entryCount;
-    let processedEntries = 0;
-    zipfile.on('entry', () => {
-      processedEntries += 1;
-      const percent = Math.min(Math.floor(processedEntries / totalEntries * 100), 100);
-      events.append({
-        type: INSTALLING_MODULE_PROGRESS,
-        name: queuedModule.name,
-        progress: percent
+      events.emit('installing-module-progress', {
+        name,
+        progress,
+        entries,
+        total
       });
     });
 
-    zipfile.on('error', onError);
+    zip.on('error', handleErr);
 
-    zipfile.on('end', () => {
-      if (!succeeded) return;
-      installedModules[queuedModule.name].installedVersion = queuedModule.version;
-      finishModuleUnzip(queuedModule, succeeded);
+    zip.on('end', () => {
+      if (!success) return;
+
+      installed[name].installedVersion = ver;
+      commitManifest();
+
+      finishInstall(name, ver, success);
     });
   };
 
   try {
-    _yauzl.default.open(queuedModule.zipfile, {
-      lazyEntries: true,
-      autoClose: true
-    }, processZipfile);
-  } catch (err) {
-    onError(err);
+    yauzl.open(path, {}, processZipfile);
+  } catch (e) {
+    onError(e);
   }
-}
+};
 
-function finishModuleUnzip(unzippedModule, succeeded) {
-  delete newInstallInProgress[unzippedModule.name];
-  delete installedModules[unzippedModule.name].updateZipfile;
-  delete installedModules[unzippedModule.name].updateVersion;
-  commitInstalledModules();
+const finishInstall = (name, ver, success) => {
+  if (!success) installing.fail++;
 
-  if (!succeeded) {
-    unzip.failures += 1;
-  }
-
-  events.append({
-    type: INSTALLED_MODULE,
-    name: unzippedModule.name,
-    current: unzip.next,
-    total: unzip.queue.length,
-    succeeded: succeeded
+  events.emit('installed-module', {
+    name,
+    current: installing.total,
+    total: installing.total,
+    succeeded: success
   });
 
-  if (unzip.next >= unzip.queue.length) {
-    const successes = unzip.queue.length - unzip.failures;
-    bootstrapping = false;
-    logger.log(`Finished module installations. [success: ${successes}] [failure: ${unzip.failures}]`);
-    unzip.queue = [];
-    unzip.next = 0;
-    unzip.failures = 0;
-    unzip.active = false;
-    events.append({
-      type: INSTALLING_MODULES_FINISHED,
-      succeeded: successes,
-      failed: unzip.failures
+  installing.done++;
+  log('Modules', 'Finished', `${name}@${ver}`, `(${installing.done}/${installing.total})`);
+
+  if ((bootstrapping && installing.done === installing.total) || installing.done === downloading.total) {
+    const successes = installing.total - installing.fail;
+    log('Modules', 'Done installs', `[success: ${successes}]`, `[failure: ${installing.fail}]`);
+
+    events.emit('installing-modules-finished', {
+      succeeded: success,
+      failed: installing.fail
     });
-    return;
+  
+    resetTracking();
+
+    bootstrapping = false;
   }
+};
 
-  process.nextTick(() => {
-    unzip.active = false;
-    processUnzipQueue();
-  });
-}
 
-function quitAndInstallUpdates() {
-  logger.log(`Relaunching to install ${hostUpdateAvailable ? 'host' : 'module'} updates...`);
+exports.checkForUpdates = () => {
+  log('Modules', 'Checking');
 
-  if (hostUpdateAvailable) {
-    hostUpdater.quitAndInstall();
+  if (checking) return;
+  checking = true;
+
+  if (skipHost) {
+    events.emit('checking-for-updates');
+    hostPassed();
   } else {
-    relaunch();
+    hostUpdater.checkForUpdates();
   }
-}
+};
 
-function relaunch() {
-  logger.end();
+exports.setInBackground = () => inBackground = true;
 
-  const {
-    app
-  } = require('electron');
+exports.quitAndInstallUpdates = () => {
+  log('Modules', 'Relaunching');
 
-  app.relaunch();
-  app.quit();
-}
+  if (hostAvail) hostUpdater.quitAndInstall();
+  else {
+    const { app } = require('electron');
 
-function isInstalled(name, version) {
-  const metadata = installedModules[name];
-  if (locallyInstalledModules) return true;
-
-  if (metadata && metadata.installedVersion > 0) {
-    if (!version) return true;
-    if (metadata.installedVersion === version) return true;
+    app.relaunch();
+    app.quit();
   }
+};
 
-  return false;
-}
+const isInstalled = exports.isInstalled = (n, v) => installed[n] && !(v && installed[n].installedVersion !== v);
+exports.getInstalled = () => ({ ...installed });
 
-function getInstalled() {
-  return { ...installedModules
-  };
-}
+const commitManifest = () => fs.writeFileSync(manifestPath, JSON.stringify(installed, null, 2));
 
-function install(name, defer, options) {
-  let {
-    version,
-    authToken
-  } = options || {};
-
+exports.install = (name, def, { version } = {}) => {
   if (isInstalled(name, version)) {
-    if (!defer) {
-      events.append({
-        type: INSTALLED_MODULE,
-        name: name,
-        current: 1,
-        total: 1,
-        succeeded: true
-      });
-    }
+    if (!def) events.emit('installed-module', {
+      name,
+      current: 1,
+      total: 1,
+      succeeded: true
+    });
 
     return;
   }
 
-  if (newInstallInProgress[name]) return;
-
-  if (!updatable) {
-    logger.log(`Not updatable; ignoring request to install ${name}...`);
-    return;
-  }
-
-  if (defer) {
-    if (version) {
-      throw new Error(`Cannot defer install for a specific version module (${name}, ${version})`);
-    }
-
-    logger.log(`Deferred install for ${name}...`);
-    installedModules[name] = {
+  if (def) {
+    installed[name] = {
       installedVersion: 0
     };
-    commitInstalledModules();
-  } else {
-    logger.log(`Starting to install ${name}...`);
-
-    if (!version) {
-      version = remoteModuleVersions[name] || 0;
-    }
-
-    newInstallInProgress[name] = version;
-    addModuleToDownloadQueue(name, version, authToken);
+    return commitManifest();
   }
-}
 
-function installPendingUpdates() {
-  const updatesToInstall = [];
+  version = version ?? remote[name] ?? 0;
+  downloadModule(name, version);
+};
+
+exports.installPendingUpdates = () => {
+  const todo = [];
 
   if (bootstrapping) {
     let modules = {};
 
     try {
-      modules = JSON.parse(_fs.default.readFileSync(bootstrapManifestFilePath));
-    } catch (err) {}
+      modules = JSON.parse(fs.readFileSync(bootstrapPath));
+    } catch (e) { }
 
-    for (const moduleName of Object.keys(modules)) {
-      installedModules[moduleName] = {
+    for (const name in modules) {
+      installed[name] = {
         installedVersion: 0
       };
 
-      const zipfile = _path.default.join(paths.getResources(), 'bootstrap', `${moduleName}.zip`);
-
-      updatesToInstall.push({
-        moduleName,
-        update: modules[moduleName],
-        zipfile
-      });
+      todo.push([ name, modules[name], join(bootstrapPath, '..', name + '.zip') ]);
     }
   }
 
-  for (const moduleName of Object.keys(installedModules)) {
-    const update = installedModules[moduleName].updateVersion || 0;
-    const zipfile = installedModules[moduleName].updateZipfile;
+  if (todo.length > 0) {
+    log('Modules', bootstrapping ? 'Bootstrapping' : 'Installing');
 
-    if (update > 0 && zipfile != null) {
-      updatesToInstall.push({
-        moduleName,
-        update,
-        zipfile
-      });
-    }
-  }
-
-  if (updatesToInstall.length > 0) {
-    logger.log(`${bootstrapping ? 'Bootstrapping' : 'Installing updates'}...`);
-    updatesToInstall.forEach(e => addModuleToUnzipQueue(e.moduleName, e.update, e.zipfile));
+    for (const x of todo) installModule(...x);
   } else {
-    logger.log('No updates to install');
-    events.append({
-      type: NO_PENDING_UPDATES
-    });
+    log('Modules', 'Nothing to install');
+
+    events.emit('no-pending-updates');
   }
-}
+};

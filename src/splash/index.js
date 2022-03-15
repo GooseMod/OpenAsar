@@ -120,7 +120,7 @@ const CHECKING_FOR_UPDATES = 'checking-for-updates';
 
 const events = exports.events = new (require('events').EventEmitter)();
 
-
+let progressState = 'downloading';
 class UIProgress { // Generic class to track updating and sent states to splash
   constructor(st) {
     this.stateId = st ? 'installing' : 'downloading';
@@ -136,7 +136,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
     });
   }
 
-  record(id, state, percent) {
+  /* record(id, state, percent) {
     this.total.add(id);
 
     if (state !== 'Waiting') this.progress.set(id, percent);
@@ -144,11 +144,40 @@ class UIProgress { // Generic class to track updating and sent states to splash
   }
 
   send() {
-    if (this.progress.size > 0 && this.progress.size > this.done.size) {
+    if (this.stateId === 'downloading') {
+      console.log(this.progress);
+      // console.log([...this.progress.values()]);
+    // if (this.progress.size > 0 && this.progress.size > this.done.size) {
+      splashState = {
+        // current: this.done.size + 1,
+        // total: this.total.size,
+        progress: [...this.progress.values()].reduce((a, x) => a + x, 0) / this.total.size
+      };
+
+      sendState(this.stateId);
+
+      return true;
+    }
+  } */
+
+  record(id, state, current, outOf) {
+    this.total.add(id);
+
+    if (current) this.progress.set(id, [ current, outOf ?? 100 ]);
+    if (state === 'Complete') this.done.add(id);
+
+    this.send();
+  }
+
+  send() {
+    if ((newUpdater && this.progress.size > 0 && this.progress.size > this.done.size) || (!newUpdater && progressState === this.stateId)) {
+      const progress = [...this.progress.values()].reduce((a, x) => a + x[0], 0) / [...this.progress.values()].reduce((a, x) => a + x[1], 0) * 100;
+      if (progress > 100) return true;
+
       splashState = {
         current: this.done.size + 1,
         total: this.total.size,
-        progress: [...this.progress.values()].reduce((a, x) => a + x, 0) / this.total.size
+        progress
       };
 
       sendState(this.stateId);
@@ -212,18 +241,12 @@ const updateUntilCurrent = async () => {
 const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   const add = (event, listener) => {
     modulesListeners[event] = listener;
-    moduleUpdater.events.addListener(event, listener);
+    moduleUpdater.events.on(event, listener);
   };
 
-  const addBasic = (ev, key, ui = ev) => add(ev, (e) => {
-    splashState[key] = e[key];
-    sendState(ui);
-  });
-  
   const callbackCheck = () => moduleUpdater.checkForUpdates();
 
-  const downloads = new UIProgress(0);
-  const installs = new UIProgress(1);
+  const downloads = new UIProgress(0), installs = new UIProgress(1);
 
   const handleFail = () => {
     scheduleNextUpdate();
@@ -234,16 +257,6 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     v1_timeoutStart();
     sendState(CHECKING_FOR_UPDATES);
   });
-
-  let currentId, currentTotal = 1;
-  const updateTotal = (newTotal) => {
-    for (let i = currentTotal; i <= newTotal; i++) {
-      downloads.record(i, 'Waiting', 0);
-      installs.record(i, 'Waiting', 0);
-    }
-
-    currentTotal = newTotal;
-  };
 
   add('update-check-finished', ({ succeeded, updateCount }) => {
     v1_timeoutStop();
@@ -259,30 +272,27 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     }
   });
 
-  add('downloading-module', ({ current, total }) => {
+  add('downloading-module', ({ name }) => {
     v1_timeoutStop();
 
-    if (total !== currentTotal) updateTotal(total);
-    currentId = current;
+    downloads.record(name, 'Waiting');
+    installs.record(name, 'Waiting');
   });
 
   add('downloading-modules-finished', ({ failed }) => {
+    progressState = 'installing';
     if (failed > 0) {
       handleFail();
-    } else {
-      process.nextTick(() => moduleUpdater[restartRequired ? 'quitAndInstallUpdates' : 'installPendingUpdates']());
-    }
+    } else if (restartRequired) moduleUpdater.quitAndInstallUpdates();
+    // process.nextTick(() => moduleUpdater[restartRequired ? 'quitAndInstallUpdates' : 'installPendingUpdates']());
   });
   
-  add('installing-module', ({ current }) => {
-    currentId = current;
-
-    installs.record(currentId, '', 0);
-    installs.send();
+  add('installing-module', ({ name }) => {
+    installs.record(name, 'Waiting');
   });
 
   const segmentCallback = (tracker) => (({ name }) => {
-    tracker.record(currentId, 'Complete', 100);
+    tracker.record(name, 'Complete');
     if (name === 'host') restartRequired = true;
   });
 
@@ -292,15 +302,19 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   add('installing-modules-finished', callbackCheck);
   add('no-pending-updates', callbackCheck);
 
-  const progressCallback = (tracker) => (({ progress }) => {
-    tracker.record(currentId, '', progress);
-    tracker.send();
+  // add('downloading-module-progress', progressCallback(downloads));
+  add('downloading-module-progress', ({ name, recv, total }) => {
+    downloads.record(name, '', recv, total);
+  });
+  // add('installing-module-progress', progressCallback(installs));
+  add('installing-module-progress', ({ name, entries, total }) => {
+    installs.record(name, '', entries, total);
   });
 
-  add('downloading-module-progress', progressCallback(downloads));
-  add('installing-module-progress', progressCallback(installs));
-
-  addBasic('update-manually', 'newVersion');
+  add('update-manually', (e) => {
+    splashState.newVersion = e.newVersion;
+    sendState('update-manually');
+  });
 };
 
 const v1_timeoutStart = () => !updateTimeout && (updateTimeout = setTimeout(scheduleNextUpdate, 10000));
