@@ -7,7 +7,7 @@ const presets = {
 };
 
 const combinePresets = (...keys) => Object.values(keys.reduce((acc, x) => {
-  for (const cmd of presets[x].split(' ')) {
+  for (const cmd of (presets[x] || '').split(' ')) {
     if (!cmd) continue;
 
     const [ key, value ] = cmd.split('=');
