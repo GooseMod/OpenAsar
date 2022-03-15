@@ -127,13 +127,13 @@ exports.init = (endpoint, _settings, buildInfo) => {
     // die
   });
 
-  const remotePlat = process.platform === 'darwin' ? 'osx' : 'linux';
-  hostUpdater.setFeedURL.bind(hostUpdater)(`${endpoint}/updates/${buildInfo.releaseChannel}?platform=${remotePlat}&version=${buildInfo.version}`);
+  const platform = process.platform === 'darwin' ? 'osx' : 'linux';
+  hostUpdater.setFeedURL.bind(hostUpdater)(`${endpoint}/updates/${buildInfo.releaseChannel}?platform=${platform}&version=${buildInfo.version}`);
 
   baseUrl = `${endpoint}/modules/${buildInfo.releaseChannel}`;
   baseQuery = {
     host_version: buildInfo.version,
-    platform: remotePlat
+    platform
   };
 };
 
