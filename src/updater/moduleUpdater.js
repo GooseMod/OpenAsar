@@ -262,11 +262,11 @@ const downloadModule = async (name, ver) => {
   downloading.done++;
 
   if (downloading.done === downloading.total) {
-    const successes = downloading.total - downloading.fail;
-    log('Modules', 'Done downloads', `[success: ${successes}]`, `[failure: ${downloading.fail}]`);
+    const succeeded = downloading.total - downloading.fail;
+    log('Modules', 'Done downloads', `${succeeded}/${downloading.total} success`);
 
     events.emit('downloading-modules-finished', {
-      succeeded: successes,
+      succeeded,
       failed: downloading.fail
     });
   }
@@ -351,11 +351,11 @@ const finishInstall = (name, ver, success) => {
   log('Modules', 'Finished', `${name}@${ver}`, `(${installing.done}/${installing.total})`);
 
   if ((bootstrapping && installing.done === installing.total) || installing.done === downloading.total) {
-    const successes = installing.total - installing.fail;
-    log('Modules', 'Done installs', `[success: ${successes}]`, `[failure: ${installing.fail}]`);
+    const succeeded = installing.total - installing.fail;
+    log('Modules', 'Done installs', `${succeeded}/${installing.total} success`);
 
     events.emit('installing-modules-finished', {
-      succeeded: success,
+      succeeded,
       failed: installing.fail
     });
   
