@@ -25,7 +25,7 @@ class Updater extends EventEmitter {
     try {
       nativeUpdaterModule = options.nativeUpdaterModule ?? require(paths.getExeDir() + '/updater');
     } catch (e) {
-      log('Updater', 'Failed to require nativeUpdater', e);
+      log('Updater', 'Require fail', e);
 
       if (e.code === 'MODULE_NOT_FOUND') return;
       throw e;
@@ -41,6 +41,7 @@ class Updater extends EventEmitter {
     this.currentlyDownloading = {};
     this.currentlyInstalling = {};
     this.hasEmittedUnhandledException = false;
+
     this.nativeUpdater = new nativeUpdaterModule.Updater({
       response_handler: this._handleResponse.bind(this),
       ...options
@@ -79,10 +80,7 @@ class Updater extends EventEmitter {
       const [id, detail] = JSON.parse(response);
       const request = this.requests.get(id);
 
-      if (request == null) {
-        console.error('Received response ', detail, ' for a request (', id, ') not in the updater request map.');
-        return;
-      }
+      if (request == null) return log('Updater', 'Unknown resp', id, detail);
 
       if (detail['Error'] != null) {
         const {
@@ -131,10 +129,10 @@ class Updater extends EventEmitter {
           this.emit('host-updated');
         }
       } else {
-        console.warn('Unknown updater response', detail);
+        log('Updater', 'Unknown resp', id, detail);
       }
     } catch (e) {
-      console.error('Unhandled exception in updater response handler:', e);
+      log('Updater', 'Handler excepetion', e);
 
       if (!this.hasEmittedUnhandledException) {
         this.hasEmittedUnhandledException = true;
@@ -154,19 +152,18 @@ class Updater extends EventEmitter {
       return detail['VersionInfo'];
     }
 
-    console.warn('Unknown updater response', detail);
+    log('Updater', 'Unknown resp', detail);
   }
 
   _getHostPath() {
     const [major, minor, revision] = this.committedHostVersion;
     const hostVersionStr = `${major}.${minor}.${revision}`;
-    return join(this.rootPath, `app-${hostVersionStr}`);
+
+    return join(this.rootPath, `app-${this.committedHostVersion.join('.')}`);
   }
 
   _startCurrentVersionInner(options, versions) {
-    if (this.committedHostVersion == null) {
-      this.committedHostVersion = versions.current_host;
-    }
+    if (this.committedHostVersion == null) this.committedHostVersion = versions.current_host;
 
     const hostPath = this._getHostPath();
 
@@ -179,9 +176,9 @@ class Updater extends EventEmitter {
           stdio: 'inherit'
         });
       });
-      console.log(`Restarting from ${resolve(process.execPath)} to ${resolve(hostExePath)}`);
-      app.quit();
-      return;
+
+      log('Updater', 'Restarting', resolve(process.execPath), '->', resolve(hostExePath));
+      return app.quit();
     }
 
     this._commitModulesInner(versions);
@@ -252,15 +249,10 @@ class Updater extends EventEmitter {
   }
 
   _recordTaskProgress(progress) {
-    if (progress.task.HostDownload != null) {
-      this._recordDownloadProgress('host', progress);
-    } else if (progress.task.HostInstall != null) {
-      this._recordInstallProgress('host', progress, null, progress.task.HostInstall.from_version != null);
-    } else if (progress.task.ModuleDownload != null) {
-      this._recordDownloadProgress(progress.task.ModuleDownload.version.module.name, progress);
-    } else if (progress.task.ModuleInstall != null) {
-      this._recordInstallProgress(progress.task.ModuleInstall.version.module.name, progress, progress.task.ModuleInstall.version.version, progress.task.ModuleInstall.from_version != null);
-    }
+    if (progress.task.HostDownload != null) this._recordDownloadProgress('host', progress);
+      else if (progress.task.HostInstall != null) this._recordInstallProgress('host', progress, null, progress.task.HostInstall.from_version != null);
+      else if (progress.task.ModuleDownload != null) this._recordDownloadProgress(progress.task.ModuleDownload.version.module.name, progress);
+      else if (progress.task.ModuleInstall != null) this._recordInstallProgress(progress.task.ModuleInstall.version.module.name, progress, progress.task.ModuleInstall.version.version, progress.task.ModuleInstall.from_version != null);
   }
 
   queryCurrentVersions() {
@@ -339,9 +331,7 @@ class Updater extends EventEmitter {
   }
 
   async commitModules(versions) {
-    if (this.committedHostVersion == null) {
-      throw new Error('Cannot commit modules before host version.');
-    }
+    if (this.committedHostVersion == null) throw new Error('Cannot commit modules before host version.');
 
     if (versions == null) {
       versions = await this.queryCurrentVersions();
@@ -361,65 +351,52 @@ class Updater extends EventEmitter {
   }
 
   getKnownFolder(name) {
-    if (!this.valid) {
-      throw new Error(INVALID_UPDATER_ERROR);
-    }
+    if (!this.valid) throw new Error(INVALID_UPDATER_ERROR);
 
     return this.nativeUpdater.known_folder(name);
   }
 
   createShortcut(options) {
-    if (!this.valid) {
-      throw new Error(INVALID_UPDATER_ERROR);
-    }
+    if (!this.valid) throw new Error(INVALID_UPDATER_ERROR);
 
     return this.nativeUpdater.create_shortcut(options);
   }
 
 }
 
-function getUpdaterPlatformName(platform) {
-  switch (platform) {
-    case 'darwin':
-      return 'osx';
-
-    case 'win32':
-      return 'win';
-
-    default:
-      return platform;
-  }
-}
-
-function tryInitUpdater(buildInfo, repositoryUrl) {
-  const rootPath = paths.getInstallPath();
-
-  if (rootPath == null) {
-    return false;
-  }
-
-  instance = new Updater({
-    release_channel: buildInfo.releaseChannel,
-    platform: getUpdaterPlatformName(process.platform),
-    repository_url: repositoryUrl,
-    root_path: rootPath
-  });
-  return instance.valid;
-}
-
-function getUpdater() {
-  if (instance != null && instance.valid) {
-    return instance;
-  }
-}
 
 module.exports = {
   Updater,
-  tryInitUpdater,
-  getUpdater,
   TASK_STATE_COMPLETE,
   TASK_STATE_FAILED,
   TASK_STATE_WAITING,
   TASK_STATE_WORKING,
-  INCONSISTENT_INSTALLER_STATE_ERROR
+  INCONSISTENT_INSTALLER_STATE_ERROR,
+
+  tryInitUpdater: (buildInfo, repository_url) => {
+    const root_path = paths.getInstallPath();
+    if (root_path == null) return false;
+  
+    let platform = process.platform;
+    switch (platform) {
+      case 'darwin':
+        platform = 'osx';
+        break;
+  
+      case 'win32':
+        platform = 'win';
+        break;
+    }
+  
+    instance = new Updater({
+      release_channel: buildInfo.releaseChannel,
+      platform,
+      repository_url,
+      root_path
+    });
+  
+    return instance.valid;
+  },
+
+  getUpdater: () => (instance != null && instance.valid && instance) || null
 };
