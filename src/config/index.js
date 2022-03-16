@@ -23,6 +23,7 @@ const open = exports.open = () => {
 
   let config = settings.get('openasar', {});
   config.setup = true;
+  settings.set('openasar', config);
   settings.save();
 
   ipcMain.on('config_set', (e, c) => {
