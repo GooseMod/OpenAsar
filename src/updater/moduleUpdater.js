@@ -412,9 +412,7 @@ exports.install = (name, def, { version } = {}) => {
   }
 
   if (def) {
-    installed[name] = {
-      installedVersion: 0
-    };
+    installed[name] = { installedVersion: 0 };
     return commitManifest();
   }
 
@@ -423,31 +421,20 @@ exports.install = (name, def, { version } = {}) => {
 };
 
 exports.installPendingUpdates = () => {
-  const todo = [];
-
   if (bootstrapping) {
-    let modules = {};
+    log('Modules', 'Bootstrapping...');
 
     try {
-      modules = JSON.parse(fs.readFileSync(bootstrapPath));
-    } catch (e) { }
-
-    for (const name in modules) {
-      installed[name] = {
-        installedVersion: 0
-      };
-
-      todo.push([ name, modules[name], join(bootstrapPath, '..', name + '.zip') ]);
+      for (const m in JSON.parse(fs.readFileSync(bootstrapPath))) { // Read [resources]/bootstrap/manifest.json, with "moduleName": version (always 0)
+        installed[m] = { installedVersion: 0 }; // Set initial
+        installModule(m, 0, join(bootstrapPath, m)); // Intentional invalid path
+      }
+    } catch (e) {
+      log('Modules', 'Bootstrap fail', e);
     }
+
+    return;
   }
 
-  if (todo.length > 0) {
-    log('Modules', bootstrapping ? 'Bootstrapping' : 'Installing');
-
-    for (const x of todo) installModule(...x);
-  } else {
-    log('Modules', 'Nothing to install');
-
-    events.emit('no-pending-updates');
-  }
+  events.emit('no-pending-updates');
 };
