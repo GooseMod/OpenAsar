@@ -416,8 +416,7 @@ exports.install = (name, def, { version } = {}) => {
     return commitManifest();
   }
 
-  version = version ?? remote[name] ?? 0;
-  downloadModule(name, version);
+  downloadModule(name, version ?? remote[name] ?? 0);
 };
 
 exports.installPendingUpdates = () => {
