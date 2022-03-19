@@ -10,7 +10,7 @@ const request = require('./request');
 const events = exports.events = new (require('events').EventEmitter)();
 
 let settings,
-  bootstrapping = false,
+  bootstrapping,
   skipHost, skipModule,
   remote = {},
   installed = {},
