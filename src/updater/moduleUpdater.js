@@ -298,37 +298,36 @@ const installModule = (name, ver, path) => {
     finishInstall(name, ver, success);
   };
 
-  const processZipfile = (e, zip) => {
-    if (e) return handleErr(e);
-
-    const total = zip.entryCount;
-    let entries = 0;
-    zip.on('entry', () => {
-      entries++;
-      const progress = Math.min(100, Math.floor(entries / total * 100));
-
-      events.emit('installing-module-progress', {
-        name,
-        progress,
-        entries,
-        total
-      });
-    });
-
-    zip.on('error', handleErr);
-
-    zip.on('end', () => {
-      if (!success) return;
-
-      installed[name].installedVersion = ver;
-      commitManifest();
-
-      finishInstall(name, ver, success);
-    });
-  };
 
   try {
-    yauzl.open(path, {}, processZipfile);
+    yauzl.open(path, {}, (e, zip) => {
+      if (e) return handleErr(e);
+  
+      const total = zip.entryCount;
+      let entries = 0;
+      zip.on('entry', () => {
+        entries++;
+        const progress = Math.min(100, Math.floor(entries / total * 100));
+  
+        events.emit('installing-module-progress', {
+          name,
+          progress,
+          entries,
+          total
+        });
+      });
+  
+      zip.on('error', handleErr);
+  
+      zip.on('end', () => {
+        if (!success) return;
+  
+        installed[name].installedVersion = ver;
+        commitManifest();
+  
+        finishInstall(name, ver, success);
+      });
+    });
   } catch (e) {
     onError(e);
   }
