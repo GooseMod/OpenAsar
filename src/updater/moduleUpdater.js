@@ -53,15 +53,12 @@ exports.init = (endpoint, _settings, buildInfo) => {
   fs.rmSync(downloadPath, { recursive: true, force: true });
   mkdirp.sync(downloadPath);
 
-  log('Modules', 'Base:', basePath);
-  log('Modules', 'Manifest:', manifestPath);
-  log('Modules', 'Download:', downloadPath);
-
   try {
     installed = JSON.parse(fs.readFileSync(manifestPath));
   } catch (e) {
     bootstrapping = true;
   }
+
 
   hostUpdater = require('./hostUpdater');
 
@@ -183,7 +180,7 @@ const checkModules = async () => {
     const rem = remote[name];
 
     if (inst !== rem) {
-      log('Modules', 'Update:', `${name}@${rem}`, `[installed: ${inst}]`, `[remote: ${rem}]`);
+      log('Modules', 'Update:', name, '|', inst, '->', rem);
       todo.push({ name, version: rem });
     }
   }
@@ -350,7 +347,7 @@ const finishInstall = (name, ver, success) => {
   installing.done++;
   log('Modules', 'Finished', `${name}@${ver}`);
 
-  if ((bootstrapping && installing.done === installing.total) || installing.done === downloading.total) {
+  if (installing.done === (downloading.total || installing.done)) {
     const succeeded = installing.total - installing.fail;
     log('Modules', 'Done installs', `| ${succeeded}/${installing.total} success`);
 
