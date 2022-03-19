@@ -16,7 +16,7 @@ const buildInfo = require('./utils/buildInfo');
 app.setVersion(buildInfo.version); // More global because discord / electron
 global.releaseChannel = buildInfo.releaseChannel;
 
-log('BuildInfo', 'Loaded build info', buildInfo);
+log('BuildInfo', buildInfo);
 
 const errorHandler = require('./errorHandler');
 errorHandler.init();
