@@ -8,6 +8,7 @@ const paths = require('../paths');
 const request = require('./request');
 
 const events = exports.events = new (require('events').EventEmitter)();
+exports.INSTALLED_MODULE = 'installed-module'; // Fixes DiscordNative ensureModule as it uses export
 
 let settings,
   bootstrapping,
