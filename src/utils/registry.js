@@ -2,7 +2,7 @@ const child_process = require('child_process');
 const { join } = require('path');
 
 const sr = process.env.SystemRoot;
-const regExe = join(sr || '', sr ? 'System32' : '', 'reg.exe'); // %SystemRoot%\System32\reg.exe OR reg.exe if SR is undefined
+const regExe = sr ? join(sr, 'System32', 'reg.exe') : 'reg.exe'; // %SystemRoot%\System32\reg.exe OR reg.exe if SR is undefined
 
 
 const spawn = (args, callback) => {
