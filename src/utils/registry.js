@@ -1,15 +1,11 @@
-const child_process = require('child_process');
-const { join } = require('path');
-
-const sr = process.env.SystemRoot;
-const regExe = sr ? join(sr, 'System32', 'reg.exe') : 'reg.exe'; // %SystemRoot%\System32\reg.exe OR reg.exe if SR is undefined
+const CP = require('child_process');
 
 
 const spawn = (args, callback) => {
   let process, stdout = '';
 
   try {
-    process = child_process.spawn(regExe, args);
+    process = CP.spawn('reg.exe', args);
   } catch (e) {
     callback(e, stdout);
   }
@@ -21,13 +17,11 @@ const spawn = (args, callback) => {
   process.on('exit', (code, signal) => callback(code !== 0 ? new Error('Spawn: ' + signal ?? code) : null, stdout));
 };
 
-const add = (queue, callback) => {
-  let args = queue.shift();
-  if (!args) return callback();
+const add = (todo, callback) => {
+  const x = todo.shift();
+  if (!x) return callback();
 
-  args = [ 'add', ...args, '/f' ];
-
-  return spawn(args, () => add(queue, callback));
+  spawn([ 'add', ...x, '/f' ], () => add(todo, callback));
 };
 
 module.exports = {
