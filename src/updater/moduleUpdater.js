@@ -20,7 +20,7 @@ let settings,
   hostUpdater,
   baseUrl, baseQuery,
   inBackground,
-  checking, hostAvail;
+  checking, hostAvail, lastUpdate;
 
 const resetTracking = () => {
   const base = {
@@ -71,15 +71,13 @@ exports.init = (endpoint, _settings, buildInfo) => {
     hostAvail = true;
     events.emit('update-check-finished', {
       succeeded: true,
-      updateCount: 1,
-      manualRequired: false
+      updateCount: 1
     });
   
     events.emit('downloading-module', {
       name: 'host',
       current: 1,
-      total: 1,
-      foreground: !inBackground
+      total: 1
     });
   });
 
@@ -97,8 +95,7 @@ exports.init = (endpoint, _settings, buildInfo) => {
   
     events.emit('update-check-finished', {
       succeeded: true,
-      updateCount: 1,
-      manualRequired: true
+      updateCount: 1
     });
   });
 
@@ -135,14 +132,13 @@ exports.init = (endpoint, _settings, buildInfo) => {
   };
 };
 
-const hostPassed = () => {
-  log('Modules', 'Host good');
-
-  if (skipModule) return events.emit('update-check-finished', {
+const hostPassed = (skip = skipModule) => {
+  if (skip) return events.emit('update-check-finished', {
     succeeded: true,
-    updateCount: 0,
-    manualRequired: false
+    updateCount: 0
   });
+
+  log('Modules', 'Host good');
 
   checkModules();
 };
@@ -158,43 +154,39 @@ const checkModules = async () => {
 
   log('Modules', 'Checking @', url);
 
-  let resp;
-
   try {
-    resp = await request.get({ url, qs, timeout: 15000 });
+    const { body } = await request.get({ url, qs, timeout: 15000 });
     checking = false;
+
+    remote = JSON.parse(body);
   } catch (e) {
     log('Modules', 'Check failed', e);
 
     return events.emit('update-check-finished', {
       succeeded: false,
-      updateCount: 0,
-      manualRequired: false
+      updateCount: 0
     });
   }
 
-  remote = JSON.parse(resp.body);
+  remote = JSON.parse(body);
 
-  const todo = [];
+  let doing = 0;
   for (const name in installed) {
     const inst = installed[name].installedVersion;
     const rem = remote[name];
 
     if (inst !== rem) {
       log('Modules', 'Update:', name, '|', inst, '->', rem);
-      todo.push({ name, version: rem });
+      doing++;
+  
+      downloadModule(name, rem);
     }
   }
 
   events.emit('update-check-finished', {
     succeeded: true,
-    updateCount: todo.length,
-    manualRequired: false
+    updateCount: doing
   });
-  
-  if (todo.length === 0) return log('Modules', 'Nothing todo');
-
-  for (const mod of todo) downloadModule(mod.name, mod.version);
 };
 
 const downloadModule = async (name, ver) => {
@@ -202,8 +194,7 @@ const downloadModule = async (name, ver) => {
   events.emit('downloading-module', {
     name,
     current: downloading.total,
-    total: downloading.total,
-    foreground: !inBackground
+    total: downloading.total
   });
 
   const url = baseUrl + '/' + name + '/' + ver;
@@ -251,9 +242,7 @@ const downloadModule = async (name, ver) => {
   events.emit('downloaded-module', {
     name: name,
     current: downloading.total,
-    total: downloading.total,
-    succeeded: success,
-    receivedBytes: received
+    total: downloading.total
   });
 
 
@@ -279,10 +268,7 @@ const installModule = (name, ver, path) => {
   events.emit('installing-module', {
     name,
     current: installing.total,
-    total: installing.total,
-    foreground: !inBackground,
-    oldVersion: currentVer,
-    newVersion: ver
+    total: installing.total
   });
 
   log('Modules', 'Installing', `${name}@${ver}`, 'from', path);
@@ -351,6 +337,8 @@ const finishInstall = (name, ver, success) => {
     const succeeded = installing.total - installing.fail;
     log('Modules', 'Done installs', `| ${succeeded}/${installing.total} success`);
 
+    if (!installing.fail) lastUpdate = Date.now();
+
     events.emit('installing-modules-finished', {
       succeeded,
       failed: installing.fail
@@ -369,9 +357,11 @@ exports.checkForUpdates = () => {
   if (checking) return;
   checking = true;
 
-  if (skipHost) {
+  const skipThis = lastUpdate > Date.now() - 10000;
+
+  if (skipHost || skipThis) {
     events.emit('checking-for-updates');
-    hostPassed();
+    hostPassed(skipModule || skipThis);
   } else {
     hostUpdater.checkForUpdates();
   }
