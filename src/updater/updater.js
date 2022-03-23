@@ -156,9 +156,6 @@ class Updater extends EventEmitter {
   }
 
   _getHostPath() {
-    const [major, minor, revision] = this.committedHostVersion;
-    const hostVersionStr = `${major}.${minor}.${revision}`;
-
     return join(this.rootPath, `app-${this.committedHostVersion.join('.')}`);
   }
 
