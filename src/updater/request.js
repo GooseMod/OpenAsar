@@ -3,7 +3,7 @@ const request = require('request');
 const nodeRequest = (opts) => new Promise((resolve, reject) => {
   const { stream, timeout } = opts;
 
-  const req = request({ ...opts, timeout: timeout ?? 30000 });
+  const req = request({ ...opts, timeout: timeout ?? 15000 });
 
   req.on('response', (response) => {
     const total = parseInt(response.headers['content-length'] || 1, 10);

@@ -152,8 +152,7 @@ const checkModules = async () => {
       qs: {
         ...baseQuery,
         _: Math.floor(Date.now() / 300000) // 5 min intervals
-      },
-      timeout: 15000
+      }
     });
 
     checking = false;
@@ -223,7 +222,6 @@ const downloadModule = async (name, ver) => {
     const resp = await request.get({
       url,
       qs: baseQuery,
-      timeout: 15000,
       stream
     });
 
