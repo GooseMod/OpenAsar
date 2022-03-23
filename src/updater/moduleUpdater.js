@@ -19,7 +19,6 @@ let settings,
   basePath, manifestPath, downloadPath, bootstrapPath,
   hostUpdater,
   baseUrl, baseQuery,
-  inBackground,
   checking, hostAvail, lastUpdate;
 
 const resetTracking = () => {
@@ -359,8 +358,6 @@ exports.checkForUpdates = () => {
     hostUpdater.checkForUpdates();
   }
 };
-
-exports.setInBackground = () => inBackground = true;
 
 exports.quitAndInstallUpdates = () => {
   log('Modules', 'Relaunching');

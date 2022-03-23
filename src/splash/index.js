@@ -243,7 +243,6 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     if (!succeeded) {
       handleFail();
     } else if (updateCount === 0) {
-      moduleUpdater.setInBackground();
       launchMainWindow();
     }
   });
