@@ -146,16 +146,16 @@ const hostPassed = (skip = skipModule) => {
 const checkModules = async () => {
   hostAvail = false;
 
-  const qs = {
-    ...baseQuery,
-    _: Math.floor(Date.now() / 300000) // 5 min intervals
-  };
-  const url = baseUrl + '/versions.json';
-
-  log('Modules', 'Checking @', url);
-
   try {
-    const { body } = await request.get({ url, qs, timeout: 15000 });
+    const { body } = await request.get({
+      url: baseUrl + '/versions.json',
+      qs: {
+        ...baseQuery,
+        _: Math.floor(Date.now() / 300000) // 5 min intervals
+      },
+      timeout: 15000
+    });
+
     checking = false;
 
     remote = JSON.parse(body);
