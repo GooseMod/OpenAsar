@@ -258,8 +258,6 @@ const downloadModule = async (name, ver) => {
 };
 
 const installModule = (name, ver, path) => {
-  const currentVer = installed[name]?.installedVersion;
-
   installing.total++;
   events.emit('installing-module', {
     name,
@@ -269,7 +267,7 @@ const installModule = (name, ver, path) => {
 
   log('Modules', 'Installing', `${name}@${ver}`, 'from', path);
 
-  let success = true, hasError = false;
+  let hasError;
 
   const handleErr = (e) => {
     if (hasError) return;
@@ -277,8 +275,7 @@ const installModule = (name, ver, path) => {
 
     log('Modules', 'Failed install', `${name}@${ver}`, e);
 
-    success = false;
-    finishInstall(name, ver, success);
+    finishInstall(name, ver, false);
   };
 
 
@@ -303,12 +300,12 @@ const installModule = (name, ver, path) => {
       zip.on('error', handleErr);
   
       zip.on('end', () => {
-        if (!success) return;
+        if (hasError) return;
   
         installed[name].installedVersion = ver;
         commitManifest();
   
-        finishInstall(name, ver, success);
+        finishInstall(name, ver, true);
       });
     });
   } catch (e) {
