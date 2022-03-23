@@ -168,8 +168,6 @@ const checkModules = async () => {
     });
   }
 
-  remote = JSON.parse(body);
-
   let doing = 0;
   for (const name in installed) {
     const inst = installed[name].installedVersion;
