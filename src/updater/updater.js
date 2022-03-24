@@ -163,7 +163,7 @@ class Updater extends EventEmitter {
     const base = join(this._getHostPath(), 'modules');
 
     for (const mod in versions.current_modules) {
-      const path = join(modulesPath, `${mod}-${versions.current_modules[mod]}`);
+      const path = join(base, `${mod}-${versions.current_modules[mod]}`);
 
       if (!Module.globalPaths.includes(path)) Module.globalPaths.push(path);
     }
