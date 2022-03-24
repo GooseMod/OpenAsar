@@ -17,13 +17,8 @@ const themesync = async () => {
   if (value !== pastValue) DiscordNative.userDataCache.cacheUserData(JSON.stringify(cached));
 };
 
-setInterval(() => {
-  try {
-    themesync();
-  } catch (e) { }
-}, 10000);
-themesync();
 
+// Settings info version injection
 setInterval(() => {
   const host = [...document.querySelectorAll('[class^="socialLinks-"] + [class^="info-"] [class^="colorMuted-"]')].find(x => x.textContent.startsWith('Host '));
   if (!host || document.querySelector('#openasar-ver')) return;
@@ -54,4 +49,12 @@ el.appendChild(document.createTextNode(`[class^="socialLinks-"] + [class^="info-
 }`));
 document.body.appendChild(el);
 
-openasar = {};
+openasar = {}; // Define global for any mods which want to know / etc
+
+
+setInterval(() => { // Try init themesync
+  try {
+    themesync();
+  } catch (e) { }
+}, 10000);
+themesync();
