@@ -201,7 +201,6 @@ const updateUntilCurrent = async () => {
 
       if (!installedAnything) {
         await newUpdater.startCurrentVersion();
-        newUpdater.setRunningInBackground();
         newUpdater.collectGarbage();
 
         return launchMainWindow();
