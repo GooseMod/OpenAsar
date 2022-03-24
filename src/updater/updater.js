@@ -165,7 +165,7 @@ class Updater extends EventEmitter {
 
     const hostExePath = join(hostPath, basename(process.execPath));
 
-    if (resolve(hostExePath) != resolve(process.execPath) && !(options === null || options === void 0 ? void 0 : options.allowObsoleteHost)) {
+    if (resolve(hostExePath) != resolve(process.execPath) && !options?.allowObsoleteHost) {
       app.once('will-quit', () => {
         spawn(hostExePath, [], {
           detached: true,
