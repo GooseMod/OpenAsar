@@ -1,7 +1,7 @@
 const { spawn } = require('child_process');
 const { app } = require('electron');
 const { EventEmitter } = require('events');
-const NodeModule = require('module');
+const Module = require('module');
 const { join, resolve, basename } = require('path');
 const { hrtime } = require('process');
 
@@ -12,18 +12,15 @@ const TASK_STATE_COMPLETE = 'Complete';
 const TASK_STATE_FAILED = 'Failed';
 const TASK_STATE_WAITING = 'Waiting';
 const TASK_STATE_WORKING = 'Working';
-const INCONSISTENT_INSTALLER_STATE_ERROR = 'InconsistentInstallerState';
-
-const INVALID_UPDATER_ERROR = "Can't send request to updater because the native updater isn't loaded.";
 
 
 class Updater extends EventEmitter {
   constructor(options) {
     super();
 
-    let nativeUpdaterModule;
+    let Native;
     try {
-      nativeUpdaterModule = options.nativeUpdaterModule ?? require(paths.getExeDir() + '/updater');
+      Native = options.nativeUpdaterModule ?? require(paths.getExeDir() + '/updater');
     } catch (e) {
       log('Updater', 'Require fail', e);
 
@@ -32,17 +29,15 @@ class Updater extends EventEmitter {
     }
 
     this.committedHostVersion = null;
-    this.committedModules = new Set();
     this.rootPath = options.root_path;
     this.nextRequestId = 0;
     this.requests = new Map();
     this.updateEventHistory = [];
-    this.isRunningInBackground = false;
     this.currentlyDownloading = {};
     this.currentlyInstalling = {};
     this.hasEmittedUnhandledException = false;
 
-    this.nativeUpdater = new nativeUpdaterModule.Updater({
+    this.nativeUpdater = new Native.Updater({
       response_handler: this._handleResponse.bind(this),
       ...options
     });
@@ -53,7 +48,7 @@ class Updater extends EventEmitter {
   }
 
   _sendRequest(detail, progressCallback = null) {
-    if (!this.valid) throw new Error(INVALID_UPDATER_ERROR);
+    if (!this.valid) throw new Error('Native fail');
 
     const requestId = this.nextRequestId++;
     return new Promise((resolve, reject) => {
@@ -62,22 +57,20 @@ class Updater extends EventEmitter {
         reject,
         progressCallback
       });
-      this.nativeUpdater.command(JSON.stringify([requestId, detail]));
+
+      this.nativeUpdater.command(JSON.stringify([ requestId, detail ]));
     });
   }
 
   _sendRequestSync(detail) {
-    if (!this.valid) {
-      throw new Error(INVALID_UPDATER_ERROR);
-    }
+    if (!this.valid) throw new Error('Native fail');
 
-    const requestId = this.nextRequestId++;
-    return this.nativeUpdater.command_blocking(JSON.stringify([requestId, detail]));
+    return this.nativeUpdater.command_blocking(JSON.stringify([ this.nextRequestId++, detail ]));
   }
 
   _handleResponse(response) {
     try {
-      const [id, detail] = JSON.parse(response);
+      const [ id, detail ] = JSON.parse(response);
       const request = this.requests.get(id);
 
       if (request == null) return log('Updater', 'Unknown resp', id, detail);
@@ -91,11 +84,7 @@ class Updater extends EventEmitter {
         const e = new Error(`(${kind}) ${details}`);
 
         if (severity === 'Fatal') {
-          const handled = this.emit(kind, e);
-
-          if (!handled) {
-            throw e;
-          }
+          if (!this.emit(kind, e)) throw e;
         } else {
           this.emit('update-error', e);
           request.reject(e);
@@ -121,13 +110,9 @@ class Updater extends EventEmitter {
 
         this._recordTaskProgress(progress);
 
-        if (request.progressCallback != null) {
-          request.progressCallback(progress);
-        }
+        request.progressCallback?.(progress);
 
-        if (progress.task['HostInstall'] != null && progress.state === TASK_STATE_COMPLETE) {
-          this.emit('host-updated');
-        }
+        if (progress.task['HostInstall'] != null && progress.state === TASK_STATE_COMPLETE) this.emit('host-updated');
       } else {
         log('Updater', 'Unknown resp', id, detail);
       }
@@ -144,13 +129,9 @@ class Updater extends EventEmitter {
   _handleSyncResponse(response) {
     const detail = JSON.parse(response);
 
-    if (detail['Error'] != null) {
-      throw new Error(detail['Error']);
-    } else if (detail === 'Ok') {
-      return;
-    } else if (detail['VersionInfo'] != null) {
-      return detail['VersionInfo'];
-    }
+    if (detail.Error != null) throw new Error(detail.Error);
+      else if (detail === 'Ok') return;
+      else if (detail.VersionInfo != null) return detail.VersionInfo;
 
     log('Updater', 'Unknown resp', detail);
   }
@@ -162,19 +143,16 @@ class Updater extends EventEmitter {
   _startCurrentVersionInner(options, versions) {
     if (this.committedHostVersion == null) this.committedHostVersion = versions.current_host;
 
-    const hostPath = this._getHostPath();
+    const latestPath = resolve(join(this._getHostPath(), basename(process.execPath)));
+    const currentPath = resolve(process.execPath);
+  
+    if (latestPath != currentPath && !options?.allowObsoleteHost) {
+      app.once('will-quit', spawn(hostExePath, [], {
+        detached: true,
+        stdio: 'inherit'
+      }));
 
-    const hostExePath = join(hostPath, basename(process.execPath));
-
-    if (resolve(hostExePath) != resolve(process.execPath) && !(options === null || options === void 0 ? void 0 : options.allowObsoleteHost)) {
-      app.once('will-quit', () => {
-        spawn(hostExePath, [], {
-          detached: true,
-          stdio: 'inherit'
-        });
-      });
-
-      log('Updater', 'Restarting', resolve(process.execPath), '->', resolve(hostExePath));
+      log('Updater', 'Restarting', currentPath, '->', latestPath);
       return app.quit();
     }
 
@@ -182,18 +160,12 @@ class Updater extends EventEmitter {
   }
 
   _commitModulesInner(versions) {
-    const hostPath = this._getHostPath();
+    const base = join(this._getHostPath(), 'modules');
 
-    const modulesPath = join(hostPath, 'modules');
+    for (const mod in versions.current_modules) {
+      const path = join(base, `${mod}-${versions.current_modules[mod]}`);
 
-    for (const module in versions.current_modules) {
-      const moduleVersion = versions.current_modules[module];
-      const moduleSearchPath = join(modulesPath, `${module}-${moduleVersion}`);
-
-      if (!this.committedModules.has(module) && NodeModule.globalPaths.indexOf(moduleSearchPath) === -1) {
-        this.committedModules.add(module);
-        NodeModule.globalPaths.push(moduleSearchPath);
-      }
+      if (!Module.globalPaths.includes(path)) Module.globalPaths.push(path);
     }
   }
 
@@ -204,15 +176,15 @@ class Updater extends EventEmitter {
       this.currentlyDownloading[name] = true;
       this.updateEventHistory.push({
         type: 'downloading-module',
-        name: name,
-        now: now
+        name,
+        now
       });
     } else if (progress.state === TASK_STATE_COMPLETE || progress.state === TASK_STATE_FAILED) {
       this.currentlyDownloading[name] = false;
       this.updateEventHistory.push({
         type: 'downloaded-module',
-        name: name,
-        now: now,
+        name,
+        now,
         succeeded: progress.state === TASK_STATE_COMPLETE,
         receivedBytes: progress.bytesProcessed
       });
@@ -228,8 +200,7 @@ class Updater extends EventEmitter {
         type: 'installing-module',
         name,
         now,
-        newVersion,
-        foreground: !this.isRunningInBackground
+        newVersion
       });
     } else if (progress.state === TASK_STATE_COMPLETE || progress.state === TASK_STATE_FAILED) {
       this.currentlyInstalling[name] = false;
@@ -239,8 +210,7 @@ class Updater extends EventEmitter {
         now,
         newVersion,
         succeeded: progress.state === TASK_STATE_COMPLETE,
-        delta: isDelta,
-        foreground: !this.isRunningInBackground
+        delta: isDelta
       });
     }
   }
@@ -330,15 +300,7 @@ class Updater extends EventEmitter {
   async commitModules(versions) {
     if (this.committedHostVersion == null) throw new Error('Cannot commit modules before host version.');
 
-    if (versions == null) {
-      versions = await this.queryCurrentVersions();
-    }
-
-    this._commitModulesInner(versions);
-  }
-
-  setRunningInBackground() {
-    this.isRunningInBackground = true;
+    this._commitModulesInner(versions ?? await this.queryCurrentVersions());
   }
 
   queryAndTruncateHistory() {
@@ -348,13 +310,13 @@ class Updater extends EventEmitter {
   }
 
   getKnownFolder(name) {
-    if (!this.valid) throw new Error(INVALID_UPDATER_ERROR);
+    if (!this.valid) throw new Error('Native fail');
 
     return this.nativeUpdater.known_folder(name);
   }
 
   createShortcut(options) {
-    if (!this.valid) throw new Error(INVALID_UPDATER_ERROR);
+    if (!this.valid) throw new Error('Native fail');
 
     return this.nativeUpdater.create_shortcut(options);
   }
@@ -368,7 +330,8 @@ module.exports = {
   TASK_STATE_FAILED,
   TASK_STATE_WAITING,
   TASK_STATE_WORKING,
-  INCONSISTENT_INSTALLER_STATE_ERROR,
+
+  INCONSISTENT_INSTALLER_STATE_ERROR: 'InconsistentInstallerState',
 
   tryInitUpdater: (buildInfo, repository_url) => {
     const root_path = paths.getInstallPath();
