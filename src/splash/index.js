@@ -101,14 +101,12 @@ const launchSplashWindow = (startMinimized) => {
   if (process.platform !== 'darwin') win.on('closed', () => { if (!launchedMainWindow) app.quit(); });
 
   wc.once('dom-ready', () => {
-    if (oaConfig.themeSync !== false) try { // Inject themesync CSS
-      wc.insertCSS(JSON.parse(fs.readFileSync(join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
-    } catch (e) { }
+    if (oaConfig.themeSync !== false) wc.insertCSS(JSON.parse(fs.readFileSync(join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
 
-    if (oaConfig.splashText === true) try {
+    if (oaConfig.splashText === true) {
       const buildInfo = require('../utils/buildInfo.js');
       wc.executeJavaScript(`debug.textContent = '${buildInfo.releaseChannel} ${buildInfo.version}\\nOpenAsar ${oaVersion}'`);
-    } catch (e) { }
+    }
   });
   if (!startMinimized) win.once('ready-to-show', () => win.show());
 
