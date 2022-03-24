@@ -1,7 +1,7 @@
 const { spawn } = require('child_process');
 const { app } = require('electron');
 const { EventEmitter } = require('events');
-const NodeModule = require('module');
+const Module = require('module');
 const { join, resolve, basename } = require('path');
 const { hrtime } = require('process');
 
@@ -32,7 +32,6 @@ class Updater extends EventEmitter {
     }
 
     this.committedHostVersion = null;
-    this.committedModules = new Set();
     this.rootPath = options.root_path;
     this.nextRequestId = 0;
     this.requests = new Map();
@@ -182,18 +181,12 @@ class Updater extends EventEmitter {
   }
 
   _commitModulesInner(versions) {
-    const hostPath = this._getHostPath();
+    const base = join(this._getHostPath(), 'modules');
 
-    const modulesPath = join(hostPath, 'modules');
+    for (const mod in versions.current_modules) {
+      const path = join(modulesPath, `${mod}-${versions.current_modules[mod]}`);
 
-    for (const module in versions.current_modules) {
-      const moduleVersion = versions.current_modules[module];
-      const moduleSearchPath = join(modulesPath, `${module}-${moduleVersion}`);
-
-      if (!this.committedModules.has(module) && NodeModule.globalPaths.indexOf(moduleSearchPath) === -1) {
-        this.committedModules.add(module);
-        NodeModule.globalPaths.push(moduleSearchPath);
-      }
+      if (!Module.globalPaths.includes(path)) Module.globalPaths.push(path);
     }
   }
 
@@ -330,11 +323,7 @@ class Updater extends EventEmitter {
   async commitModules(versions) {
     if (this.committedHostVersion == null) throw new Error('Cannot commit modules before host version.');
 
-    if (versions == null) {
-      versions = await this.queryCurrentVersions();
-    }
-
-    this._commitModulesInner(versions);
+    this._commitModulesInner(versions ?? await this.queryCurrentVersions());
   }
 
   setRunningInBackground() {
