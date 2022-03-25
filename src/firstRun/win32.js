@@ -1,36 +1,33 @@
 const fs = require('fs');
 const { join, resolve, basename } = require('path');
 
-const paths = require('../paths');
 const registry = require('../utils/registry');
 const Constants = require('../Constants');
 
 const appPath = resolve(process.execPath, '..');
 const rootPath = resolve(appPath, '..');
 
-const iconFile = 'app.ico';
-const copyIconToRoot = () => {
-  const currentPath = join(appPath, iconFile);
-  const newPath = join(rootPath, iconFile);
+const rootIcon = () => {
+  const c = join(appPath, 'app.ico'); // Current
+  const n = join(rootPath, 'app.ico'); // New
 
   try {
-    fs.copyFileSync(currentPath, newPath);
-    return newPath;
+    fs.copyFileSync(c, n);
+    return n;
   } catch (e) {
-    log('FirstRun', 'Failed to copy icon to root', e);
-    return currentPath;
+    log('FirstRun', e);
+    return c;
   }
 };
 
 const updateShortcuts = (updater) => {
   try {
-    const filename = Constants.APP_NAME_FOR_HUMANS + '.lnk';
-
-    const icon_path = copyIconToRoot();
+    const file = Constants.APP_NAME_FOR_HUMANS + '.lnk';
+    const icon_path = rootIcon();
 
     for (const shortcut_path of [
-      join(updater.getKnownFolder('desktop'), filename),
-      join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, filename)
+      join(updater.getKnownFolder('desktop'), file),
+      join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, file)
     ]) {
       if (!fs.existsSync(shortcut_path)) continue; // Don't update already deleted paths
 
@@ -48,25 +45,22 @@ const updateShortcuts = (updater) => {
 
     return true;
   } catch (e) {
-    log('FirstRun', 'Shortcuts error', e);
+    log('FirstRun', e);
   }
 };
 
-exports.performFirstRunTasks = (updater) => {
-  log('FirstRun', 'Perform');
 
-  const flagPath = join(paths.getUserDataVersioned(), '.first-run');
-  if (fs.existsSync(flagPath)) return; // Already done, skip
-
-  const shortcutSuccess = updateShortcuts(updater);
+exports.do = (updater) => {
+  const flag = join(appPath, '.first-run');
+  if (fs.existsSync(flag)) return; // Already done, skip
 
   registry.installProtocol(Constants.APP_PROTOCOL, () => {
-    if (!shortcutSuccess) return;
+    if (!updateShortcuts(updater)) return;
 
     try {
-      fs.writeFileSync(flagPath, 'true');
+      fs.writeFileSync(flag, 'true');
     } catch (e) {
-      log('FirstRun', 'Error writing .first-run', e);
+      log('FirstRun', e);
     }
   });
 };
