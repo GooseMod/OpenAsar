@@ -16,7 +16,7 @@ exports.update = (startMin, done, show) => {
     inst.on('InconsistentInstallerState', fatal);
     inst.on('update-error', handled);
 
-    require('../firstRun').performFirstRunTasks(inst);
+    require('../firstRun').do(inst);
   } else {
     require('./moduleUpdater').init(Constants.UPDATE_ENDPOINT, require('../appSettings').getSettings(), buildInfo);
   }
