@@ -1,5 +1,5 @@
 // Stub (Darwin)
-exports.install = (callback) => callback();
-exports.update = (callback) => callback();
-exports.uninstall = (callback) => callback();
-exports.isInstalled = (callback) => callback(false);
+exports.install = (c) => c();
+exports.update = (c) => c();
+exports.uninstall = (c) => c();
+exports.isInstalled = (c) => c(false);
