@@ -1,25 +1,24 @@
-const { readFileSync, statSync, writeFileSync } = require('fs');
+const fs = require('fs');
 const { join } = require('path');
 
-class Settings { // Heavily based on original for compat, but simplified and tweaked
+module.exports = class Settings { // Heavily based on original for compat, but simplified and tweaked
   constructor(root) {
     this.path = join(root, 'settings.json');
 
     try {
-      this.lastSaved = readFileSync(this.path);
-      this.settings = JSON.parse(this.lastSaved);
+      this.settings = JSON.parse(fs.readFileSync(this.path));
     } catch (e) {
       this.settings = {};
     }
 
-    this.lastModified = this.getLastModified();
+    this.mod = this.getMod();
 
     log('AppSettings', this.path, this.settings);
   }
 
-  getLastModified() {
+  getMod() { // Get when file was last modified
     try {
-      return statSync(this.path).mtime.getTime();
+      return fs.statSync(this.path).mtime.getTime();
     } catch (e) {
       return 0;
     }
@@ -34,25 +33,17 @@ class Settings { // Heavily based on original for compat, but simplified and twe
   }
 
   save() {
-    if (this.lastModified && this.lastModified !== this.getLastModified()) return; // File was last modified after Settings was made, so was externally edited therefore we don't save over
+    if (this.mod && this.mod !== this.getMod()) return; // File was last modified after Settings was made, so was externally edited therefore we don't save over
 
     try {
-      const toSave = JSON.stringify(this.settings, null, 2);
+      const str = JSON.stringify(this.settings, null, 2);
 
-      if (this.lastSaved != toSave) { // Settings has changed
-        this.lastSaved = toSave;
+      fs.writeFileSync(this.path, str);
+      this.mod = this.getMod();
 
-        writeFileSync(this.path, toSave);
-
-        this.lastModified = this.getLastModified();
-      }
-
-      log('AppSettings', 'Saved', this.path);
+      log('AppSettings', 'Saved');
     } catch (e) {
-      log('AppSettings', 'Failed', this.path, e);
+      log('AppSettings', e);
     }
   }
-
 }
-
-module.exports = Settings;
