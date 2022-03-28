@@ -1,5 +1,6 @@
-const log = require('./utils/log');
+const log = (area, ...args) => console.log(`[\x1B[38;2;88;101;242mOpenAsar\x1B[0m > ${area}]`, ...args);
 global.log = log; // Make log global for easy usage everywhere
+
 global.oaVersion = 'nightly';
 
 log('Init', 'OpenAsar', oaVersion);
