@@ -3,3 +3,5 @@ src/package-lock.json
 *.asar
 _*
 miniSrc/
+
+*.crswap # crostini tmp files
