@@ -38,7 +38,7 @@ const open = exports.open = () => {
 
   ipcMain.on('cr', () => {
     settings.save();
-    app.relaunch({ args: process.argv });
+    app.relaunch();
     app.exit();
   });
 
