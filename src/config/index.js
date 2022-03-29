@@ -26,19 +26,19 @@ const open = exports.open = () => {
   settings.set('openasar', config);
   settings.save();
 
-  ipcMain.on('config_set', (e, c) => {
+  ipcMain.on('cs', (e, c) => {
     config = c;
     settings.set('openasar', config);
     settings.save(); // Ensure saving
   });
 
-  ipcMain.on('config_get', (e) => {
+  ipcMain.on('cg', (e) => {
     e.returnValue = config;
   });
 
-  ipcMain.on('config_restart', () => {
+  ipcMain.on('cr', () => {
     settings.save();
-    app.relaunch({ args: process.argv.filter((x) => x !== '--config') });
+    app.relaunch({ args: process.argv });
     app.exit();
   });
 
