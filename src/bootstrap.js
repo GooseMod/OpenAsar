@@ -47,16 +47,15 @@ const startCore = () => {
 
   const i = setImmediate(() => {
     if (!global.mainWindowId) return;
-    clearInterval(i);
 
     const bw = BrowserWindow.fromId(global.mainWindowId);
 
-    let donePageReady = false;
+    let done = false;
     bw.webContents.on('dom-ready', () => {
-      if (!donePageReady) { // Only run once
+      if (!done) { // Only run once
         splashScreen.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
 
-        donePageReady = true;
+        done = true;
       }
 
       const [ channel, hash ] = oaVersion.split('-'); // Split via -
