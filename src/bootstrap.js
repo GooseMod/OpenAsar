@@ -61,7 +61,7 @@ const startCore = () => {
       const [ channel, hash ] = oaVersion.split('-'); // Split via -
 
       bw.webContents.executeJavaScript(
-        readFileSync(join(__dirname, 'mainWindowInject.js'), 'utf8')
+        readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
           .replaceAll('<channel>', channel)
           .replaceAll('<hash>', hash || 'custom')
       );
