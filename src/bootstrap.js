@@ -45,7 +45,7 @@ const startCore = () => {
     crashReporterSetup: require('./crashReporterSetup'),
   });
 
-  const i = setImmediate(() => {
+  setImmediate(() => {
     if (!global.mainWindowId) return;
 
     const bw = BrowserWindow.fromId(global.mainWindowId);
