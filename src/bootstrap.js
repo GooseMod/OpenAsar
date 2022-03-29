@@ -8,10 +8,6 @@ process.env.PULSE_LATENCY_MSEC = process.env.PULSE_LATENCY_MSEC ?? 30;
 app.setAppUserModelId(Constants.APP_ID);
 app.name = 'discord'; // Force name as sometimes breaks
 
-const paths = require('./paths');
-global.moduleDataPath = paths.getModuleDataPath(); // Global because discord
-app.setPath('userData', paths.getUserData()); // Set userData properly because electron
-
 const buildInfo = require('./utils/buildInfo');
 app.setVersion(buildInfo.version); // More global because discord / electron
 global.releaseChannel = buildInfo.releaseChannel;
@@ -37,13 +33,13 @@ const startCore = () => {
   log('Bootstrap', 'Required core');
 
   desktopCore.startup({
-    paths,
     splashScreen,
     moduleUpdater,
     buildInfo,
     appSettings,
     Constants,
     updater,
+    paths: require('./paths'),
     GPUSettings: require('./GPUSettings'),
     autoStart: require('./autoStart'),
     crashReporterSetup: require('./crashReporterSetup'),
@@ -76,8 +72,6 @@ const startCore = () => {
 
 const startUpdate = async () => {
   const startMinimized = process.argv.includes('--start-minimized');
-
-  paths.cleanOldVersions();
 
   appUpdater.update(startMinimized, () => {
     if (process.env.OPENASAR_NOSTART) return;

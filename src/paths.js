@@ -26,12 +26,13 @@ exports.init = () => {
 
   moduleData = buildInfo.newUpdater ? join(userData, 'module_data') : join(userDataVersioned, 'modules');
   resourcesPath = join(process.resourcesPath);
-};
 
-exports.cleanOldVersions = () => {
-  if (!installPath) return;
+  global.moduleDataPath = moduleData; // Global because discord
+  app.setPath('userData', userData); // Set userData properly because electron
 
-  for (const x of fs.readdirSync(installPath)) {
+
+  // cleanOldVersions
+  if (installPath) for (const x of fs.readdirSync(installPath)) {
     if (x.startsWith('app-') && !x.includes(buildInfo.version)) fs.rmSync(join(installPath, x), { recursive: true, force: true });
   }
 };
