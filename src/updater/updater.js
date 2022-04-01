@@ -162,11 +162,7 @@ class Updater extends EventEmitter {
   _commitModulesInner(versions) {
     const base = join(this._getHostPath(), 'modules');
 
-    for (const mod in versions.current_modules) {
-      const path = join(base, `${mod}-${versions.current_modules[mod]}`);
-
-      if (!Module.globalPaths.includes(path)) Module.globalPaths.push(path);
-    }
+    for (const mod in versions.current_modules) Module.globalPaths.push(join(base, `${mod}-${versions.current_modules[mod]}`));
   }
 
   _recordDownloadProgress(name, progress) {
