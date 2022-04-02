@@ -22,7 +22,7 @@ class Updater extends EventEmitter {
     try {
       Native = options.nativeUpdaterModule ?? require(paths.getExeDir() + '/updater');
     } catch (e) {
-      log('Updater', 'Require fail', e);
+      log('Updater', e); // Error when requiring
 
       if (e.code === 'MODULE_NOT_FOUND') return;
       throw e;
@@ -73,7 +73,7 @@ class Updater extends EventEmitter {
       const [ id, detail ] = JSON.parse(response);
       const request = this.requests.get(id);
 
-      if (request == null) return log('Updater', 'Unknown resp', id, detail);
+      if (request == null) return log('Updater', id, detail); // No request handlers for id / type
 
       if (detail['Error'] != null) {
         const {
@@ -113,11 +113,9 @@ class Updater extends EventEmitter {
         request.progressCallback?.(progress);
 
         if (progress.task['HostInstall'] != null && progress.state === TASK_STATE_COMPLETE) this.emit('host-updated');
-      } else {
-        log('Updater', 'Unknown resp', id, detail);
-      }
+      } else log('Updater', id, detail); // Unknown response
     } catch (e) {
-      log('Updater', 'Handler excepetion', e);
+      log('Updater', e); // Error handling response
 
       if (!this.hasEmittedUnhandledException) {
         this.hasEmittedUnhandledException = true;
@@ -133,7 +131,7 @@ class Updater extends EventEmitter {
       else if (detail === 'Ok') return;
       else if (detail.VersionInfo != null) return detail.VersionInfo;
 
-    log('Updater', 'Unknown resp', detail);
+    log('Updater', detail); // Unknown response
   }
 
   _getHostPath() {
@@ -143,16 +141,16 @@ class Updater extends EventEmitter {
   _startCurrentVersionInner(options, versions) {
     if (this.committedHostVersion == null) this.committedHostVersion = versions.current_host;
 
-    const latestPath = resolve(join(this._getHostPath(), basename(process.execPath)));
-    const currentPath = resolve(process.execPath);
+    const cur = resolve(process.execPath);
+    const next = resolve(join(this._getHostPath(), basename(process.execPath)));
   
-    if (latestPath != currentPath && !options?.allowObsoleteHost) {
-      app.once('will-quit', spawn(hostExePath, [], {
+    if (next != cur && !options?.allowObsoleteHost) {
+      app.once('will-quit', spawn(next, [], {
         detached: true,
         stdio: 'inherit'
       }));
 
-      log('Updater', 'Restarting', currentPath, '->', latestPath);
+      log('Updater', 'Restarting', next);
       return app.quit();
     }
 
@@ -288,9 +286,7 @@ class Updater extends EventEmitter {
   }
 
   startCurrentVersionSync(options) {
-    const versions = this.queryCurrentVersionsSync();
-
-    this._startCurrentVersionInner(options, versions);
+    this._startCurrentVersionInner(options, this.queryCurrentVersionsSync());
   }
 
   async commitModules(versions) {
