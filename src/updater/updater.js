@@ -47,7 +47,7 @@ class Updater extends require('events').EventEmitter {
   }
 
   _sendRequest(detail, progressCallback = null) {
-    if (!this.valid) throw new Error('Native fail');
+    if (!this.valid) throw 'No native';
 
     const requestId = this.nextRequestId++;
     return new Promise((resolve, reject) => {
@@ -62,7 +62,7 @@ class Updater extends require('events').EventEmitter {
   }
 
   _sendRequestSync(detail) {
-    if (!this.valid) throw new Error('Native fail');
+    if (!this.valid) throw 'No native';
 
     return this.nativeUpdater.command_blocking(JSON.stringify([ this.nextRequestId++, detail ]));
   }
@@ -126,7 +126,7 @@ class Updater extends require('events').EventEmitter {
   _handleSyncResponse(response) {
     const detail = JSON.parse(response);
 
-    if (detail.Error != null) throw new Error(detail.Error);
+    if (detail.Error != null) throw detail.Error;
       else if (detail === 'Ok') return;
       else if (detail.VersionInfo != null) return detail.VersionInfo;
 
@@ -289,7 +289,7 @@ class Updater extends require('events').EventEmitter {
   }
 
   async commitModules(versions) {
-    if (this.committedHostVersion == null) throw new Error('Cannot commit modules before host version.');
+    if (this.committedHostVersion == null) throw 'No host';
 
     this._commitModulesInner(versions ?? await this.queryCurrentVersions());
   }
@@ -301,13 +301,13 @@ class Updater extends require('events').EventEmitter {
   }
 
   getKnownFolder(name) {
-    if (!this.valid) throw new Error('Native fail');
+    if (!this.valid) throw 'No native';
 
     return this.nativeUpdater.known_folder(name);
   }
 
   createShortcut(options) {
-    if (!this.valid) throw new Error('Native fail');
+    if (!this.valid) throw 'No native';
 
     return this.nativeUpdater.create_shortcut(options);
   }
@@ -328,20 +328,9 @@ module.exports = {
     const root_path = paths.getInstallPath();
     if (root_path == null) return false;
   
-    let platform = process.platform;
-    switch (platform) {
-      case 'darwin':
-        platform = 'osx';
-        break;
-  
-      case 'win32':
-        platform = 'win';
-        break;
-    }
-  
     instance = new Updater({
       release_channel: buildInfo.releaseChannel,
-      platform,
+      platform: process.platform === 'win32' ? 'win' : 'osx',
       repository_url,
       root_path
     });
