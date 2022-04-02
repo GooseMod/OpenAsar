@@ -15,7 +15,7 @@ let splashWindow, updateTimeout, newUpdater;
 
 
 exports.initSplash = (startMinimized = false) => {
-  log('Splash', `Initing`);
+  log('Splash', `Init`);
 
   newUpdater = updater.getUpdater();
 
@@ -31,8 +31,6 @@ exports.initSplash = (startMinimized = false) => {
 
   if (process.env.OPENASAR_QUICKSTART || oaConfig.quickstart) setTimeout(() => {
     destroySplash();
-
-    if (newUpdater != null) require('../utils/u2QuickLoad'); // Manually load desktop_core module path for faster requiring
 
     launchMainWindow();
     
@@ -62,8 +60,6 @@ const destroySplash = () => {
 };
 
 const launchMainWindow = () => {
-  log('Splash', 'Launch main');
-
   for (const e in modulesListeners) moduleUpdater.events.removeListener(e, modulesListeners[e]); // Remove updater v1 listeners
 
   if (!launchedMainWindow && splashWindow != null) {
@@ -204,8 +200,9 @@ const updateUntilCurrent = async () => {
         return launchMainWindow();
       }
     } catch (e) {
-      log('Splash', 'Update failed', e);
+      log('Splash', e);
       sendState('fail');
+
       await new Promise(res => scheduleNextUpdate(res));
     }
   }

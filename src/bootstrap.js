@@ -29,8 +29,7 @@ if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAccele
 
 let desktopCore;
 const startCore = () => {
-  desktopCore = require('discord_desktop_core');
-  log('Bootstrap', 'Required core');
+  desktopCore = require('./utils/requireNative')('discord_desktop_core');
 
   desktopCore.startup({
     splashScreen,
@@ -77,7 +76,6 @@ const startUpdate = async () => {
 
     startCore();
   }, () => {
-    log('Bootstrap', 'Main window visible');
     desktopCore.setMainWindowVisible(!startMinimized);
 
     setTimeout(() => { // Try to update our asar
@@ -88,7 +86,7 @@ const startUpdate = async () => {
         try {
           require('./asarUpdate')();
         } catch (e) {
-          log('AsarUpdate', 'Failed', e);
+          log('AsarUpdate', e);
         }
       }
     }, 3000);

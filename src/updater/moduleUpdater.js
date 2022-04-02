@@ -406,7 +406,7 @@ exports.installPendingUpdates = () => {
         installModule(m, 0, join(bootstrapPath, m)); // Intentional invalid path
       }
     } catch (e) {
-      log('Modules', 'Bootstrap fail', e);
+      log('Modules', e);
     }
 
     return;
