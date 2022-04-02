@@ -1,6 +1,5 @@
 const { spawn } = require('child_process');
 const { app } = require('electron');
-const { EventEmitter } = require('events');
 const Module = require('module');
 const { join, resolve, basename } = require('path');
 const { hrtime } = require('process');
@@ -14,7 +13,7 @@ const TASK_STATE_WAITING = 'Waiting';
 const TASK_STATE_WORKING = 'Working';
 
 
-class Updater extends EventEmitter {
+class Updater extends require('events').EventEmitter {
   constructor(options) {
     super();
 
@@ -160,7 +159,7 @@ class Updater extends EventEmitter {
   _commitModulesInner(versions) {
     const base = join(this._getHostPath(), 'modules');
 
-    for (const mod in versions.current_modules) Module.globalPaths.push(join(base, `${mod}-${versions.current_modules[mod]}`));
+    for (const m in versions.current_modules) Module.globalPaths.push(join(base, `${m}-${versions.current_modules[m]}`));
   }
 
   _recordDownloadProgress(name, progress) {
