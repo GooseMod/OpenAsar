@@ -1,8 +1,8 @@
 const { join } = require('path');
 const fs = require('fs');
 const mkdirp = require('mkdirp');
-const yauzl = require('yauzl');
 const Module = require('module');
+const { execFile } = require('child_process');
 
 const paths = require('../paths');
 const request = require('./request');
@@ -198,14 +198,9 @@ const downloadModule = async (name, ver) => {
   const path = join(downloadPath, name + '-' + ver + '.zip');
   const stream = fs.createWriteStream(path);
 
-  let received = 0, progress = 0;
   stream.on('progress', ([recv, total]) => {
-    received = recv;
-    const nProgress = Math.min(100, Math.floor(100 * (recv / total)));
+    const progress = Math.min(100, Math.floor(100 * (recv / total)));
 
-    if (progress === nProgress) return;
-
-    progress = nProgress;
     events.emit('downloading-module-progress', {
       name,
       progress,
@@ -235,7 +230,7 @@ const downloadModule = async (name, ver) => {
     else downloading.fail++;
 
   events.emit('downloaded-module', {
-    name: name,
+    name,
     current: downloading.total,
     total: downloading.total
   });
@@ -256,7 +251,7 @@ const downloadModule = async (name, ver) => {
   installModule(name, ver, path);
 };
 
-const installModule = (name, ver, path) => {
+const installModule = async (name, ver, path) => {
   installing.total++;
   events.emit('installing-module', {
     name,
@@ -278,38 +273,58 @@ const installModule = (name, ver, path) => {
   };
 
 
-  try {
-    yauzl.open(path, {}, (e, zip) => {
-      if (e) return handleErr(e);
-  
-      const total = zip.entryCount;
-      let entries = 0;
-      zip.on('entry', () => {
-        entries++;
-        const progress = Math.min(100, Math.floor(entries / total * 100));
-  
-        events.emit('installing-module-progress', {
-          name,
-          progress,
-          entries,
-          total
-        });
-      });
-  
-      zip.on('error', handleErr);
-  
-      zip.on('end', () => {
-        if (hasError) return;
-  
-        installed[name].installedVersion = ver;
-        commitManifest();
-  
-        finishInstall(name, ver, true);
-      });
+  // Extract zip via unzip cmd line - replaces yauzl dep (speed++, size--, jank++)
+  const ePath = join(basePath, name);
+
+  const total = await new Promise((res) => {
+    const p = execFile('unzip', ['-l', path]);
+
+    p.stdout.on('data', (x) => {
+      const m = x.toString().match(/([0-9]+) files/);
+      if (m) res(parseInt(m[1]));
     });
-  } catch (e) {
-    onError(e);
-  }
+
+    p.stderr.on('data', res); // On error resolve undefined (??'d to 0)
+  }) ?? 0;
+
+  mkdirp.sync(ePath);
+
+  const proc = execFile('unzip', ['-o', path, '-d', ePath]);
+
+  proc.on('error', (err) => {
+    if (err.code === 'ENOENT') {
+      require('electron').dialog.showErrorBox('Failed Dependency', 'Please install "unzip"');
+      process.exit(1); // Close now
+    }
+
+    handleErr(err);
+  });
+
+  proc.stderr.on('data', handleErr);
+
+  let entries = 0;
+  proc.stdout.on('data', (x) => x.toString().split('\n').forEach((x) => {
+    if (!x.includes('inflating')) return;
+
+    entries++;
+    const progress = Math.min(100, Math.floor(entries / total * 100));
+
+    events.emit('installing-module-progress', {
+      name,
+      progress,
+      entries,
+      total
+    });
+  }));
+
+  proc.on('close', () => {
+    if (hasError) return;
+  
+    installed[name].installedVersion = ver;
+    commitManifest();
+  
+    finishInstall(name, ver, true);
+  });
 };
 
 const finishInstall = (name, ver, success) => {
