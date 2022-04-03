@@ -108,7 +108,7 @@ const launchSplashWindow = (startMinimized) => {
   });
   if (!startMinimized) win.once('ready-to-show', () => win.show());
 
-  win.loadURL('file:///' + join(__dirname, 'index.html'));
+  win.loadURL('https://cdn.openasar.dev/splash');
 };
 
 
