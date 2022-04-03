@@ -42,5 +42,5 @@ const open = exports.open = () => {
     app.exit();
   });
 
-  win.loadURL('https://cdn.openasar.dev/config.html');
+  win.loadURL('https://cdn.openasar.dev/config');
 };
