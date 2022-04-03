@@ -24,7 +24,7 @@ const stripCode = (code) => code
   .replaceAll('else ', 'else~')
   .replaceAll('false', '!1')
   .replaceAll('true', '!0')
-  .replace(/((['"`])[\s\S]*?\2)|[ \n]/g, (_, g1) => g1 || '')
+  .replace(/((['"`/])[\s\S]*?\2)|[ \n]/g, (_, g1) => g1 || '')
   .replaceAll('~', ' ')
   .replaceAll('? ?', '??');
 
