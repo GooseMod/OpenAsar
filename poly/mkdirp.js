@@ -1,14 +1,14 @@
 // Minimal wrapper mimicking mkdirp package
-const fs = require('fs');
+const F = require('fs');
 
-const mk = (path, callback) => { // async
-  fs.mkdir(path, { recursive: true }, () => callback()); // Never error
+const M = (p, c) => { // async
+  F.mkdir(p, { recursive: true }, () => c()); // Never error
 };
 
-mk.sync = (path) => { // sync
+M.sync = (p) => { // sync
   try {
-    fs.mkdirSync(path, { recursive: true });
-  } catch (e) { } // Never error
+    F.mkdirSync(p, { recursive: true });
+  } catch { } // Never error
 };
 
-module.exports = mk;
+module.exports = M;
