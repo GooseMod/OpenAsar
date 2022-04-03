@@ -28,4 +28,7 @@ Compared to Discord's original, OpenAsar is <2% of the size. This is because whe
 Quickstart "skips" a few Discord features like the splash screen and waiting for updates in favour of speed. It is currently experimental and not fully recommended for normal use.
 
 ### Is this 100% original?
-No, and depends on your definition. By original if you mean all of this is rewritten, not containing any original Discord code - not yet but we hope for v2.0. If you mean original by design, etc. - no, as we have to follow Discord APIs to maintain compatibility.
+No, and depends on your definition. By original if you mean all of this is rewritten, the vast majority (~90%) is self-rewritten or modified in some way. If you mean original by design, etc. - no, as we have to follow Discord APIs to maintain compatibility.
+
+### Can I use this in *my* project?
+Sure. Just make sure to properly [respect the license](LICENSE) and clearly / transparently credit.
