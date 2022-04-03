@@ -96,7 +96,7 @@ const launchSplashWindow = (startMinimized) => {
   const win = splashWindow;
   const wc = win.webContents;
 
-  if (process.platform !== 'darwin') win.on('closed', () => { if (!launchedMainWindow) app.quit(); });
+  if (process.platform !== 'darwin') win.on('closed', () => !launchedMainWindow && app.quit());
 
   wc.once('dom-ready', () => {
     if (oaConfig.themeSync !== false) wc.insertCSS(JSON.parse(fs.readFileSync(join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
