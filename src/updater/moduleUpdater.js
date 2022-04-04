@@ -32,7 +32,7 @@ const resetTracking = () => {
   installing = Object.assign({}, base);
 };
 
-exports.init = (endpoint, _settings, buildInfo) => {
+exports.init = (endpoint, _settings, { releaseChannel, version }) => {
   log('Modules', 'Init');
 
   settings = _settings;
@@ -123,11 +123,11 @@ exports.init = (endpoint, _settings, buildInfo) => {
   });
 
   const platform = process.platform === 'darwin' ? 'osx' : 'linux';
-  hostUpdater.setFeedURL(`${endpoint}/updates/${buildInfo.releaseChannel}?platform=${platform}&version=${buildInfo.version}`);
+  hostUpdater.setFeedURL(`${endpoint}/updates/${releaseChannel}?platform=${platform}&version=${version}`);
 
-  baseUrl = `${endpoint}/modules/${buildInfo.releaseChannel}`;
+  baseUrl = `${endpoint}/modules/${releaseChannel}`;
   baseQuery = {
-    host_version: buildInfo.version,
+    host_version: version,
     platform
   };
 };
