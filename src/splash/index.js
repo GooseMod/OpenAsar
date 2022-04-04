@@ -19,7 +19,7 @@ exports.initSplash = (startMin = false) => {
 
   if (newUpdater == null) initModuleUpdater();
 
-  launchSplashWindow(startMin);
+  launchSplash(startMin);
 
   if (newUpdater != null) {
     updateUntilCurrent();
@@ -32,7 +32,7 @@ exports.initSplash = (startMin = false) => {
 
     if (newUpdater != null) require('../utils/u2QuickLoad'); // Manually load module paths for faster requiring
 
-    launchMainWindow();
+    launchMain();
     
     setTimeout(() => {
       events.emit('APP_SHOULD_SHOW');
@@ -59,7 +59,7 @@ const destroySplash = () => {
   }, 100);
 };
 
-const launchMainWindow = () => {
+const launchMain = () => {
   for (const e in modulesListeners) moduleUpdater.events.removeListener(e, modulesListeners[e]); // Remove updater v1 listeners
 
   if (!launchedMainWindow && splashWindow != null) {
@@ -77,7 +77,7 @@ const sendState = (status) => {
 };
 
 
-const launchSplashWindow = (startMin) => {
+const launchSplash = (startMin) => {
   splashWindow = new BrowserWindow({
     width: 300,
     height: process.platform === 'darwin' ? 300 : 350,
@@ -198,7 +198,7 @@ const updateUntilCurrent = async () => {
         await newUpdater.startCurrentVersion();
         newUpdater.collectGarbage();
 
-        return launchMainWindow();
+        return launchMain();
       }
     } catch (e) {
       log('Splash', e);
@@ -238,7 +238,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     if (!succeeded) {
       handleFail();
     } else if (updateCount === 0) {
-      launchMainWindow();
+      launchMain();
     }
   });
 
