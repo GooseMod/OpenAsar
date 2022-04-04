@@ -22,17 +22,18 @@ class HostLinux extends events.EventEmitter {
     try {
       const current = vParse(app.getVersion());
 
-      get(this.updateUrl, (_e, res, body) => {
+      get(this.updateUrl, (err, res, body) => {
+        if (err) return this.emit('error');
         if (res.statusCode === 204) return this.emit('update-not-available');
-        const latest = vParse(JSON.parse(body).name);
 
+        const latest = vParse(JSON.parse(body).name);
         if (vNewer(latest, current)) return this.emit('update-manually', latest.join('.'));
 
         this.emit('update-not-available');
       });
     } catch (e) {
       log('HostLinux', 'Error', e);
-      this.emit('error', e);
+      this.emit('error');
     }
   }
 }
