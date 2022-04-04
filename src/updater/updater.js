@@ -144,7 +144,17 @@ class Updater extends require('events').EventEmitter {
     const next = resolve(join(this._getHostPath(), basename(process.execPath)));
   
     if (next != cur && !options?.allowObsoleteHost) {
-      app.once('will-quit', spawn(next, [], {
+      // Retain OpenAsar
+      const fs = require('original-fs');
+  
+      const getAsar = (p) => join(p, '..', 'resources', 'app.asar');
+      const cAsar = getAsar(cur);
+      const nAsar = getAsar(next);
+
+      fs.copyFileSync(nAsar, nAsar + '.backup'); // Copy new app.asar to backup file (<new>/app.asar -> <new>/app.asar.backup)
+      fs.copyFileSync(cAsar, nAsar); // Copy old app.asar to new app.asar (<old>/app.asar -> <new>/app.asar)
+      
+      app.once('will-quit', () => spawn(next, [], {
         detached: true,
         stdio: 'inherit'
       }));

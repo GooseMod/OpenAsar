@@ -1,7 +1,6 @@
 const { join, basename, dirname } = require('path');
 
 const registry = require('../utils/registry');
-const retainAsar = require('./retainAsar');
 
 const appSettings = require('../appSettings');
 const settings = appSettings.getSettings();
@@ -23,8 +22,6 @@ exports.update = (callback) => {
   log('AutoStart', 'Update');
 
   exports.isInstalled(installed => installed ? exports.install(callback) : callback()); // Reinstall if installed, else just callback
-
-  retainAsar(); // Retain OpenAsar
 };
 
 exports.uninstall = (callback) => {
