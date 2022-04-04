@@ -118,11 +118,12 @@ exports.init = (endpoint, _settings, buildInfo) => {
     log('Modules', 'Host error');
 
     checking = false;
-    // die
+
+    setTimeout(() => hostUpdater.checkForUpdates(), 1000); // Retry after 1s
   });
 
   const platform = process.platform === 'darwin' ? 'osx' : 'linux';
-  hostUpdater.setFeedURL.bind(hostUpdater)(`${endpoint}/updates/${buildInfo.releaseChannel}?platform=${platform}&version=${buildInfo.version}`);
+  hostUpdater.setFeedURL(`${endpoint}/updates/${buildInfo.releaseChannel}?platform=${platform}&version=${buildInfo.version}`);
 
   baseUrl = `${endpoint}/modules/${buildInfo.releaseChannel}`;
   baseQuery = {
