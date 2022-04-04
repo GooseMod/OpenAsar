@@ -15,8 +15,6 @@ let splashWindow, updateTimeout, newUpdater;
 
 
 exports.initSplash = (startMinimized = false) => {
-  log('Splash', `Init`);
-
   newUpdater = updater.getUpdater();
 
   if (newUpdater == null) initModuleUpdater();

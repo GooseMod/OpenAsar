@@ -33,8 +33,6 @@ const resetTracking = () => {
 };
 
 exports.init = (endpoint, _settings, { releaseChannel, version }) => {
-  log('Modules', 'Init');
-
   settings = _settings;
 
   skipHost = settings.get('SKIP_HOST_UPDATE');
