@@ -10,13 +10,12 @@ const request = require('./request');
 const events = exports.events = new (require('events').EventEmitter)();
 exports.INSTALLED_MODULE = 'installed-module'; // Fixes DiscordNative ensureModule as it uses export
 
-let settings,
-  bootstrapping,
+let bootstrapping,
   skipHost, skipModule,
   remote = {},
   installed = {},
   downloading, installing,
-  basePath, manifestPath, downloadPath, bootstrapPath,
+  basePath, manifestPath, downloadPath,
   hostUpdater,
   baseUrl, baseQuery,
   checking, hostAvail, lastUpdate;
@@ -32,16 +31,13 @@ const resetTracking = () => {
   installing = Object.assign({}, base);
 };
 
-exports.init = (endpoint, _settings, { releaseChannel, version }) => {
-  settings = _settings;
-
+exports.init = (endpoint, settings, { releaseChannel, version }) => {
   skipHost = settings.get('SKIP_HOST_UPDATE');
   skipModule = settings.get('SKIP_MODULE_UPDATE');
 
   basePath = join(paths.getUserDataVersioned(), 'modules');
   manifestPath = join(basePath, 'installed.json');
   downloadPath = join(basePath, 'pending');
-  bootstrapPath = join(paths.getResources(), 'bootstrap', 'manifest.json');
 
   resetTracking();
 
@@ -402,16 +398,11 @@ exports.installPendingUpdates = () => {
   if (bootstrapping) {
     log('Modules', 'Bootstrapping...');
 
-    try {
-      for (const m in JSON.parse(fs.readFileSync(bootstrapPath))) { // Read [resources]/bootstrap/manifest.json, with "moduleName": version (always 0)
-        installed[m] = { installedVersion: 0 }; // Set initial
-        installModule(m, 0, join(bootstrapPath, m)); // Intentional invalid path
-      }
-    } catch (e) {
-      log('Modules', e);
+    for (const m in JSON.parse(fs.readFileSync(join(paths.getResources(), 'bootstrap', 'manifest.json')))) { // Read [resources]/bootstrap/manifest.json, with "moduleName": version (always 0)
+      installed[m] = { installedVersion: 0 }; // Set initial version as 0
     }
 
-    return;
+    return exports.checkForUpdates();
   }
 
   events.emit('no-pending-updates');
