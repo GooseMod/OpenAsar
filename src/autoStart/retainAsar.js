@@ -9,7 +9,7 @@ module.exports = () => {
 
   const installDir = paths.getInstallPath();
 
-  const nextRes = join(installDir, fs.readdirSync(installDir).reverse().find((x) => x.startsWith('app-1')), 'resources');
+  const nextRes = join(installDir, fs.readdirSync(installDir).reverse().find(x => x.startsWith('app-1')), 'resources');
   const next = join(nextRes, 'app.asar');
   const backup = join(nextRes, 'app.asar.backup');
 

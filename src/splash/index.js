@@ -277,7 +277,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   add('installing-module-progress', progressCallback(installs));
 
 
-  add('update-manually', (e) => {
+  add('update-manually', e => {
     splashState.newVersion = e.newVersion;
     sendState('update-manually');
   });

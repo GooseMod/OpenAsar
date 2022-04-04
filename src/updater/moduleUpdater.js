@@ -80,7 +80,7 @@ exports.init = (endpoint, _settings, { releaseChannel, version }) => {
 
   hostUpdater.on('update-not-available', hostPassed);
 
-  hostUpdater.on('update-manually', (v) => {
+  hostUpdater.on('update-manually', v => {
     log('Modules', 'Host manual');
     checking = false;
   
@@ -260,7 +260,7 @@ const installModule = async (name, ver, path) => {
 
   let hasError;
 
-  const handleErr = (e) => {
+  const handleErr = e => {
     if (hasError) return;
     hasError = true;
 
@@ -276,7 +276,7 @@ const installModule = async (name, ver, path) => {
   const total = await new Promise((res) => {
     const p = execFile('unzip', ['-l', path]);
 
-    p.stdout.on('data', (x) => {
+    p.stdout.on('data', x => {
       const m = x.toString().match(/([0-9]+) files/);
       if (m) res(parseInt(m[1]));
     });
@@ -300,8 +300,8 @@ const installModule = async (name, ver, path) => {
   proc.stderr.on('data', handleErr);
 
   let cur = 0;
-  proc.stdout.on('data', (x) => x.toString().split('\n').forEach((x) => {
-    if (!x.includes('inflating')) return;
+  proc.stdout.on('data', x => x.toString().split('\n').forEach(y => {
+    if (!y.includes('inflating')) return;
 
     cur++;
     const progress = Math.min(100, Math.floor(cur / total * 100));

@@ -3,7 +3,7 @@ const events = require('events');
 
 const { get } = require('request');
 
-const vParse = (s) => s.split('.').map((x) => parseInt(x));
+const vParse = s => s.split('.').map(x => parseInt(x));
 const vNewer = (a, b) => a.some((x, i) => x === b[i] ? undefined : (x > b[i]));
 
 class HostLinux extends events.EventEmitter {

@@ -32,7 +32,7 @@ const open = exports.open = () => {
     settings.save(); // Ensure saving
   });
 
-  ipcMain.on('cg', (e) => {
+  ipcMain.on('cg', e => {
     e.returnValue = config;
   });
 

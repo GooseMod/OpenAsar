@@ -3,4 +3,4 @@
 // For Module Updater: get root path for all modules in globalPaths
 
 const g = require('module').globalPaths;
-module.exports = (n, e = '') => require(require('path').join(g.find((x) => x.includes(n)) ?? g[0], n, e));
+module.exports = (n, e = '') => require(require('path').join(g.find(x => x.includes(n)) ?? g[0], n, e));

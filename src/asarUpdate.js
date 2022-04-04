@@ -21,9 +21,9 @@ module.exports = async () => { // (Try) update asar
   const downloadSuccess = await new Promise((res) => {
     const file = fs.createWriteStream(downloadPath);
 
-    let writeError = false;
-    file.on('error', err => {
-      log('AsarUpdate', 'Failed to write', err);
+    let writeError;
+    file.on('error', e => {
+      log('AsarUpdate', 'Failed to write', e);
       file.close();
 
       writeError = true;

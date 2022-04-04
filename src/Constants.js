@@ -1,7 +1,7 @@
 const { releaseChannel } = require('./utils/buildInfo');
 const settings = require('./appSettings').getSettings();
 
-const titleCase = (s) => s[0].toUpperCase() + s.slice(1);
+const titleCase = s => s[0].toUpperCase() + s.slice(1);
 
 const appNameSuffix = releaseChannel === 'stable' ? '' : titleCase(releaseChannel);
 const APP_NAME = 'Discord' + appNameSuffix;
