@@ -14,12 +14,12 @@ let restartRequired = false;
 let splashWindow, updateTimeout, newUpdater;
 
 
-exports.initSplash = (startMinimized = false) => {
+exports.initSplash = (startMin = false) => {
   newUpdater = updater.getUpdater();
 
   if (newUpdater == null) initModuleUpdater();
 
-  launchSplashWindow(startMinimized);
+  launchSplashWindow(startMin);
 
   if (newUpdater != null) {
     updateUntilCurrent();
@@ -77,7 +77,7 @@ const sendState = (status) => {
 };
 
 
-const launchSplashWindow = (startMinimized) => {
+const launchSplashWindow = (startMin) => {
   splashWindow = new BrowserWindow({
     width: 300,
     height: process.platform === 'darwin' ? 300 : 350,
@@ -104,7 +104,8 @@ const launchSplashWindow = (startMinimized) => {
       wc.executeJavaScript(`debug.textContent = '${buildInfo.releaseChannel} ${buildInfo.version}\\nOpenAsar ${oaVersion}'`);
     }
   });
-  if (!startMinimized) win.once('ready-to-show', () => win.show());
+
+  if (!startMin) win.once('ready-to-show', () => win.show());
 
   win.loadURL('https://cdn.openasar.dev/splash');
 };
