@@ -62,8 +62,6 @@ exports.init = (endpoint, _settings, { releaseChannel, version }) => {
 
   hostUpdater = require('./hostUpdater');
 
-  hostUpdater.on('checking-for-update', () => events.emit('checking-for-updates'));
-
   hostUpdater.on('update-available', () => {
     log('Modules', 'Host available');
   
@@ -365,14 +363,10 @@ exports.checkForUpdates = () => {
   if (checking) return;
   checking = true;
 
-  const skipThis = lastUpdate > Date.now() - 10000;
+  events.emit('checking-for-updates');
 
-  if (skipHost || skipThis) {
-    events.emit('checking-for-updates');
-    hostPassed(skipModule || skipThis);
-  } else {
-    hostUpdater.checkForUpdates();
-  }
+  if (skipHost || lastUpdate > Date.now() - 10000) hostPassed(true);
+    else hostUpdater.checkForUpdates();
 };
 
 exports.quitAndInstallUpdates = () => {
