@@ -10,7 +10,6 @@ let splashState = {};
 let modulesListeners = {};
 let launchedMainWindow = false;
 let updateAttempt = 0;
-let restartRequired = false;
 let splashWindow, updateTimeout, newUpdater;
 
 
@@ -210,6 +209,8 @@ const updateUntilCurrent = async () => {
 };
 
 const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
+  let restartRequired;
+
   const add = (event, listener) => {
     modulesListeners[event] = listener;
     moduleUpdater.events.on(event, listener);
@@ -270,14 +271,11 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   add('installing-modules-finished', callbackCheck);
   add('no-pending-updates', callbackCheck);
 
+  const progressCallback = (tracker) => ({ name, cur, total }) => tracker.record(name, '', cur, total);
 
-  add('downloading-module-progress', ({ name, recv, total }) => {
-    downloads.record(name, '', recv, total);
-  });
+  add('downloading-module-progress', progressCallback(downloads));
+  add('installing-module-progress', progressCallback(installs));
 
-  add('installing-module-progress', ({ name, entries, total }) => {
-    installs.record(name, '', entries, total);
-  });
 
   add('update-manually', (e) => {
     splashState.newVersion = e.newVersion;

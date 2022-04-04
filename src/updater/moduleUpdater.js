@@ -195,13 +195,13 @@ const downloadModule = async (name, ver) => {
   const path = join(downloadPath, name + '-' + ver + '.zip');
   const stream = fs.createWriteStream(path);
 
-  stream.on('progress', ([recv, total]) => {
-    const progress = Math.min(100, Math.floor(100 * (recv / total)));
+  stream.on('progress', ([cur, total]) => {
+    const progress = Math.min(100, Math.floor(100 * (cur / total)));
 
     events.emit('downloading-module-progress', {
       name,
       progress,
-      recv,
+      cur,
       total
     });
   });
@@ -299,17 +299,17 @@ const installModule = async (name, ver, path) => {
 
   proc.stderr.on('data', handleErr);
 
-  let entries = 0;
+  let cur = 0;
   proc.stdout.on('data', (x) => x.toString().split('\n').forEach((x) => {
     if (!x.includes('inflating')) return;
 
-    entries++;
-    const progress = Math.min(100, Math.floor(entries / total * 100));
+    cur++;
+    const progress = Math.min(100, Math.floor(cur / total * 100));
 
     events.emit('installing-module-progress', {
       name,
       progress,
-      entries,
+      cur,
       total
     });
   }));
