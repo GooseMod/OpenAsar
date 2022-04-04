@@ -1,5 +1,7 @@
 # OpenAsar
-**An experimental open-source alternative of Discord desktop's `app.asar`**
+![Nightly Status](https://github.com/GooseMod/OpenAsar/actions/workflows/nightly.yml/badge.svg) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://choosealicense.com/licenses/mit/l) ![GitHub Sponsors](https://img.shields.io/github/sponsors/CanadaHonk?label=Sponsors&logo=github)
+
+**An open-source alternative of Discord desktop's `app.asar`**
 
 ## Features
 - **:rocket: Startup Speed**: ~2x faster startup times (up to ~4x with experimental config)
