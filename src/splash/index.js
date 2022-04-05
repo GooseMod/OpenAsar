@@ -10,7 +10,7 @@ let splashState = {};
 let modulesListeners = {};
 let launchedMainWindow = false;
 let updateAttempt = 0;
-let splashWindow, updateTimeout, newUpdater;
+let splashWindow, newUpdater;
 
 
 exports.initSplash = (startMin = false) => {
@@ -43,7 +43,6 @@ exports.pageReady = () => destroySplash() || process.nextTick(() => events.emit(
 const destroySplash = () => {
   log('Splash', 'Destroy');
 
-  v1_timeoutStop();
   if (!splashWindow) return;
 
   splashWindow.setSkipTaskbar(true);
@@ -223,14 +222,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     sendState('fail');
   };
 
-  add(CHECKING_FOR_UPDATES, () => {
-    v1_timeoutStart();
-    sendState(CHECKING_FOR_UPDATES);
-  });
-
   add('update-check-finished', ({ succeeded, updateCount }) => {
-    v1_timeoutStop();
-
     installs.reset();
     downloads.reset();
 
@@ -242,8 +234,6 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   });
 
   add('downloading-module', ({ name }) => {
-    v1_timeoutStop();
-
     downloads.record(name, 'Waiting');
     installs.record(name, 'Waiting');
   });
@@ -279,10 +269,9 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     splashState.newVersion = e.newVersion;
     sendState('update-manually');
   });
-};
 
-const v1_timeoutStart = () => !updateTimeout && (updateTimeout = setTimeout(scheduleNextUpdate, 10000));
-const v1_timeoutStop = () => updateTimeout && (updateTimeout = clearTimeout(updateTimeout));
+  sendState(CHECKING_FOR_UPDATES);
+};
 
 const scheduleNextUpdate = (callback = moduleUpdater.checkForUpdates) => { // Used by v1 and v2, default to v1 as used more widely in it
   updateAttempt++;
