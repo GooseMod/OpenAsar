@@ -30,5 +30,5 @@ Quickstart "skips" a few Discord features like the splash screen and waiting for
 ### Is this 100% original?
 No, and depends on your definition. By original if you mean all of this is rewritten, the vast majority (~90%) is self-rewritten or modified in some way. If you mean original by design, etc. - no, as we have to follow Discord APIs to maintain compatibility.
 
-### Can I use this in *my* project?
-Sure. Just make sure to properly [respect the license](LICENSE) and clearly / transparently credit.
+### Can I use this in my project?
+Sure! Just make sure to properly [respect the license](LICENSE) and clearly / transparently credit OpenAsar.
