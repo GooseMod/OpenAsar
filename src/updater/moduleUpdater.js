@@ -31,7 +31,7 @@ const resetTracking = () => {
   installing = Object.assign({}, base);
 };
 
-exports.init = (endpoint, settings, { releaseChannel, version }) => {
+exports.init = (endpoint, { releaseChannel, version }) => {
   skipHost = settings.get('SKIP_HOST_UPDATE');
   skipModule = settings.get('SKIP_MODULE_UPDATE');
 

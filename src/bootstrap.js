@@ -14,23 +14,24 @@ global.releaseChannel = buildInfo.releaseChannel;
 
 log('BuildInfo', buildInfo);
 
-const errorHandler = require('./errorHandler');
-errorHandler.init();
+const { fatal, handled, init: EHInit } = require('./errorHandler');
+EHInit();
 
-const splashScreen = require('./splash');
+const splash = require('./splash');
 
 const updater = require('./updater/updater');
 const moduleUpdater = require('./updater/moduleUpdater');
-const appUpdater = require('./updater/appUpdater');
 
 if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
+
+const autoStart = require('./autoStart');
 
 let desktopCore;
 const startCore = () => {
   desktopCore = require('./utils/requireNative')('discord_desktop_core');
 
   desktopCore.startup({
-    splashScreen,
+    splashScreen: splash,
     moduleUpdater,
     buildInfo,
     Constants,
@@ -38,7 +39,7 @@ const startCore = () => {
     appSettings: require('./appSettings'),
     paths: require('./paths'),
     GPUSettings: require('./GPUSettings'),
-    autoStart: require('./autoStart'),
+    autoStart,
     crashReporterSetup: require('./crashReporterSetup'),
   });
 
@@ -50,7 +51,7 @@ const startCore = () => {
     let done = false;
     bw.webContents.on('dom-ready', () => {
       if (!done) { // Only run once
-        splashScreen.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
+        splash.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
 
         done = true;
       }
@@ -67,14 +68,29 @@ const startCore = () => {
 };
 
 const startUpdate = async () => {
-  const startMinimized = process.argv.includes('--start-minimized');
+  const startMin = process.argv.includes('--start-minimized');
 
-  appUpdater.update(startMinimized, () => {
-    if (process.env.OPENASAR_NOSTART) return;
+  if (updater.tryInitUpdater(buildInfo, Constants.NEW_UPDATE_ENDPOINT)) {
+    const inst = updater.getUpdater();
 
-    startCore();
-  }, () => {
-    desktopCore.setMainWindowVisible(!startMinimized);
+    inst.on('host-updated', () => autoStart.update(() => {}));
+    inst.on('unhandled-exception', fatal);
+    inst.on('InconsistentInstallerState', fatal);
+    inst.on('update-error', handled);
+
+    require('./firstRun').do(inst);
+  } else {
+    moduleUpdater.init(Constants.UPDATE_ENDPOINT, buildInfo);
+  }
+
+  splash.initSplash(startMin);
+
+  splash.events.once('APP_SHOULD_LAUNCH', () => {
+    if (!process.env.OPENASAR_NOSTART) startCore();
+  });
+
+  splash.events.once('APP_SHOULD_SHOW', () => {
+    desktopCore.setMainWindowVisible(!startMin);
 
     setTimeout(() => { // Try to update our asar
       const config = require('./config');
