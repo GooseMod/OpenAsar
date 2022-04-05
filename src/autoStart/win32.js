@@ -2,9 +2,6 @@ const { join, basename, dirname } = require('path');
 
 const registry = require('../utils/registry');
 
-const appSettings = require('../appSettings');
-const settings = appSettings.getSettings();
-
 const appName = basename(process.execPath, '.exe');
 const fullExeName = basename(process.execPath);
 const updatePath = join(dirname(process.execPath), '..', 'Update.exe');

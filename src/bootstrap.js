@@ -18,13 +18,11 @@ const errorHandler = require('./errorHandler');
 errorHandler.init();
 
 const splashScreen = require('./splash');
-const appSettings = require('./appSettings');
 
 const updater = require('./updater/updater');
 const moduleUpdater = require('./updater/moduleUpdater');
 const appUpdater = require('./updater/appUpdater');
 
-const settings = appSettings.getSettings();
 if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
 
 let desktopCore;
@@ -35,9 +33,9 @@ const startCore = () => {
     splashScreen,
     moduleUpdater,
     buildInfo,
-    appSettings,
     Constants,
     updater,
+    appSettings: require('./appSettings'),
     paths: require('./paths'),
     GPUSettings: require('./GPUSettings'),
     autoStart: require('./autoStart'),

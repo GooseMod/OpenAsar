@@ -18,7 +18,7 @@ exports.update = (startMin, done, show) => {
 
     require('../firstRun').do(inst);
   } else {
-    require('./moduleUpdater').init(Constants.UPDATE_ENDPOINT, require('../appSettings').getSettings(), buildInfo);
+    require('./moduleUpdater').init(Constants.UPDATE_ENDPOINT, settings, buildInfo);
   }
 
   splash.initSplash(startMin);

@@ -1,5 +1,4 @@
 const { releaseChannel } = require('./utils/buildInfo');
-const settings = require('./appSettings').getSettings();
 
 const titleCase = s => s[0].toUpperCase() + s.slice(1);
 

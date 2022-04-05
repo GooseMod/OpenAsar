@@ -1,8 +1,6 @@
 const { BrowserWindow, ipcMain, app } = require('electron');
 const { join } = require('path');
 
-const settings = require('../appSettings').getSettings();
-
 ipcMain.on('DISCORD_UPDATED_QUOTES', (e, c) => {
   if (c === 'o') open();
 });

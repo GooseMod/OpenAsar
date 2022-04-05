@@ -9,7 +9,8 @@ process.resourcesPath = require('path').join(__dirname, '..'); // Force resource
 
 require('./paths').init();
 
-global.oaConfig = require('./appSettings').getSettings().get('openasar', {});
+global.settings = require('./appSettings').getSettings();
+global.oaConfig = settings.get('openasar', {});
 require('./cmdSwitches')();
 
 if (process.argv.includes('--overlay-host')) { // If overlay
