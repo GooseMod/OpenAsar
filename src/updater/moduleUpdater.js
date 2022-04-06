@@ -111,7 +111,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 
     checking = false;
 
-    setTimeout(() => hostUpdater.checkForUpdates(), 1000); // Retry after 1s
+    events.emit('update-check-finished', { succeeded: false });
   });
 
   const platform = process.platform === 'darwin' ? 'osx' : 'linux';
