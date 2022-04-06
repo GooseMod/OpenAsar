@@ -74,8 +74,6 @@ const startUpdate = async () => {
     moduleUpdater.init(Constants.UPDATE_ENDPOINT, buildInfo);
   }
 
-  splash.initSplash(startMin);
-
   splash.events.once('APP_SHOULD_LAUNCH', () => {
     if (!process.env.OPENASAR_NOSTART) startCore();
   });
@@ -100,6 +98,8 @@ const startUpdate = async () => {
       }
     }, 3000);
   });
+
+  splash.initSplash(startMin);
 };
 
 
