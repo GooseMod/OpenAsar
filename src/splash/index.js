@@ -38,20 +38,19 @@ exports.initSplash = (startMin = false) => {
 };
 
 exports.focusWindow = () => splashWindow?.focus?.();
-exports.pageReady = () => destroySplash() || process.nextTick(() => events.emit('APP_SHOULD_SHOW'));
+exports.pageReady = () => destroySplash() && process.nextTick(() => events.emit('APP_SHOULD_SHOW'));
 
 const destroySplash = () => {
-  log('Splash', 'Destroy');
+  splashWindow?.setSkipTaskbar?.(true);
 
-  if (!splashWindow) return;
-
-  splashWindow.setSkipTaskbar(true);
   setTimeout(() => {
     if (!splashWindow) return;
 
     splashWindow.hide();
     splashWindow.close();
     splashWindow = null;
+
+    return true;
   }, 100);
 };
 

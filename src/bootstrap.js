@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app } = require('electron');
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
@@ -28,6 +28,20 @@ const autoStart = require('./autoStart');
 
 let desktopCore;
 const startCore = () => {
+  app.on('browser-window-created', (e, bw) => { // Main window injection
+    bw.webContents.on('dom-ready', () => {
+      splash.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
+
+      const [ channel, hash ] = oaVersion.split('-'); // Split via -
+
+      bw.webContents.executeJavaScript(
+        readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
+          .replaceAll('<channel>', channel)
+          .replaceAll('<hash>', hash || 'custom')
+      );
+    });
+  });
+
   desktopCore = require('./utils/requireNative')('discord_desktop_core');
 
   desktopCore.startup({
@@ -41,29 +55,6 @@ const startCore = () => {
     GPUSettings: require('./GPUSettings'),
     autoStart,
     crashReporterSetup: require('./crashReporterSetup'),
-  });
-
-  setImmediate(() => {
-    if (!global.mainWindowId) return;
-
-    const bw = BrowserWindow.fromId(global.mainWindowId);
-
-    let done = false;
-    bw.webContents.on('dom-ready', () => {
-      if (!done) { // Only run once
-        splash.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
-
-        done = true;
-      }
-
-      const [ channel, hash ] = oaVersion.split('-'); // Split via -
-
-      bw.webContents.executeJavaScript(
-        readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
-          .replaceAll('<channel>', channel)
-          .replaceAll('<hash>', hash || 'custom')
-      );
-    });
   });
 };
 
