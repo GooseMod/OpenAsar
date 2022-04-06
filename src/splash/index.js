@@ -38,7 +38,7 @@ exports.initSplash = (startMin = false) => {
 };
 
 exports.focusWindow = () => splashWindow?.focus?.();
-exports.pageReady = () => destroySplash() && process.nextTick(() => events.emit('APP_SHOULD_SHOW'));
+exports.pageReady = () => destroySplash() || process.nextTick(() => events.emit('APP_SHOULD_SHOW'));
 
 const destroySplash = () => {
   splashWindow?.setSkipTaskbar?.(true);
@@ -49,8 +49,6 @@ const destroySplash = () => {
     splashWindow.hide();
     splashWindow.close();
     splashWindow = null;
-
-    return true;
   }, 100);
 };
 

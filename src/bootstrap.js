@@ -80,7 +80,11 @@ const startUpdate = async () => {
     if (!process.env.OPENASAR_NOSTART) startCore();
   });
 
+  let done;
   splash.events.once('APP_SHOULD_SHOW', () => {
+    if (done) return;
+    done = true;
+
     desktopCore.setMainWindowVisible(!startMin);
 
     setTimeout(() => { // Try to update our asar
