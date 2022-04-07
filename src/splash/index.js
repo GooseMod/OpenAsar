@@ -10,7 +10,7 @@ let splashState = {};
 let modulesListeners = {};
 let launchedMainWindow = false;
 let updateAttempt = 0;
-let splashWindow, newUpdater;
+let win, newUpdater;
 
 
 exports.initSplash = (startMin = false) => {
@@ -37,25 +37,25 @@ exports.initSplash = (startMin = false) => {
   }, 300);
 };
 
-exports.focusWindow = () => splashWindow?.focus?.();
+exports.focusWindow = () => win?.focus?.();
 exports.pageReady = () => destroySplash() || process.nextTick(() => events.emit('APP_SHOULD_SHOW'));
 
 const destroySplash = () => {
-  splashWindow?.setSkipTaskbar?.(true);
+  win?.setSkipTaskbar?.(true);
 
   setTimeout(() => {
-    if (!splashWindow) return;
+    if (!win) return;
 
-    splashWindow.hide();
-    splashWindow.close();
-    splashWindow = null;
+    win.hide();
+    win.close();
+    win = null;
   }, 100);
 };
 
 const launchMain = () => {
   for (const e in modulesListeners) moduleUpdater.events.removeListener(e, modulesListeners[e]); // Remove updater v1 listeners
 
-  if (!launchedMainWindow && splashWindow != null) {
+  if (!launchedMainWindow && win != null) {
     sendState('starting');
 
     launchedMainWindow = true;
@@ -65,13 +65,13 @@ const launchMain = () => {
 
 const sendState = (status) => {
   try {
-    splashWindow.webContents.send('state', { status, ...splashState });
+    win.webContents.send('state', { status, ...splashState });
   } catch (_e) {}
 };
 
 
 const launchSplash = (startMin) => {
-  splashWindow = new BrowserWindow({
+  win = new BrowserWindow({
     width: 300,
     height: process.platform === 'darwin' ? 300 : 350,
     frame: false,
@@ -84,7 +84,6 @@ const launchSplash = (startMin) => {
     }
   });
 
-  const win = splashWindow;
   const wc = win.webContents;
 
   if (process.platform !== 'darwin') win.on('closed', () => !launchedMainWindow && app.quit());
