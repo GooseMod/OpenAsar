@@ -8,12 +8,14 @@ const updater = require("../updater/updater");
 
 let splashState = {};
 let modulesListeners = {};
+let launchedMainWindow = false;
 let updateAttempt = 0;
-let win, newUpdater, done;
+let splashWindow, newUpdater;
 
 
 exports.initSplash = (startMin = false) => {
   newUpdater = updater.getUpdater();
+
   if (newUpdater == null) initModuleUpdater();
 
   launchSplash(startMin);
@@ -28,48 +30,48 @@ exports.initSplash = (startMin = false) => {
     destroySplash();
 
     launchMain();
-
+    
     setTimeout(() => {
       events.emit('APP_SHOULD_SHOW');
     }, 100);
   }, 300);
 };
 
-exports.focusWindow = () => win?.focus?.();
-
-const destroySplash = () => {
-  win?.setSkipTaskbar?.(true);
-
-  setTimeout(() => {
-    if (!win) return;
-
-    win.hide();
-    win.close();
-    win = null;
-  }, 100);
-};
-
+exports.focusWindow = () => splashWindow?.focus?.();
 exports.pageReady = () => destroySplash() || process.nextTick(() => events.emit('APP_SHOULD_SHOW'));
 
+const destroySplash = () => {
+  splashWindow?.setSkipTaskbar?.(true);
+
+  setTimeout(() => {
+    if (!splashWindow) return;
+
+    splashWindow.hide();
+    splashWindow.close();
+    splashWindow = null;
+  }, 100);
+};
 
 const launchMain = () => {
   for (const e in modulesListeners) moduleUpdater.events.removeListener(e, modulesListeners[e]); // Remove updater v1 listeners
 
-  done = true;
+  if (!launchedMainWindow && splashWindow != null) {
+    sendState('starting');
 
-  sendState('starting');
-  events.emit('APP_SHOULD_LAUNCH');
+    launchedMainWindow = true;
+    events.emit('APP_SHOULD_LAUNCH');
+  }
 };
 
 const sendState = (status) => {
   try {
-    win.webContents.send('state', { status, ...splashState });
+    splashWindow.webContents.send('state', { status, ...splashState });
   } catch (_e) {}
 };
 
 
 const launchSplash = (startMin) => {
-  win = new BrowserWindow({
+  splashWindow = new BrowserWindow({
     width: 300,
     height: process.platform === 'darwin' ? 300 : 350,
     frame: false,
@@ -82,9 +84,10 @@ const launchSplash = (startMin) => {
     }
   });
 
+  const win = splashWindow;
   const wc = win.webContents;
 
-  if (process.platform !== 'darwin') win.on('closed', () => !done && app.quit());
+  if (process.platform !== 'darwin') win.on('closed', () => !launchedMainWindow && app.quit());
 
   wc.once('dom-ready', () => {
     if (oaConfig.themeSync !== false) wc.insertCSS(JSON.parse(fs.readFileSync(join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
