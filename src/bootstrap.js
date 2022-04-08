@@ -59,6 +59,8 @@ const startCore = () => {
 };
 
 const startUpdate = async () => {
+  if (oaConfig.noTrack !== false) require('./noTrack');
+
   const startMin = process.argv.includes('--start-minimized');
 
   if (updater.tryInitUpdater(buildInfo, Constants.NEW_UPDATE_ENDPOINT)) {
@@ -86,8 +88,7 @@ const startUpdate = async () => {
     desktopCore.setMainWindowVisible(!startMin);
 
     setTimeout(() => { // Try to update our asar
-      const config = require('./config');
-      if (oaConfig.setup !== true || process.argv.includes('--config')) config.open();
+      if (oaConfig.setup !== true || process.argv.includes('--config')) require('./config').open();
 
       if (oaConfig.autoupdate !== false) { // If autoupdate disabled, don't update
         try {
