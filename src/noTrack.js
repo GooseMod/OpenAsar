@@ -1,6 +1,8 @@
 const { get } = require('https');
 const { session } = require('electron');
 
+const bl = { cancel: true }; // Standard block callback response
+
 let sentry;
 session.defaultSession.webRequest.onBeforeRequest({
   urls: [
@@ -8,23 +10,18 @@ session.defaultSession.webRequest.onBeforeRequest({
     'https://*/api/*/science'
   ]
 }, async ({ url }, cb) => {
-  if (url.endsWith('/science')) return cb({ cancel: true });
+  if (url.endsWith('/science')) return cb(bl);
 
   if (!sentry) {
-    const content = await new Promise((res) => get(url, (r) => {
+    if ((await new Promise((res) => get(url, (r) => { // Get content (js code) from URL
       let t = '';
 
       r.on('data', c => t += c.toString());
       r.on('end', () => res(t));
-    }));
-
-    if (content.includes('RecipeWebview')) sentry = url;
+    }))).includes('RecipeWebview')) sentry = url;
   }
 
-  if (sentry === url) {
-    log('NoTrack', 'Blocked', url);
-    return cb({ cancel: true });
-  }
+  if (sentry === url) return cb(bl);
 
   cb({});
 });
