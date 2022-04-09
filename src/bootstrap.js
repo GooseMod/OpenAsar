@@ -88,7 +88,8 @@ const startUpdate = async () => {
     desktopCore.setMainWindowVisible(!startMin);
 
     setTimeout(() => { // Try to update our asar
-      if (oaConfig.setup !== true || process.argv.includes('--config')) require('./config').open();
+      const config = require('./config');
+      if (oaConfig.setup !== true || process.argv.includes('--config')) config.open();
 
       if (oaConfig.autoupdate !== false) { // If autoupdate disabled, don't update
         try {
