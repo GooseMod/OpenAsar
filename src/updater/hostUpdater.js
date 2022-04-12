@@ -1,14 +1,11 @@
 const { app, autoUpdater } = require('electron');
-const events = require('events');
 
 const { get } = require('request');
 
-const vParse = s => s.split('.').map(x => parseInt(x));
-const vNewer = (a, b) => a.some((x, i) => x === b[i] ? undefined : (x > b[i]));
 
-class HostLinux extends events.EventEmitter {
+module.exports = process.platform === 'linux' ? new (class HostLinux extends require('events').EventEmitter {
   setFeedURL(url) {
-    this.updateUrl = url;
+    this.url = url;
   }
 
   quitAndInstall() {
@@ -17,34 +14,12 @@ class HostLinux extends events.EventEmitter {
   }
 
   async checkForUpdates() {
-    this.emit('checking-for-update');
+    get(this.url, (e, r) => {
+      if (e) return this.emit('error');
 
-    try {
-      const current = vParse(app.getVersion());
+      if (r.statusCode === 204) return this.emit('update-not-available');
 
-      get(this.updateUrl, (err, res, body) => {
-        if (err) return this.emit('error');
-        if (res.statusCode === 204) return this.emit('update-not-available');
-
-        const latest = vParse(JSON.parse(body).name);
-        if (vNewer(latest, current)) return this.emit('update-manually', latest.join('.'));
-
-        this.emit('update-not-available');
-      });
-    } catch (e) {
-      log('HostLinux', 'Error', e);
-      this.emit('error');
-    }
+      this.emit('update-manually');
+    });
   }
-}
-
-
-switch (process.platform) {
-  case 'darwin':
-    module.exports = autoUpdater;
-    break;
-
-  case 'linux':
-    module.exports = new HostLinux();
-    break;
-}
+})() : autoUpdater;
