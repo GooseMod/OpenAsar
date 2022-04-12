@@ -107,6 +107,7 @@ jobs:
         mkdir discord
         cp -rf files/ discord/app-1.0.0
         cd discord/app-1.0.0
+        mkdir modules
 
     - name: Check if Discord will startup
       run: |

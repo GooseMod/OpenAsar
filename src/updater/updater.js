@@ -341,8 +341,6 @@ module.exports = {
 
   tryInitUpdater: (buildInfo, repository_url) => {
     const root_path = paths.getInstallPath();
-
-    log('DEBUG 1', root_path);
     if (root_path == null) return false;
   
     instance = new Updater({
