@@ -2,6 +2,7 @@ const { join, basename, dirname } = require('path');
 
 const registry = require('../utils/registry');
 
+
 const appName = basename(process.execPath, '.exe');
 
 const queuePrefix = [ 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName ];
@@ -13,6 +14,6 @@ exports.install = (callback) => {
 
 exports.update = (callback) => exports.isInstalled(installed => installed ? exports.install(callback) : callback()); // Reinstall if installed, else just callback
 
-exports.uninstall = (callback) => registry.spawn([ 'delete', ...queuePrefix, '/f' ], (_error, _stdout) => callback()); // Delete reg
+exports.uninstall = (callback) => registry.spawn([ 'delete', ...queuePrefix, '/f' ], () => callback()); // Delete reg
 
-exports.isInstalled = (callback) => registry.spawn([ 'query', ...queuePrefix ], (_error, stdout) => callback(stdout.includes(appName))); // Check reg
+exports.isInstalled = (callback) => registry.spawn([ 'query', ...queuePrefix ], () => callback(stdout.includes(appName))); // Check reg
