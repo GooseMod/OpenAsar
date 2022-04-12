@@ -11,6 +11,7 @@ on:
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
 
     steps:
@@ -36,7 +37,10 @@ jobs:
         path: app.asar
         retention-days: 1
 
-  test:
+
+  test-linux:
+    name: Test Linux
+  
     needs: build
     runs-on: ubuntu-latest
   
@@ -71,9 +75,11 @@ jobs:
         sleep 1
         [[ $COPROC_PID ]] && kill $COPROC_PID
       timeout-minutes: 3
-  
+
+
   release:
-    needs: test
+    name: Release
+    needs: test-linux
     runs-on: ubuntu-latest
 
     steps:
