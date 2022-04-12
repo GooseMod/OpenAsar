@@ -1,5 +1,1 @@
-exports.replace = (GPUSettings) => {
-  for (const name in GPUSettings) {
-    exports[name] = GPUSettings[name];
-  }
-};
+exports.replace = (n) => Object.keys(n).forEach(x => exports[x] = n[x]);
