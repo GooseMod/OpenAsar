@@ -96,8 +96,8 @@ jobs:
         cp artifact/app.asar .
 
     - name: Setup Client
+      shell: bash
       run: |
-        # Download latest client from updater v2 and extract (manifest -> brotli -> tar)
         node scripts/downloadWin.js
         tar xf client.tar
 
