@@ -110,8 +110,10 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        .\DiscordCanary.exe | grep -m1 "ABRA"
+        cd discord/app-1.0.0
+        ./DiscordCanary.exe | grep -m1 "ABRA"
       timeout-minutes: 3
+      shell: bash
 
 
   release:
