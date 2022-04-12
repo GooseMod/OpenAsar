@@ -57,11 +57,6 @@ jobs:
       run: |
         cp artifact/app.asar .
 
-    - name: Setup Node.js v16.x
-      uses: actions/setup-node@v2
-      with:
-        node-version: 16.x
-
     - name: Download Client with OpenAsar
       run: |
         wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
