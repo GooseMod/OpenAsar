@@ -1,19 +1,15 @@
-const { join, basename, dirname } = require('path');
+const { join, basename } = require('path');
 
 const registry = require('../utils/registry');
 
-
 const appName = basename(process.execPath, '.exe');
-
 const queuePrefix = [ 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName ];
 
-exports.install = (callback) => {
-  const execPath = join(dirname(process.execPath), '..', 'Update.exe') + ` --processStart ${basename(process.execPath)}` + (settings.get('START_MINIMIZED', false) ? ' --process-start-args --start-minimized' : ''); // Add Electron args if start minimized on
-  registry.add([[ ...queuePrefix, '/d', execPath ]], callback); // Make reg
-};
 
-exports.update = (callback) => exports.isInstalled(installed => installed ? exports.install(callback) : callback()); // Reinstall if installed, else just callback
+exports.install = (cb) => registry.add([[ ...queuePrefix, '/d', join(process.execPath, '..', '..', 'Update.exe') + ` --processStart ${basename(process.execPath)}` + (settings.get('START_MINIMIZED') ? ' --process-start-args --start-minimized' : '') ]], cb); // Make reg (with Electron args if start min)
 
-exports.uninstall = (callback) => registry.spawn([ 'delete', ...queuePrefix, '/f' ], () => callback()); // Delete reg
+exports.update = (cb) => exports.isInstalled(installed => installed ? exports.install(cb) : cb()); // Reinstall if installed, else just cb
 
-exports.isInstalled = (callback) => registry.spawn([ 'query', ...queuePrefix ], () => callback(stdout.includes(appName))); // Check reg
+exports.uninstall = (cb) => registry.spawn([ 'delete', ...queuePrefix, '/f' ], () => cb()); // Delete reg
+
+exports.isInstalled = (cb) => registry.spawn([ 'query', ...queuePrefix ], () => cb(stdout.includes(appName))); // Check reg
