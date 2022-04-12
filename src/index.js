@@ -17,13 +17,14 @@ global.oaConfig = settings.get('openasar', {});
 
 require('./cmdSwitches')();
 
-
+log('DEBUG2', '1');
 // Force u2QuickLoad (pre-"minified" ish)
 const M = require('module'); // Module
 
 const b = join(paths.getExeDir(), 'modules'); // Base dir
 if (process.platform === 'win32') for (const m of require('fs').readdirSync(b)) M.globalPaths.push(join(b, m)); // For each module dir, add to globalPaths
 
+log('DEBUG2', '2');
 
 if (process.argv.includes('--overlay-host')) { // If overlay
   require('./utils/requireNative')('discord_overlay2', 'standalone_host.js'); // Start overlay
