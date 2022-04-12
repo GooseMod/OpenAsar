@@ -103,7 +103,7 @@ jobs:
 
         # Install OpenAsar build and setup environment
         sed -i "s/^\/\/ <TEST_FLAG_WINDOWS>.*$/if \(name == 'discord_rpc'\) { console.log\('ABRA'\); process.exit\(\); }/" app.asar
-        # cp -f app.asar files/resources/app.asar
+        cp -f app.asar files/resources/app.asar
         mkdir discord
         cp -rf files/ discord/app-1.0.0
         cd discord/app-1.0.0
