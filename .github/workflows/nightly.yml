@@ -111,7 +111,7 @@ jobs:
     - name: Check if Discord will startup
       run: |
         cd discord/app-1.0.0
-        ./DiscordCanary.exe
+        ./DiscordCanary.exe 2>&1
       timeout-minutes: 3
       shell: bash
 
