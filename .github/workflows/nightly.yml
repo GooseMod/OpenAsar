@@ -7,7 +7,7 @@ on:
     - 'src/**'
     - 'scripts/**'
     - 'poly/**'
-    - '.github/workflows/**'
+    - '\.github/workflows/**'
 
 jobs:
   build:
@@ -36,7 +36,7 @@ jobs:
         path: app.asar
         retention-days: 1
 
-  test:
+  test-linux:
     needs: build
     runs-on: ubuntu-latest
   
@@ -73,7 +73,7 @@ jobs:
       timeout-minutes: 3
   
   release:
-    needs: test
+    needs: test-linux
     runs-on: ubuntu-latest
 
     steps:
