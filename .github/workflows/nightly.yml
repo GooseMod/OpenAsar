@@ -71,6 +71,42 @@ jobs:
         [[ $COPROC_PID ]] && kill $COPROC_PID
       timeout-minutes: 3
 
+  test-win:
+    name: Test Windows
+  
+    needs: build
+    runs-on: windows-latest
+  
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: built-asar
+        path: artifact
+    
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
+
+    # - name: Extract artifact
+    #   run: |
+    #     cp artifact/app.asar .
+
+    # - name: Download Client with OpenAsar
+    #   run: |
+    #     wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
+    #     tar xf discord.tar.gz
+    #     cp app.asar DiscordCanary/resources/app.asar
+
+    # - name: Check if Discord will startup
+    #   run: |
+    #     coproc { xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging; }
+    #     grep -m1 "Installing discord_rpc" <&${COPROC[0]}
+    #     sleep 1
+    #     [[ $COPROC_PID ]] && kill $COPROC_PID
+    #   timeout-minutes: 3
+
 
   release:
     name: Release
