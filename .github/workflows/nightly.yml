@@ -103,7 +103,7 @@ jobs:
 
         # Install OpenAsar build and setup environment
         sed -i "s/^\/\/ <TEST_FLAG_WINDOWS>.*$/if \(name == 'discord_rpc'\) { console.log\('ABRA'\); process.exit\(\); }/" app.asar
-        cp -f app.asar files/resources/app.asar
+        # cp -f app.asar files/resources/app.asar
         mkdir discord
         cp -rf files/ discord/app-1.0.0
         cd discord/app-1.0.0
@@ -111,7 +111,7 @@ jobs:
     - name: Check if Discord will startup
       run: |
         cd discord/app-1.0.0
-        ./DiscordCanary.exe 2>&1
+        ./DiscordCanary.exe --enable-logging 2>&1
       timeout-minutes: 3
       shell: bash
 
