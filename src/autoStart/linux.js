@@ -22,13 +22,11 @@ Comment=Text and voice chat for gamers.
 X-GNOME-Autostart-enabled=true`;
 
 exports.install = (callback) => {
-  log('AutoStart', 'Install');
-
   try {
     mkdirp.sync(dirname(desktopPath));
     return fs.writeFile(desktopPath, desktopContent, callback);
   } catch (e) {
-    log('AutoStart', 'Install: error writing file', e);
+    log('AutoStart', e);
     return callback(); // Callback anyway
   }
 };
