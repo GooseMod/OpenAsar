@@ -27,7 +27,7 @@ get('https://discord.com/api/updates/distributions/app/manifests/latest?channel=
 
     console.log('decompressing...');
 
-    body = Buffer.concat(data);
+    body = Buffer.concat(body);
     body = zlib.brotliDecompressSync(body);
 
     fs.writeFileSync('client.tar', body);
