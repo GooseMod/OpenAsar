@@ -99,7 +99,4 @@ jobs:
         gh release create ${{ env.VERSION }} -t "Nightly" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        VERSION: 'nightly'
-        NAME: 'Nightly'
-        #FILES: app.asar minified_testing_dont_use.asar
         FILES: app.asar
