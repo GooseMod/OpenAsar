@@ -98,9 +98,8 @@ jobs:
     - name: Setup Client
       run: |
         # Download latest client from updater v2 and extract (manifest -> brotli -> tar)
-        wget "$(curl 'https://discord.com/api/updates/distributions/app/manifests/latest?channel=canary&platform=win&arch=x86' | python -c 'import json,sys;print(json.load(sys.stdin)["full"]["url"])')"
-        node -e "fs.writeFileSync('full.tar', zlib.brotliDecompressSync(fs.readFileSync('full.distro')))"
-        tar xf full.tar
+        node scripts/downloadWin.js
+        tar xf client.tar
 
         # Install OpenAsar build and setup environment
         sed -i "s/^\/\/ <TEST_FLAG_WINDOWS>.*$/if \(name == 'discord_rpc'\) { console.log\('ABRA'\); process.exit\(\); }/" app.asar
