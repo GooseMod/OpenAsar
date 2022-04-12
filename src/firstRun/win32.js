@@ -1,20 +1,19 @@
 const fs = require('fs');
 const { join, resolve, basename } = require('path');
 
-const registry = require('../utils/registry');
 const Constants = require('../Constants');
 
-const appPath = resolve(process.execPath, '..');
-const rootPath = resolve(appPath, '..');
+const app = resolve(process.execPath, '..');
+const root = resolve(app, '..');
 
 
 const updateShortcuts = (updater) => {
   try {
     const file = Constants.APP_NAME_FOR_HUMANS + '.lnk';
-    const icon_Path = join(rootPath, 'app.ico');
+    const icon_Path = join(root, 'app.ico');
 
     try {
-      fs.copyFileSync(join(appPath, 'app.ico'), icon_path);
+      fs.copyFileSync(join(app, 'app.ico'), icon_path);
     } catch { }
 
     for (const shortcut_path of [
@@ -24,14 +23,14 @@ const updateShortcuts = (updater) => {
       if (!fs.existsSync(shortcut_path)) continue; // Don't update already deleted paths
 
       updater.createShortcut({
-        target_path: join(rootPath, 'Update.exe'),
+        target_path: join(root, 'Update.exe'),
         shortcut_path,
         arguments: '--processStart ' + basename(process.execPath),
         icon_path,
         icon_index: 0,
         description: Constants.APP_DESCRIPTION,
         app_user_model_id: Constants.APP_ID,
-        working_directory: appPath
+        working_directory: app
       });
     }
 
@@ -43,11 +42,41 @@ const updateShortcuts = (updater) => {
 
 
 exports.do = (updater) => {
-  const flag = join(appPath, '.first-run');
+  const flag = join(app, '.first-run');
   if (fs.existsSync(flag)) return; // Already done, skip
 
-  registry.installProtocol(Constants.APP_PROTOCOL, () => {
-    if (!updateShortcuts(updater)) return;
+  const proto = Constants.APP_PROTOCOL;
+  const base = 'HKCU\\Software\\Classes\\' + proto;
+
+  require('../utils/registry').add([[base, '/ve', '/d', `URL:${proto} Protocol`], [base, '/v', 'URL Protocol'], [base + '\\DefaultIcon', '/ve', '/d', `"${process.execPath}",-1`], [base + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], () => { // Make protocol
+    try { // Make shortcuts
+      const file = Constants.APP_NAME_FOR_HUMANS + '.lnk';
+      const icon_Path = join(root, 'app.ico');
+  
+      try {
+        fs.copyFileSync(join(app, 'app.ico'), icon_path);
+      } catch { }
+  
+      for (const shortcut_path of [
+        join(updater.getKnownFolder('desktop'), file),
+        join(updater.getKnownFolder('programs'), Constants.APP_COMPANY, file)
+      ]) {
+        if (!fs.existsSync(shortcut_path)) continue; // Don't update already deleted paths
+  
+        updater.createShortcut({
+          target_path: join(root, 'Update.exe'),
+          shortcut_path,
+          arguments: '--processStart ' + basename(process.execPath),
+          icon_path,
+          icon_index: 0,
+          description: Constants.APP_DESCRIPTION,
+          app_user_model_id: Constants.APP_ID,
+          working_directory: app
+        });
+      }
+    } catch (e) {
+      return log('FirstRun', e);
+    }
 
     try {
       fs.writeFileSync(flag, 'true');
