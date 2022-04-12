@@ -7,7 +7,7 @@ on:
     - 'src/**'
     - 'scripts/**'
     - 'poly/**'
-    - '\.github/workflows/**'
+    - '.github/workflows/**'
 
 jobs:
   build:
@@ -36,7 +36,7 @@ jobs:
         path: app.asar
         retention-days: 1
 
-  test-linux:
+  test:
     needs: build
     runs-on: ubuntu-latest
   
@@ -73,7 +73,7 @@ jobs:
       timeout-minutes: 3
   
   release:
-    needs: test-linux
+    needs: test
     runs-on: ubuntu-latest
 
     steps:
@@ -99,4 +99,5 @@ jobs:
         gh release create ${{ env.VERSION }} -t "Nightly" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        VERSION: 'nightly'
         FILES: app.asar
