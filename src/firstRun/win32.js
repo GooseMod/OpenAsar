@@ -7,23 +7,15 @@ const Constants = require('../Constants');
 const appPath = resolve(process.execPath, '..');
 const rootPath = resolve(appPath, '..');
 
-const rootIcon = () => {
-  const c = join(appPath, 'app.ico'); // Current
-  const n = join(rootPath, 'app.ico'); // New
-
-  try {
-    fs.copyFileSync(c, n);
-    return n;
-  } catch (e) {
-    log('FirstRun', e);
-    return c;
-  }
-};
 
 const updateShortcuts = (updater) => {
   try {
     const file = Constants.APP_NAME_FOR_HUMANS + '.lnk';
-    const icon_path = rootIcon();
+    const icon_Path = join(rootPath, 'app.ico');
+
+    try {
+      fs.copyFileSync(join(appPath, 'app.ico'), icon_path);
+    } catch { }
 
     for (const shortcut_path of [
       join(updater.getKnownFolder('desktop'), file),
