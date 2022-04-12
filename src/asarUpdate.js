@@ -18,55 +18,42 @@ module.exports = async () => { // (Try) update asar
 
   const originalHash = getAsarHash();
 
-  const downloadSuccess = await new Promise((res) => {
+  await new Promise((res) => {
     const file = fs.createWriteStream(downloadPath);
 
-    let writeError;
     file.on('error', e => {
-      log('AsarUpdate', 'Failed to write', e);
+      log('AsarUpdate', e);
       file.close();
 
-      writeError = true;
-      res(false);
-    });
-
-    const req = request.get(asarUrl);
-
-    req.on('response', (res) => {
-      if (writeError) return;
-
-      res.pipe(file);
+      res();
     });
 
     file.on('finish', () => {
       file.close();
-      res(true);
+      res();
     });
+
+    const req = request.get(asarUrl);
+
+    req.on('response', (res) => res.pipe(file));
   });
 
-  if (!downloadSuccess || fs.readFileSync(downloadPath, 'utf8').startsWith('<Error>')) return log('AsarUpdate', 'Download error');
+  if (fs.readFileSync(downloadPath, 'utf8').startsWith('<Error>')) return log('AsarUpdate', 'Download error');
 
-  const copySuccess = await new Promise((res) => {
+  if (await new Promise((res) => {
     try {
       fs.copyFileSync(downloadPath, asarPath); // Overwrite actual app.asar
       fs.unlinkSync(downloadPath); // Delete downloaded temp file
-      res(true);
+      res();
     } catch (err) {
-      log('AsarUpdate', 'Copy error', err);
-      res(false);
+      log('AsarUpdate', err);
+      res(true);
     }
-  });
-
-  if (!copySuccess) return;
+  })) return;
 
   const newHash = getAsarHash();
-  const changed = originalHash !== newHash;
 
-  log('AsarUpdate', `Hash Comparison:
-Original: ${originalHash}
-New: ${newHash}`);
-
-  if (changed && oaConfig.updatePrompt === true) {
+  if (oaConfig.updatePrompt === true && originalHash !== newHash) {
     const { response } = await dialog.showMessageBox(null, {
       message: 'Updated OpenAsar',
       detail: `Restart required to use new version.`,
