@@ -102,7 +102,7 @@ jobs:
         tar xf client.tar
 
         # Install OpenAsar build and setup environment
-        sed -i "s/^\/\/ <TEST_FLAG>.*$/if \(name == 'discord_rpc'\) { console.log\('ABRA'\); process.exit\(\); }/" app.asar
+        sed -i "s/^\/\/ <TEST_FLAG>.*$/console.log\('ABRA'\); process.exit\(\);/" app.asar
         sed -r -i "s/^.*log\('Updater', 'Restarting', next\);/return; \/\/ stub stub stub stub stub stub /" app.asar
         cp -f app.asar files/resources/app.asar
         mkdir discord
