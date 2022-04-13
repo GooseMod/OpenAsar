@@ -98,6 +98,9 @@ const startUpdate = async () => {
           log('AsarUpdate', e);
         }
       }
+
+
+      // <TEST_FLAG> excess excess excess excess excess excess exce
     }, 3000);
   });
 
