@@ -142,7 +142,7 @@ class Updater extends require('events').EventEmitter {
 
     const cur = resolve(process.execPath);
     const next = resolve(join(this._getHostPath(), basename(process.execPath)));
-  
+
     if (next != cur && !options?.allowObsoleteHost) {
       // Retain OpenAsar
       const fs = require('original-fs');
@@ -163,7 +163,7 @@ class Updater extends require('events').EventEmitter {
       return app.quit();
     }
 
-    this._commitModulesInner(versions);
+    // this._commitModulesInner(versions);
   }
 
   _commitModulesInner(versions) {
