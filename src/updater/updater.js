@@ -163,7 +163,7 @@ class Updater extends require('events').EventEmitter {
       return app.quit();
     }
 
-    // this._commitModulesInner(versions);
+    this._commitModulesInner(versions);
   }
 
   _commitModulesInner(versions) {

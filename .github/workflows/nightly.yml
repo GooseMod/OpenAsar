@@ -69,7 +69,7 @@ jobs:
         grep -m1 "Installing discord_rpc" <&${COPROC[0]}
         sleep 1
         [[ $COPROC_PID ]] && kill $COPROC_PID
-      timeout-minutes: 3
+      timeout-minutes: 2
 
   test-win:
     name: Test Windows
@@ -121,7 +121,7 @@ jobs:
       run: |
         cd discord/app-1.0.0
         ./DiscordCanary.exe | grep -m1 "ABRA"
-      timeout-minutes: 3
+      timeout-minutes: 2
       shell: bash
 
 

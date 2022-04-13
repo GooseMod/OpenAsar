@@ -98,9 +98,6 @@ const startUpdate = async () => {
           log('AsarUpdate', e);
         }
       }
-
-
-      // <TEST_FLAG> excess excess excess excess excess excess exce
     }, 3000);
   });
 
@@ -113,6 +110,8 @@ module.exports = () => {
     log('Bootstrap', 'Non-first instance');
     return app.quit();
   }
+
+  intentional_fail(); // wow
 
   if (app.isReady()) {
     startUpdate();
