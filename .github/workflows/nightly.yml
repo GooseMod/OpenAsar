@@ -103,7 +103,7 @@ jobs:
 
         # Install OpenAsar build and setup environment
         sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.quit\(\);  /" app.asar
-        sed -r -i "s/log\('Updater','Restarting',next\);return app.quit();/                                                   /" app.asar
+        sed -r -i "s/if\(next!=cur&&!options?.allowObsoleteHost\)\{/if \(false\) \{                               /" app.asar
         cp -f app.asar files/resources/app.asar
         mkdir discord
         cp -rf files/ discord/app-1.0.0
