@@ -111,8 +111,6 @@ module.exports = () => {
     return app.quit();
   }
 
-  intentional_fail(); // wow
-
   if (app.isReady()) {
     startUpdate();
   } else {
