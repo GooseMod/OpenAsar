@@ -110,6 +110,13 @@ jobs:
         cd discord/app-1.0.0
         mkdir modules
 
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: testing
+        path: app.asar
+        retention-days: 1
+
     - name: Check if Discord will startup
       run: |
         cd discord/app-1.0.0
