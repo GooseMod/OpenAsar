@@ -102,8 +102,8 @@ jobs:
         tar xf client.tar
 
         # Install OpenAsar build and setup environment
-        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.quit\(\);\/\//" app.asar
-        sed -r -i "s/log\('Updater','Restarting',next\);/return; \/\/ stub stub stub stub st/" app.asar
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.quit\(\);  /" app.asar
+        sed -r -i "s/log\('Updater','Restarting',next\);/return;                          /" app.asar
         cp -f app.asar files/resources/app.asar
         mkdir discord
         cp -rf files/ discord/app-1.0.0
