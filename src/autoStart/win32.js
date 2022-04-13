@@ -12,4 +12,4 @@ exports.update = (cb) => exports.isInstalled(installed => installed ? exports.in
 
 exports.uninstall = (cb) => registry.spawn([ 'delete', ...queuePrefix, '/f' ], () => cb()); // Delete reg
 
-exports.isInstalled = (cb) => registry.spawn([ 'query', ...queuePrefix ], () => cb(stdout.includes(appName))); // Check reg
+exports.isInstalled = (cb) => registry.spawn([ 'query', ...queuePrefix ], (e, out) => cb(out.includes(appName))); // Check reg
