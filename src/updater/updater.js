@@ -206,8 +206,6 @@ class Updater extends require('events').EventEmitter {
         newVersion
       });
     } else if (progress.state === TASK_STATE_COMPLETE || progress.state === TASK_STATE_FAILED) {
-// <TEST_FLAG_WINDOWS> excess excess excess excess excess excess ex
-
       this.currentlyInstalling[name] = false;
       this.updateEventHistory.push({
         type: 'installed-module',
