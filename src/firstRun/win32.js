@@ -19,7 +19,7 @@ exports.do = (updater) => {
   require('../utils/registry').add([[base, '/ve', '/d', `URL:${proto} Protocol`], [base, '/v', 'URL Protocol'], [base + '\\DefaultIcon', '/ve', '/d', `"${process.execPath}",-1`], [base + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], () => { // Make protocol
     try { // Make shortcuts
       const file = Constants.APP_NAME_FOR_HUMANS + '.lnk';
-      const icon_Path = join(root, 'app.ico');
+      const icon_path = join(root, 'app.ico');
   
       fs.copyFileSync(join(app, 'app.ico'), icon_path); // app-1.0.0/app.ico -> app.ico
   
