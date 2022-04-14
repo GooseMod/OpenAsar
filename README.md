@@ -9,7 +9,7 @@
 - **:paintbrush: Splash Theming**: Easy theming for your splash which works with most themes for any client mod
 - **:electric_plug: Drop-in**: Replace one file and it's installed, that's it (same with uninstall)
 - **:gear: Configurable**: Adds many config options for Discord and OpenAsar enhancements (see config section)
-- **:feather: Lightweight**: <1% of Discord's original size (9mb -> ~50kb)
+- **:balloon: Lightweight**: <1% of Discord's original size (9mb -> ~50kb)
 - **:shield: No Tracking**: Removes Discord's built-in tracking for crashes and errors in the asar (not app itself)
 
 ### See [FAQ](faq.md) for more details
