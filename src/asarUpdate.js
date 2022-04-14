@@ -21,43 +21,25 @@ module.exports = async () => { // (Try) update asar
   await new Promise((res) => {
     const file = fs.createWriteStream(downloadPath);
 
-    file.on('error', e => {
-      log('AsarUpdate', e);
-      file.close();
-
-      res();
-    });
-
     file.on('finish', () => {
       file.close();
       res();
     });
 
-    const req = request.get(asarUrl);
-
-    req.on('response', (res) => res.pipe(file));
+    request.get(asarUrl).on('response', r => r.pipe(file));
   });
 
   if (fs.readFileSync(downloadPath, 'utf8').startsWith('<Error>')) return log('AsarUpdate', 'Download error');
 
-  if (await new Promise((res) => {
-    try {
-      fs.copyFileSync(downloadPath, asarPath); // Overwrite actual app.asar
-      fs.unlinkSync(downloadPath); // Delete downloaded temp file
-      res();
-    } catch (err) {
-      log('AsarUpdate', err);
-      res(true);
-    }
-  })) return;
+  fs.copyFileSync(downloadPath, asarPath); // Overwrite actual app.asar
+  fs.unlinkSync(downloadPath); // Delete downloaded temp file
 
-  const newHash = getAsarHash();
 
-  if (oaConfig.updatePrompt === true && originalHash !== newHash) {
+  if (oaConfig.updatePrompt === true && originalHash !== getAsarHash()) {
     const { response } = await dialog.showMessageBox(null, {
       message: 'Updated OpenAsar',
       detail: `Restart required to use new version.`,
-      buttons: ['Restart Now', 'Later'],
+      buttons: ['Restart', 'Later'],
       defaultId: 0
     });
 
