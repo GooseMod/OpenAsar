@@ -30,14 +30,16 @@ const autoStart = require('./autoStart');
 
 let desktopCore;
 const startCore = () => {
-  if (oaConfig.removeCSP) {
-    session.defaultSession.webRequest.onHeadersReceived(({ responseHeaders }, callback) => {
-      for (const header in responseHeaders)
-        if (header.toLowerCase().startsWith("content-security-policy"))
-          delete responseHeaders[header];
+  if (oaConfig.jsInject) {
+    session.defaultSession.webRequest.onHeadersReceived(
+      ({ responseHeaders }, cb) => {
+        for (const header in responseHeaders)
+          if (header.toLowerCase().startsWith("content-security-policy"))
+            delete responseHeaders[header];
 
-      callback({ responseHeaders });
-    })
+        cb({ responseHeaders });
+      }
+    );
   }
 
   app.on('browser-window-created', (e, bw) => { // Main window injection
@@ -52,7 +54,7 @@ const startCore = () => {
           .replaceAll('<hash>', hash || 'custom')
       );
 
-      if (oaConfig.jsInject) 
+      if (oaConfig.jsInject)
         bw.webContents.executeJavaScript(oaConfig.jsInject)
     });
   });
