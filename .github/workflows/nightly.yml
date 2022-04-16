@@ -69,7 +69,7 @@ jobs:
         grep -m1 "Installing discord_rpc" <&${COPROC[0]}
         sleep 1
         [[ $COPROC_PID ]] && kill $COPROC_PID
-      timeout-minutes: 2
+      timeout-minutes: 3
 
   debug-linux:
     name: Debug Linux
@@ -99,7 +99,7 @@ jobs:
     - name: Run Client
       run: |
         xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging 2>&1
-      timeout-minutes: 2
+      timeout-minutes: 3
   
   debug-win:
     name: Debug Windows
@@ -142,7 +142,7 @@ jobs:
       run: |
         cd discord/app-1.0.0
         ./DiscordCanary.exe --enable-logging
-      timeout-minutes: 2
+      timeout-minutes: 3
       shell: bash
 
   test-win:
@@ -195,7 +195,7 @@ jobs:
       run: |
         cd discord/app-1.0.0
         ./DiscordCanary.exe | grep -m1 "ABRA"
-      timeout-minutes: 2
+      timeout-minutes: 3
       shell: bash
 
 
