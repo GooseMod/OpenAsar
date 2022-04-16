@@ -98,7 +98,7 @@ jobs:
 
     - name: Run Client
       run: |
-        ./DiscordCanary/DiscordCanary --enable-logging 2>&1
+        xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging 2>&1
       timeout-minutes: 2
   
   debug-win:
