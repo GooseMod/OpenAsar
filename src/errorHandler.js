@@ -1,7 +1,7 @@
 const { app, dialog } = require("electron");
 
 
-exports.fatal = (e) => dialog.showMessageBox({
+exports.fatal = (e) => console.log(e) || dialog.showMessageBox({
   type: 'error',
   message: 'A fatal Javascript error occured',
   detail: e?.stack ?? String(e)
