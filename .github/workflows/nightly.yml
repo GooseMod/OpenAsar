@@ -101,6 +101,50 @@ jobs:
         ./DiscordCanary/DiscordCanary --enable-logging 2>&1
       timeout-minutes: 2
   
+  debug-win:
+    name: Debug Windows
+  
+    needs: build
+    runs-on: windows-latest
+  
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js v16.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: built-asar
+        path: artifact
+
+    - name: Extract artifact
+      run: |
+        cp artifact/app.asar .
+
+    - name: Setup Client
+      shell: bash
+      run: |
+        node scripts/downloadWin.js
+        tar xf client.tar
+
+        # Install OpenAsar build and setup environment
+        cp -f app.asar files/resources/app.asar
+        mkdir discord
+        cp -rf files/ discord/app-1.0.0
+        cd discord/app-1.0.0
+        mkdir modules
+
+    - name: Run Client
+      run: |
+        cd discord/app-1.0.0
+        ./DiscordCanary.exe --enable-logging
+      timeout-minutes: 2
+      shell: bash
+
   test-win:
     name: Test Windows
   
