@@ -71,6 +71,36 @@ jobs:
         [[ $COPROC_PID ]] && kill $COPROC_PID
       timeout-minutes: 2
 
+  debug-linux:
+    name: Debug Linux
+  
+    needs: build
+    runs-on: ubuntu-latest
+  
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: built-asar
+        path: artifact
+    
+    - name: Extract artifact
+      run: |
+        cp artifact/app.asar .
+
+    - name: Download Client with OpenAsar
+      run: |
+        wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
+        tar xf discord.tar.gz
+        cp app.asar DiscordCanary/resources/app.asar
+
+    - name: Run Client
+      run: |
+        ./DiscordCanary/DiscordCanary --enable-logging 2>&1
+      timeout-minutes: 2
+  
   test-win:
     name: Test Windows
   
