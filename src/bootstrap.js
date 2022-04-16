@@ -14,8 +14,8 @@ global.releaseChannel = buildInfo.releaseChannel;
 
 log('BuildInfo', buildInfo);
 
-const { fatal, handled, init: EHInit } = require('./errorHandler');
-EHInit();
+const { fatal } = require('./errorHandler');
+// process.on('uncaughtException', fatal);
 
 const splash = require('./splash');
 
@@ -69,7 +69,7 @@ const startUpdate = async () => {
     inst.on('host-updated', () => autoStart.update(() => {}));
     inst.on('unhandled-exception', fatal);
     inst.on('InconsistentInstallerState', fatal);
-    inst.on('update-error', handled);
+    inst.on('update-error', console.error);
 
     require('./firstRun').do(inst);
   } else {
