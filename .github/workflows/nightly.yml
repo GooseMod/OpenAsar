@@ -99,7 +99,7 @@ jobs:
     - name: Run Client
       run: |
         xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging 2>&1
-      timeout-minutes: 3
+      timeout-minutes: 5
   
   debug-win:
     name: Debug Windows
@@ -142,7 +142,7 @@ jobs:
       run: |
         cd discord/app-1.0.0
         ./DiscordCanary.exe --enable-logging
-      timeout-minutes: 3
+      timeout-minutes: 5
       shell: bash
 
   test-win:
