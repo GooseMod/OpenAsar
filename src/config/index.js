@@ -9,7 +9,7 @@ const open = exports.open = () => {
   const win = require('../utils/win')({
     width: 500,
     height: 650
-  }, join(__dirname, 'preload.js'), 'https://cdn.openasar.dev/config');
+  }, join(__dirname, 'preload.js'), 'config');
 
   let config = settings.get('openasar', {});
   config.setup = true;

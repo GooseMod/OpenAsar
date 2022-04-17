@@ -68,7 +68,7 @@ const launchSplash = (startMin) => {
   win = require('../utils/win')({
     width: 300,
     height: process.platform === 'darwin' ? 300 : 350
-  }, join(__dirname, 'preload.js'), 'https://cdn.openasar.dev/splash');
+  }, join(__dirname, 'preload.js'), 'splash');
 
   if (process.platform !== 'darwin') win.on('closed', () => !launchedMainWindow && app.quit());
 
