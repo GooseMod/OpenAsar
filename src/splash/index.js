@@ -85,7 +85,9 @@ const launchSplash = (startMin) => {
   if (process.platform !== 'darwin') win.on('closed', () => !launchedMainWindow && app.quit());
 
   wc.once('dom-ready', () => {
-    if (oaConfig.themeSync !== false) wc.insertCSS(JSON.parse(fs.readFileSync(join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
+    if (oaConfig.themeSync !== false) try {
+      wc.insertCSS(JSON.parse(fs.readFileSync(join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
+    } catch { }
 
     if (oaConfig.splashText === true) {
       const buildInfo = require('../utils/buildInfo.js');
