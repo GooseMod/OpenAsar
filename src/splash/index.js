@@ -20,11 +20,7 @@ exports.initSplash = (startMin = false) => {
 
   launchSplash(startMin);
 
-  if (newUpdater != null) {
-    updateUntilCurrent();
-  } else {
-    moduleUpdater.installPendingUpdates();
-  }
+  if (newUpdater != null) updateUntilCurrent();
 
   if (process.env.OPENASAR_QUICKSTART || oaConfig.quickstart) setTimeout(() => {
     destroySplash();
@@ -253,7 +249,6 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   add('installed-module', segmentCallback(installs));
 
   add('installing-modules-finished', callbackCheck);
-  add('no-pending-updates', callbackCheck);
 
   const progressCallback = (tracker) => ({ name, cur, total }) => tracker.record(name, '', cur, total);
 
@@ -267,6 +262,8 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   });
 
   sendState(CHECKING_FOR_UPDATES);
+
+  callbackCheck();
 };
 
 const scheduleNextUpdate = (callback = moduleUpdater.checkForUpdates) => { // Used by v1 and v2, default to v1 as used more widely in it

@@ -10,8 +10,7 @@ const request = require('./request');
 const events = exports.events = new (require('events').EventEmitter)();
 exports.INSTALLED_MODULE = 'installed-module'; // Fixes DiscordNative ensureModule as it uses export
 
-let bootstrapping,
-  skipHost, skipModule,
+let skipHost, skipModule,
   remote = {},
   installed = {},
   downloading, installing,
@@ -49,8 +48,10 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 
   try {
     installed = JSON.parse(fs.readFileSync(manifestPath));
-  } catch (e) {
-    bootstrapping = true;
+  } catch {
+    for (const m in JSON.parse(fs.readFileSync(join(paths.getResources(), 'bootstrap', 'manifest.json')))) { // Read [resources]/bootstrap/manifest.json, with "moduleName": version (always 0)
+      installed[m] = { installedVersion: 0 }; // Set initial version as 0
+    }
   }
 
 
@@ -339,8 +340,6 @@ const finishInstall = (name, ver, success) => {
     });
   
     resetTracking();
-
-    bootstrapping = false;
   }
 };
 
@@ -392,18 +391,4 @@ exports.install = (name, def, { version } = {}) => {
   }
 
   downloadModule(name, version ?? remote[name] ?? 0);
-};
-
-exports.installPendingUpdates = () => {
-  if (bootstrapping) {
-    log('Modules', 'Bootstrapping...');
-
-    for (const m in JSON.parse(fs.readFileSync(join(paths.getResources(), 'bootstrap', 'manifest.json')))) { // Read [resources]/bootstrap/manifest.json, with "moduleName": version (always 0)
-      installed[m] = { installedVersion: 0 }; // Set initial version as 0
-    }
-
-    return exports.checkForUpdates();
-  }
-
-  events.emit('no-pending-updates');
 };
