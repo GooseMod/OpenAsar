@@ -72,7 +72,7 @@ const launchSplash = (startMin) => {
 
   if (process.platform !== 'darwin') win.on('closed', () => !launchedMainWindow && app.quit());
 
-  if (!startMin) win.once('ready-to-show', () => win.show());
+  if (!startMin) win.once('ready-to-show', win.show);
 };
 
 
