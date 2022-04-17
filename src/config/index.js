@@ -1,4 +1,4 @@
-const { BrowserWindow, ipcMain, app } = require('electron');
+const { ipcMain, app } = require('electron');
 const { join } = require('path');
 
 ipcMain.on('DISCORD_UPDATED_QUOTES', (e, c) => {
@@ -6,18 +6,10 @@ ipcMain.on('DISCORD_UPDATED_QUOTES', (e, c) => {
 });
 
 const open = exports.open = () => {
-  const win = new BrowserWindow({
+  const win = require('../utils/win')({
     width: 500,
-    height: 650,
-    center: true,
-    frame: false,
-    resizable: false,
-    center: true,
-    backgroundColor: '#101418',
-    webPreferences: {
-      preload: join(__dirname, 'preload.js')
-    }
-  });
+    height: 650
+  }, join(__dirname, 'preload.js'), 'https://cdn.openasar.dev/config');
 
   let config = settings.get('openasar', {});
   config.setup = true;
@@ -39,6 +31,4 @@ const open = exports.open = () => {
     app.relaunch();
     app.exit();
   });
-
-  win.loadURL('https://cdn.openasar.dev/config');
 };

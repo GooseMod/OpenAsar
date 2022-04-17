@@ -1,8 +1,6 @@
 const { join } = require('path');
-const fs = require('fs');
-const { BrowserWindow, app } = require('electron');
+const { app } = require('electron');
 
-const paths = require('../paths');
 const moduleUpdater = require("../updater/moduleUpdater");
 const updater = require("../updater/updater");
 
@@ -67,37 +65,14 @@ const sendState = (status) => {
 
 
 const launchSplash = (startMin) => {
-  win = new BrowserWindow({
+  win = require('../utils/win')({
     width: 300,
-    height: process.platform === 'darwin' ? 300 : 350,
-    frame: false,
-    resizable: false,
-    center: true,
-    show: false,
-    backgroundColor: '#2f3136',
-    webPreferences: {
-      preload: join(__dirname, 'preload.js')
-    }
-  });
-
-  const wc = win.webContents;
+    height: process.platform === 'darwin' ? 300 : 350
+  }, join(__dirname, 'preload.js'), 'https://cdn.openasar.dev/splash');
 
   if (process.platform !== 'darwin') win.on('closed', () => !launchedMainWindow && app.quit());
 
-  wc.once('dom-ready', () => {
-    if (oaConfig.themeSync !== false) try {
-      wc.insertCSS(JSON.parse(fs.readFileSync(join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
-    } catch { }
-
-    if (oaConfig.splashText === true) {
-      const buildInfo = require('../utils/buildInfo.js');
-      wc.executeJavaScript(`debug.textContent = '${buildInfo.releaseChannel} ${buildInfo.version}\\nOpenAsar ${oaVersion}'`);
-    }
-  });
-
   if (!startMin) win.once('ready-to-show', () => win.show());
-
-  win.loadURL('https://cdn.openasar.dev/splash');
 };
 
 
