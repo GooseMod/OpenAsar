@@ -1,4 +1,4 @@
-const { app, dialog } = require('electron');
+const { app } = require('electron');
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
@@ -14,15 +14,8 @@ global.releaseChannel = buildInfo.releaseChannel;
 
 log('BuildInfo', buildInfo);
 
-const fatal = e => {
-  log('Fatal', e);
-
-  dialog.showMessageBox({
-    type: 'error',
-    message: 'A fatal Javascript error occured',
-    detail: e?.stack ?? String(e)
-  }).then(() => app.quit());
-};
+const { fatal, handled, init: EHInit } = require('./errorHandler');
+EHInit();
 
 const splash = require('./splash');
 
@@ -76,7 +69,7 @@ const startUpdate = async () => {
     inst.on('host-updated', () => autoStart.update(() => {}));
     inst.on('unhandled-exception', fatal);
     inst.on('InconsistentInstallerState', fatal);
-    inst.on('update-error', console.error);
+    inst.on('update-error', handled);
 
     require('./firstRun').do(inst);
   } else {
