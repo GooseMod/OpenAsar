@@ -23,7 +23,7 @@ const fatal = e => {
     detail: e?.stack ?? String(e)
   }).then(() => app.quit());
 };
-// process.on('uncaughtException', fatal);
+process.on('uncaughtException', console.error);
 
 
 const splash = require('./splash');
