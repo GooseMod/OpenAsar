@@ -80,10 +80,10 @@ const CHECKING_FOR_UPDATES = 'checking-for-updates';
 
 const events = exports.events = new (require('events').EventEmitter)();
 
-let progressState = 'downloading';
+let toSend = 0; // Progress state to send for ModuleUpdater (0 = downloading, 1 = installing)
 class UIProgress { // Generic class to track updating and sent states to splash
   constructor(st) {
-    this.stateId = st ? 'installing' : 'downloading';
+    this.st = st;
 
     this.reset();
   }
@@ -106,7 +106,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
   }
 
   send() {
-    if ((newUpdater && this.progress.size > 0 && this.progress.size > this.done.size) || (!newUpdater && progressState === this.stateId)) {
+    if ((newUpdater && this.progress.size > 0 && this.progress.size > this.done.size) || (!newUpdater && toSend === this.st)) {
       const progress = [...this.progress.values()].reduce((a, x) => a + x[0], 0) / [...this.progress.values()].reduce((a, x) => a + x[1], 0) * 100;
       if (progress > 100) return true;
 
@@ -116,7 +116,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
         progress
       };
 
-      sendState(this.stateId);
+      sendState(this.st ? 'installing' : 'downloading');
 
       return true;
     }
@@ -175,8 +175,6 @@ const updateUntilCurrent = async () => {
 };
 
 const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
-  let restartRequired;
-
   const add = (event, listener) => {
     modulesListeners[event] = listener;
     moduleUpdater.events.on(event, listener);
@@ -208,9 +206,9 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   });
 
   add('downloading-modules-finished', ({ failed }) => {
-    progressState = 'installing';
+    toSend = 1;
+
     if (failed > 0) handleFail();
-      else if (restartRequired) moduleUpdater.quitAndInstallUpdates();
   });
   
   add('installing-module', ({ name }) => {
@@ -219,7 +217,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
 
   const segmentCallback = (tracker) => (({ name }) => {
     tracker.record(name, 'Complete');
-    if (name === 'host') restartRequired = true;
+    if (name === 'host') moduleUpdater.quitAndInstallUpdates();
   });
 
   add('downloaded-module', segmentCallback(downloads));
