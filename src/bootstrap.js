@@ -60,9 +60,15 @@ const startCore = () => {
     Constants,
     updater,
     autoStart,
+
+    // Just requires
     appSettings: require('./appSettings'),
     paths: require('./paths'),
-    GPUSettings: require('./GPUSettings'),
+
+    // Stubs
+    GPUSettings: {
+      replace: () => {}
+    },
     crashReporterSetup: {
       isInitialized: () => true,
       metadata: {}

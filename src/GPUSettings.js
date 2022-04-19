@@ -1,1 +1,0 @@
-exports.replace = (n) => Object.keys(n).forEach(x => exports[x] = n[x]);
