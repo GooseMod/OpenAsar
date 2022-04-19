@@ -22,6 +22,7 @@ const stripCode = (code) => code
   .replaceAll('throw ', 'throw~')
   .replaceAll('async ', 'async~')
   .replaceAll('else ', 'else~')
+  .replace('/([0-9]+) files/', '/([0-9]+)~files/')
   .replaceAll('false', '!1')
   .replaceAll('true', '!0')
   .replace(/((['"`])[\s\S]*?\2)|[ \n]/g, (_, g1) => g1 || '')
