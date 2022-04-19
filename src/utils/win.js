@@ -1,18 +1,12 @@
-const { BrowserWindow } = require('electron');
-
-const paths = require('../paths');
-const fs = require('fs');
-
-
-module.exports = (o, preload, u) => {
-  const w = new BrowserWindow({
+module.exports = (o, n) => {
+  const w = new (require('electron').BrowserWindow)({
     center: true,
     frame: false,
     resizable: false,
     center: true,
     backgroundColor: '#2f3136',
     webPreferences: {
-      preload
+      preload: require('path').join(__dirname, '..', n, 'preload.js')
     },
     ...o
   });
@@ -20,11 +14,11 @@ module.exports = (o, preload, u) => {
   const c = w.webContents;
   c.once('dom-ready', () => {
     if (oaConfig.themeSync !== false) try {
-      c.insertCSS(JSON.parse(fs.readFileSync(join(paths.getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
+      c.insertCSS(JSON.parse(require('fs').readFileSync(join(require('../paths').getUserData(), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
     } catch { }
   });
 
-  w.loadURL('https://cdn.openasar.dev/' + u);
+  w.loadURL('https://cdn.openasar.dev/' + n);
 
   return w;
 };

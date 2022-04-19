@@ -1,4 +1,3 @@
-const { join } = require('path');
 const { app } = require('electron');
 
 const moduleUpdater = require("../updater/moduleUpdater");
@@ -68,7 +67,7 @@ const launchSplash = (startMin) => {
   win = require('../utils/win')({
     width: 300,
     height: process.platform === 'darwin' ? 300 : 350
-  }, join(__dirname, 'preload.js'), 'splash');
+  }, 'splash');
 
   if (process.platform !== 'darwin') win.on('closed', () => !launchedMainWindow && app.quit());
 
