@@ -59,11 +59,14 @@ const startCore = () => {
     buildInfo,
     Constants,
     updater,
+    autoStart,
     appSettings: require('./appSettings'),
     paths: require('./paths'),
     GPUSettings: require('./GPUSettings'),
-    autoStart,
-    crashReporterSetup: require('./crashReporterSetup'),
+    crashReporterSetup: {
+      isInitialized: () => true,
+      metadata: {}
+    }
   });
 };
 
