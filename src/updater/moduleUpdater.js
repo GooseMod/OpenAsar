@@ -67,9 +67,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     });
   
     events.emit('downloading-module', {
-      name: 'host',
-      current: 1,
-      total: 1
+      name: 'host'
     });
   });
 
@@ -95,15 +93,11 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     checking = false;
 
     events.emit('downloaded-module', {
-      name: 'host',
-      current: 1,
-      total: 1,
-      succeeded: true
+      name: 'host'
     });
 
     events.emit('downloading-modules-finished', {
-      succeeded: 1,
-      failed: 0
+      succeeded: 1
     });
   });
 
@@ -182,9 +176,7 @@ const checkModules = async () => {
 const downloadModule = async (name, ver) => {
   downloading.total++;
   events.emit('downloading-module', {
-    name,
-    current: downloading.total,
-    total: downloading.total
+    name
   });
 
   const url = baseUrl + '/' + name + '/' + ver;
@@ -194,7 +186,6 @@ const downloadModule = async (name, ver) => {
 
   stream.on('progress', ([ cur, total ]) => events.emit('downloading-module-progress', {
     name,
-    progress: Math.min(100, Math.floor(100 * (cur / total))),
     cur,
     total
   }));
@@ -220,9 +211,7 @@ const downloadModule = async (name, ver) => {
     else downloading.fail++;
 
   events.emit('downloaded-module', {
-    name,
-    current: downloading.total,
-    total: downloading.total
+    name
   });
 
 
@@ -244,9 +233,7 @@ const downloadModule = async (name, ver) => {
 const installModule = async (name, ver, path) => {
   installing.total++;
   events.emit('installing-module', {
-    name,
-    current: installing.total,
-    total: installing.total
+    name
   });
 
   log('Modules', 'Installing', `${name}@${ver}`, 'from', path);
@@ -299,7 +286,6 @@ const installModule = async (name, ver, path) => {
     cur++;
     events.emit('installing-module-progress', {
       name,
-      progress: Math.min(100, Math.floor(cur / total * 100)),
       cur,
       total
     });
@@ -319,10 +305,7 @@ const finishInstall = (name, ver, success) => {
   if (!success) installing.fail++;
 
   events.emit('installed-module', {
-    name,
-    current: installing.total,
-    total: installing.total,
-    succeeded: success
+    name
   });
 
   installing.done++;
