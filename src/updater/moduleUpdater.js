@@ -160,7 +160,7 @@ const checkModules = async () => {
     const rem = remote[name];
 
     if (inst !== rem) {
-      log('Modules', 'Update:', name, '|', inst, '->', rem);
+      log('Modules', 'Update:', name, inst, '->', rem);
       doing++;
   
       downloadModule(name, rem);
@@ -190,7 +190,7 @@ const downloadModule = async (name, ver) => {
     total
   }));
 
-  log('Modules', 'Downloading', `${name}@${ver}`, 'from', url, 'to', path);
+  log('Modules', 'Downloading', `${name}@${ver}`);
 
   let success = false;
   try {
@@ -218,11 +218,8 @@ const downloadModule = async (name, ver) => {
   downloading.done++;
 
   if (downloading.done === downloading.total) {
-    const succeeded = downloading.total - downloading.fail;
-    log('Modules', 'Done downloads', `| ${succeeded}/${downloading.total} success`);
-
     events.emit('downloading-modules-finished', {
-      succeeded,
+      succeeded: downloading.total - downloading.fail,
       failed: downloading.fail
     });
   }
@@ -236,7 +233,7 @@ const installModule = async (name, ver, path) => {
     name
   });
 
-  log('Modules', 'Installing', `${name}@${ver}`, 'from', path);
+  // log('Modules', 'Installing', `${name}@${ver}`);
 
   let hasError;
 
@@ -305,20 +302,18 @@ const finishInstall = (name, ver, success) => {
   if (!success) installing.fail++;
 
   events.emit('installed-module', {
-    name
+    name,
+    succeeded: true
   });
 
   installing.done++;
   log('Modules', 'Finished', `${name}@${ver}`);
 
-  if (installing.done === (downloading.total || installing.done)) {
-    const succeeded = installing.total - installing.fail;
-    log('Modules', 'Done installs', `| ${succeeded}/${installing.total} success`);
-
+  if (installing.done === downloading.total) {
     if (!installing.fail) lastUpdate = Date.now();
 
     events.emit('installing-modules-finished', {
-      succeeded,
+      succeeded: installing.total - installing.fail,
       failed: installing.fail
     });
   
@@ -360,8 +355,6 @@ exports.install = (name, def, { version } = {}) => {
   if (isInstalled(name, version)) {
     if (!def) events.emit('installed-module', {
       name,
-      current: 1,
-      total: 1,
       succeeded: true
     });
 
