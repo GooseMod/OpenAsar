@@ -164,9 +164,7 @@ const updateUntilCurrent = async () => {
       }
     } catch (e) {
       log('Splash', e);
-      sendState('fail');
-
-      await new Promise(res => scheduleNextUpdate(res));
+      await new Promise(r => fail(r));
     }
   }
 };
@@ -179,8 +177,7 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   const downloads = new UIProgress(0), installs = new UIProgress(1);
 
   const handleFail = () => {
-    scheduleNextUpdate();
-    sendState('fail');
+    fail(check);
   };
 
   on('update-check-finished', ({ succeeded, updateCount }) => {
@@ -235,10 +232,10 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   check();
 };
 
-const scheduleNextUpdate = (callback = moduleUpdater.checkForUpdates) => { // Used by v1 and v2, default to v1 as used more widely in it
-  updateAttempt++;
+const fail = (c) => {
+  const s = 10;
+  splashState.seconds = s;
+  sendState('fail');
 
-  const wait = Math.min(updateAttempt * 10, 60);
-  splashState.seconds = wait;
-  setTimeout(callback, wait * 1000);
+  setTimeout(c, s * 1000);
 };
