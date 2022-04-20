@@ -49,8 +49,8 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   try {
     installed = JSON.parse(fs.readFileSync(manifestPath));
   } catch {
-    for (const m in JSON.parse(fs.readFileSync(join(paths.getResources(), 'bootstrap', 'manifest.json')))) { // Read [resources]/bootstrap/manifest.json, with "moduleName": version (always 0)
-      installed[m] = { installedVersion: 0 }; // Set initial version as 0
+    for (const m of [ 'desktop_core', 'utils', 'voice' ]) { // Ignore actual bootstrap manifest and choose our own core 3, others are installed as/when needed
+      installed['discord_' + m] = { installedVersion: 0 }; // Set initial version as 0
     }
   }
 
