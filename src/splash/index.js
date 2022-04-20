@@ -179,7 +179,6 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
   const downloads = new UIProgress(0), installs = new UIProgress(1);
 
   const handleFail = () => {
-    setTimeout(check)
     scheduleNextUpdate();
     sendState('fail');
   };
