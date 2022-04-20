@@ -330,7 +330,8 @@ exports.checkForUpdates = () => {
 
   events.emit('checking-for-updates');
 
-  if (skipHost || last > Date.now() - 10000) hostPassed(true);
+  if (skipHost) hostPassed();
+    else if (last > Date.now() - 10000) hostPassed(true);
     else hostUpdater.checkForUpdates();
 };
 
