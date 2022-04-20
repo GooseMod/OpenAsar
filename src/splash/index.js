@@ -3,11 +3,9 @@ const { app } = require('electron');
 const moduleUpdater = require("../updater/moduleUpdater");
 const updater = require("../updater/updater");
 
-let splashState = {};
-let modulesListeners = {};
-let launchedMainWindow = false;
-let updateAttempt = 0;
-let win, newUpdater;
+let splashState = {},
+  launched = false,
+  win, newUpdater;
 
 
 exports.initSplash = (startMin = false) => {
@@ -46,12 +44,12 @@ const destroySplash = () => {
 };
 
 const launchMain = () => {
-  for (const e in modulesListeners) moduleUpdater.events.removeListener(e, modulesListeners[e]); // Remove updater v1 listeners
+  moduleUpdater.events.removeAllListeners(); // Remove updater v1 listeners
 
-  if (!launchedMainWindow && win != null) {
+  if (!launched && win != null) {
     sendState('starting');
 
-    launchedMainWindow = true;
+    launched = true;
     events.emit('APP_SHOULD_LAUNCH');
   }
 };
@@ -69,7 +67,7 @@ const launchSplash = (startMin) => {
     height: process.platform === 'darwin' ? 300 : 350
   }, 'splash');
 
-  if (process.platform !== 'darwin') win.on('closed', () => !launchedMainWindow && app.quit());
+  if (process.platform !== 'darwin') win.on('closed', () => !launched && app.quit());
 
   if (!startMin) win.once('ready-to-show', win.show);
 };
@@ -174,21 +172,19 @@ const updateUntilCurrent = async () => {
 };
 
 const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
-  const add = (event, listener) => {
-    modulesListeners[event] = listener;
-    moduleUpdater.events.on(event, listener);
-  };
+  const on = (k, v) => moduleUpdater.events.on(k, v);
 
-  const callbackCheck = () => moduleUpdater.checkForUpdates();
+  const check = () => moduleUpdater.checkForUpdates();
 
   const downloads = new UIProgress(0), installs = new UIProgress(1);
 
   const handleFail = () => {
+    setTimeout(check)
     scheduleNextUpdate();
     sendState('fail');
   };
 
-  add('update-check-finished', ({ succeeded, updateCount }) => {
+  on('update-check-finished', ({ succeeded, updateCount }) => {
     installs.reset();
     downloads.reset();
 
@@ -199,18 +195,18 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     }
   });
 
-  add('downloading-module', ({ name }) => {
+  on('downloading-module', ({ name }) => {
     downloads.record(name, 'Waiting');
     installs.record(name, 'Waiting');
   });
 
-  add('downloading-modules-finished', ({ failed }) => {
+  on('downloading-modules-finished', ({ failed }) => {
     toSend = 1;
 
     if (failed > 0) handleFail();
   });
   
-  add('installing-module', ({ name }) => {
+  on('installing-module', ({ name }) => {
     installs.record(name, 'Waiting');
   });
 
@@ -219,25 +215,25 @@ const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
     if (name === 'host') moduleUpdater.quitAndInstallUpdates();
   });
 
-  add('downloaded-module', segmentCallback(downloads));
-  add('installed-module', segmentCallback(installs));
+  on('downloaded-module', segmentCallback(downloads));
+  on('installed-module', segmentCallback(installs));
 
-  add('installing-modules-finished', callbackCheck);
+  on('installing-modules-finished', check);
 
   const progressCallback = (tracker) => ({ name, cur, total }) => tracker.record(name, '', cur, total);
 
-  add('downloading-module-progress', progressCallback(downloads));
-  add('installing-module-progress', progressCallback(installs));
+  on('downloading-module-progress', progressCallback(downloads));
+  on('installing-module-progress', progressCallback(installs));
 
 
-  add('update-manually', e => {
+  on('update-manually', e => {
     splashState.newVersion = e.newVersion;
     sendState('update-manually');
   });
 
   sendState(CHECKING_FOR_UPDATES);
 
-  callbackCheck();
+  check();
 };
 
 const scheduleNextUpdate = (callback = moduleUpdater.checkForUpdates) => { // Used by v1 and v2, default to v1 as used more widely in it
