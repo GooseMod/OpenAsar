@@ -17,7 +17,7 @@ let skipHost, skipModule,
   basePath, manifestPath, downloadPath,
   hostUpdater,
   baseUrl, baseQuery,
-  checking, hostAvail, lastUpdate;
+  checking, hostAvail, last;
 
 const resetTracking = () => {
   const base = {
@@ -310,7 +310,7 @@ const finishInstall = (name, ver, success) => {
   log('Modules', 'Finished', `${name}@${ver}`);
 
   if (installing.done === downloading.total) {
-    if (!installing.fail) lastUpdate = Date.now();
+    if (!installing.fail) last = Date.now();
 
     events.emit('installing-modules-finished', {
       succeeded: installing.total - installing.fail,
@@ -330,7 +330,7 @@ exports.checkForUpdates = () => {
 
   events.emit('checking-for-updates');
 
-  if (skipHost || lastUpdate > Date.now() - 10000) hostPassed(true);
+  if (skipHost || last > Date.now() - 10000) hostPassed(true);
     else hostUpdater.checkForUpdates();
 };
 
