@@ -4,18 +4,17 @@ const moduleUpdater = require("../updater/moduleUpdater");
 const updater = require("../updater/updater");
 
 let splashState = {},
-  launched = false,
-  win, newUpdater;
+  launched,
+  win;
 
 
-exports.initSplash = (startMin = false) => {
-  newUpdater = updater.getUpdater();
-
-  if (newUpdater == null) initModuleUpdater();
+exports.initSplash = (startMin) => {
+  const inst = updater.getUpdater();
+  if (inst) initNew(inst);
+    else initOld();
 
   launchSplash(startMin);
 
-  if (newUpdater != null) updateUntilCurrent();
 
   if (process.env.OPENASAR_QUICKSTART || oaConfig.quickstart) setTimeout(() => {
     destroySplash();
@@ -103,7 +102,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
   }
 
   send() {
-    if ((newUpdater && this.progress.size > 0 && this.progress.size > this.done.size) || (!newUpdater && toSend === this.st)) {
+    if ((toSend === -1 && this.progress.size > 0 && this.progress.size > this.done.size) || toSend === this.st) {
       const progress = [...this.progress.values()].reduce((a, x) => a + x[0], 0) / [...this.progress.values()].reduce((a, x) => a + x[1], 0) * 100;
       if (progress > 100) return true;
 
@@ -120,7 +119,9 @@ class UIProgress { // Generic class to track updating and sent states to splash
   }
 }
 
-const updateUntilCurrent = async () => {
+const initNew = async (inst) => {
+  toSend = -1;
+
   const retryOptions = {
     skip_host_delta: false,
     skip_module_delta: {}
@@ -134,7 +135,7 @@ const updateUntilCurrent = async () => {
       const downloads = new UIProgress(0);
       const installs = new UIProgress(1);
 
-      await newUpdater.updateToLatestWithOptions(retryOptions, ({ task, state, percent }) => {
+      await inst.updateToLatestWithOptions(retryOptions, ({ task, state, percent }) => {
         const download = task.HostDownload || task.ModuleDownload;
         const install = task.HostInstall || task.ModuleInstall;
 
@@ -157,8 +158,8 @@ const updateUntilCurrent = async () => {
       });
 
       if (!installedAnything) {
-        await newUpdater.startCurrentVersion();
-        newUpdater.collectGarbage();
+        await inst.startCurrentVersion();
+        inst.collectGarbage();
 
         return launchMain();
       }
@@ -169,7 +170,7 @@ const updateUntilCurrent = async () => {
   }
 };
 
-const initModuleUpdater = () => { // "Old" (not v2 / new, win32 only)
+const initOld = () => { // "Old" (not v2 / new, win32 only)
   const on = (k, v) => moduleUpdater.events.on(k, v);
 
   const check = () => moduleUpdater.checkForUpdates();
