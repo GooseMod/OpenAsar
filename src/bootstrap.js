@@ -1,5 +1,6 @@
-const { app, dialog } = require('electron');
+const { app, session, dialog } = require('electron');
 const { readFileSync } = require('fs');
+const get = require('request');
 const { join } = require('path');
 
 const Constants = require('./Constants');
@@ -77,7 +78,24 @@ const startCore = () => {
 };
 
 const startUpdate = async () => {
-  if (oaConfig.noTrack !== false) require('./noTrack');
+  if (oaConfig.noTrack !== false) {
+    const bl = { cancel: true }; // Standard block callback response
+
+    let sentry;
+    session.defaultSession.webRequest.onBeforeRequest({
+      urls: [
+        'https://*.discord.com/assets/*.js',
+        'https://*/api/*/science'
+      ]
+    }, async ({ url }, cb) => {
+      if (url.endsWith('/science')) return cb(bl);
+
+      if (!sentry && (await new Promise((res) => get(url, (e, r, b) => res(b)))).includes('RecipeWebview')) sentry = url;
+      if (sentry === url) return cb(bl);
+
+      cb({});
+    });
+  }
 
   const startMin = process.argv.includes('--start-minimized');
 
