@@ -38,17 +38,23 @@ const autoStart = require('./autoStart');
 
 let desktopCore;
 const startCore = () => {
+  if (oaConfig.js) session.defaultSession.webRequest.onHeadersReceived((d, cb) => {
+    delete d.responseHeaders['content-security-policy'];
+    cb(d);
+  });
+
   app.on('browser-window-created', (e, bw) => { // Main window injection
     bw.webContents.on('dom-ready', () => {
       splash.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
 
       const [ channel, hash ] = oaVersion.split('-'); // Split via -
 
-      bw.webContents.executeJavaScript(
-        readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
-          .replaceAll('<channel>', channel)
-          .replaceAll('<hash>', hash || 'custom')
-      );
+      const exec = bw.webContents.executeJavaScript;
+      exec(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
+        .replaceAll('<channel>', channel)
+        .replaceAll('<hash>', hash || 'custom'));
+
+      if (oaConfig.js) exec(oaConfig.js);
     });
   });
 
