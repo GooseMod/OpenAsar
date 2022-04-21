@@ -204,13 +204,13 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
     installs.record(name, '', cur, total);
   });
 
-  const segmentCallback = (tracker) => (({ name }) => {
+  const segment = (tracker) => (({ name }) => {
     tracker.record(name, 'Complete');
     if (name === 'host') moduleUpdater.quitAndInstallUpdates();
   });
 
-  on('downloaded-module', segmentCallback(downloads));
-  on('installed-module', segmentCallback(installs));
+  on('downloaded-module', segment(downloads));
+  on('installed-module', segment(installs));
 
   on('installing-modules-finished', check);
 
