@@ -3,11 +3,8 @@ const { readFileSync } = require('fs');
 const get = require('request');
 const { join } = require('path');
 
-const Constants = require('./Constants');
-
+if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
 process.env.PULSE_LATENCY_MSEC = process.env.PULSE_LATENCY_MSEC ?? 30;
-app.setAppUserModelId(Constants.APP_ID);
-app.name = 'discord'; // Force name as sometimes breaks
 
 const buildInfo = require('./utils/buildInfo');
 app.setVersion(buildInfo.version); // More global because discord / electron
@@ -15,17 +12,18 @@ global.releaseChannel = buildInfo.releaseChannel;
 
 log('BuildInfo', buildInfo);
 
+const Constants = require('./Constants');
+app.setAppUserModelId(Constants.APP_ID);
+
+app.name = 'discord'; // Force name as sometimes breaks
+
 const fatal = e => log('Fatal', e);
 process.on('uncaughtException', console.error);
 
 
 const splash = require('./splash');
-
 const updater = require('./updater/updater');
 const moduleUpdater = require('./updater/moduleUpdater');
-
-if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
-
 const autoStart = require('./autoStart');
 
 let desktopCore;
