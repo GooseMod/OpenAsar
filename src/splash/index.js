@@ -185,15 +185,12 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
     installs.reset();
     downloads.reset();
 
-    if (!succeeded) {
-      handleFail();
-    } else if (updateCount === 0) {
-      launchMain();
-    }
+    if (!succeeded) handleFail();
+      else if (updateCount === 0) launchMain();
   });
 
-  on('downloading-module', ({ name }) => {
-    downloads.record(name, 'Waiting');
+  on('downloading-module', ({ name, cur, total }) => {
+    downloads.record(name, '', cur, total);
     installs.record(name, 'Waiting');
   });
 
@@ -203,8 +200,8 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
     if (failed > 0) handleFail();
   });
   
-  on('installing-module', ({ name }) => {
-    installs.record(name, 'Waiting');
+  on('installing-module', ({ name, cur, total }) => {
+    installs.record(name, '', cur, total);
   });
 
   const segmentCallback = (tracker) => (({ name }) => {
@@ -216,11 +213,6 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
   on('installed-module', segmentCallback(installs));
 
   on('installing-modules-finished', check);
-
-  const progressCallback = (tracker) => ({ name, cur, total }) => tracker.record(name, '', cur, total);
-
-  on('downloading-module-progress', progressCallback(downloads));
-  on('installing-module-progress', progressCallback(installs));
 
 
   on('update-manually', e => {

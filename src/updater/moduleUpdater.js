@@ -171,32 +171,30 @@ const checkModules = async () => {
 
 const downloadModule = async (name, ver) => {
   downloading.total++;
-  events.emit('downloading-module', {
-    name
-  });
-
-  const url = baseUrl + '/' + name + '/' + ver;
 
   const path = join(downloadPath, name + '-' + ver + '.zip');
-  const stream = fs.createWriteStream(path);
+  const file = fs.createWriteStream(path);
 
   // log('Modules', 'Downloading', `${name}@${ver}`);
 
   let success, total, cur = 0;
-  request({ url, qs }).on('response', (res) => {
+  request({
+    url: baseUrl + '/' + name + '/' + ver,
+    qs
+  }).on('response', (res) => {
     success = res.statusCode === 200;
     total = parseInt(res.headers['content-length'] ?? 1, 10);
 
-    res.pipe(stream);
+    res.pipe(file);
 
     res.on('data', c => {
       cur += c.length;
 
-      events.emit('downloading-module-progress', { name, cur, total });
+      events.emit('downloading-module', { name, cur, total });
     });
   });
 
-  await new Promise((res) => stream.on('close', res));
+  await new Promise((res) => file.on('close', res));
 
 
   if (!installed[name]) installed[name] = {};
@@ -223,9 +221,6 @@ const downloadModule = async (name, ver) => {
 
 const installModule = async (name, ver, path) => {
   installing.total++;
-  events.emit('installing-module', {
-    name
-  });
 
   // log('Modules', 'Installing', `${name}@${ver}`);
 
@@ -275,11 +270,7 @@ const installModule = async (name, ver, path) => {
     if (!y.includes('inflating')) return;
 
     cur++;
-    events.emit('installing-module-progress', {
-      name,
-      cur,
-      total
-    });
+    events.emit('installing-module', { name, cur, total });
   }));
 
   proc.on('close', () => {
