@@ -5,7 +5,7 @@ const Module = require('module');
 const { execFile } = require('child_process');
 
 const paths = require('../paths');
-const request = require('./request');
+const request = require('request');
 
 const events = exports.events = new (require('events').EventEmitter)();
 exports.INSTALLED_MODULE = 'installed-module'; // Fixes DiscordNative ensureModule as it uses export
@@ -134,15 +134,14 @@ const checkModules = async () => {
   hostAvail = false;
 
   try {
-    const { body } = await request.get({
+    remote = await new Promise((res) => request({
       url: baseUrl + '/versions.json',
       qs
-    });
+    }, (e, r, b) => res(JSON.parse(b))));
 
     checking = false;
-
-    remote = JSON.parse(body);
   } catch (e) {
+    checking = false;
     log('Modules', 'Check failed', e);
 
     return events.emit('update-check-finished', {
@@ -181,26 +180,24 @@ const downloadModule = async (name, ver) => {
   const path = join(downloadPath, name + '-' + ver + '.zip');
   const stream = fs.createWriteStream(path);
 
-  stream.on('progress', ([ cur, total ]) => events.emit('downloading-module-progress', {
-    name,
-    cur,
-    total
-  }));
+  // log('Modules', 'Downloading', `${name}@${ver}`);
 
-  log('Modules', 'Downloading', `${name}@${ver}`);
+  let success, total, cur = 0;
+  request({ url, qs }).on('response', (res) => {
+    success = res.statusCode === 200;
+    total = parseInt(res.headers['content-length'] ?? 1, 10);
 
-  let success = false;
-  try {
-    const resp = await request.get({
-      url,
-      qs,
-      stream
+    res.pipe(stream);
+
+    res.on('data', c => {
+      cur += c.length;
+
+      events.emit('downloading-module-progress', { name, cur, total });
     });
+  });
 
-    success = resp.statusCode === 200;
-  } catch (e) {
-    log('Modules', 'Fetch errored', e);
-  }
+  await new Promise((res) => stream.on('close', res));
+
 
   if (!installed[name]) installed[name] = {};
 
