@@ -1,7 +1,7 @@
 const request = require('request');
 
 const nodeRequest = (opts) => new Promise((resolve, reject) => {
-  const { stream, timeout } = opts;
+  let { stream, timeout } = opts;
 
   const req = request({ ...opts, timeout: timeout ?? 15000 });
 

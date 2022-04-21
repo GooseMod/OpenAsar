@@ -3,6 +3,8 @@ const fs = require('fs');
 const mkdirp = require('mkdirp');
 const Module = require('module');
 const { execFile } = require('child_process');
+const { Readable, Writable } = require('stream');
+const zlib = require('zlib');
 
 const paths = require('../paths');
 const request = require('./request');
@@ -16,7 +18,7 @@ let skipHost, skipModule,
   downloading, installing,
   basePath, manifestPath, downloadPath,
   hostUpdater,
-  baseUrl, baseQuery,
+  baseUrl,
   checking, hostAvail, last;
 
 const resetTracking = () => {
@@ -112,11 +114,10 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   const platform = process.platform === 'darwin' ? 'osx' : 'linux';
   hostUpdater.setFeedURL(`${endpoint}/updates/${releaseChannel}?platform=${platform}&version=${version}`);
 
-  baseUrl = `${endpoint}/modules/${releaseChannel}`;
-  baseQuery = {
-    host_version: version,
-    platform
-  };
+  // endpoint = 'https://cdn.jsdelivr.net/gh/openasar/mu@gh-pages';
+  // endpoint = 'https://openasar.dev/Mu';
+  endpoint = 'https://mu.openasar.dev'
+  baseUrl = `${endpoint}/${platform}/${releaseChannel}`;
 };
 
 const hostPassed = (skip = skipModule) => {
@@ -134,13 +135,7 @@ const checkModules = async () => {
   hostAvail = false;
 
   try {
-    const { body } = await request.get({
-      url: baseUrl + '/versions.json',
-      qs: {
-        ...baseQuery,
-        _: Math.floor(Date.now() / 300000) // 5 min intervals
-      }
-    });
+    const { body } = await request.get(baseUrl + '/modules.json');
 
     checking = false;
 
@@ -179,10 +174,13 @@ const downloadModule = async (name, ver) => {
     name
   });
 
-  const url = baseUrl + '/' + name + '/' + ver;
+  const url = baseUrl + '/' + name;
+  const path = join(downloadPath, name + '-' + ver + '.tar');
 
-  const path = join(downloadPath, name + '-' + ver + '.zip');
-  const stream = fs.createWriteStream(path);
+  const stream = zlib.createBrotliDecompress();
+  stream.pipe(fs.createWriteStream(path));
+  // const path = join(downloadPath, name + '-' + ver + '.tar.br');
+  // const stream = fs.createWriteStream(path);
 
   stream.on('progress', ([ cur, total ]) => events.emit('downloading-module-progress', {
     name,
@@ -196,7 +194,6 @@ const downloadModule = async (name, ver) => {
   try {
     const resp = await request.get({
       url,
-      qs: baseQuery,
       stream
     });
 
@@ -250,43 +247,31 @@ const installModule = async (name, ver, path) => {
   // Extract zip via unzip cmd line - replaces yauzl dep (speed++, size--, jank++)
   const ePath = join(basePath, name);
 
-  const total = await new Promise((res) => {
-    const p = execFile('unzip', ['-l', path]);
+  let total = 0;
+  await new Promise((res) => {
+    const p = execFile('tar', ['-tf', path]);
 
-    p.stdout.on('data', x => {
-      const m = x.toString().match(/([0-9]+) files/);
-      if (m) res(parseInt(m[1]));
-    });
-
-    p.stderr.on('data', res); // On error resolve undefined (??'d to 0)
-  }) ?? 0;
+    p.stdout.on('data', x => total += x.toString().split('\n').length);
+    p.on('close', res);
+  });
 
   mkdirp.sync(ePath);
 
-  const proc = execFile('unzip', ['-o', path, '-d', ePath]);
+  const proc = execFile('tar', ['-xvf', path, '-C', ePath]);
 
-  proc.on('error', (err) => {
-    if (err.code === 'ENOENT') {
-      require('electron').dialog.showErrorBox('Failed Dependency', 'Please install "unzip"');
-      process.exit(1); // Close now
-    }
-
-    handleErr(err);
-  });
-
+  proc.on('error', handleErr);
   proc.stderr.on('data', handleErr);
 
   let cur = 0;
-  proc.stdout.on('data', x => x.toString().split('\n').forEach(y => {
-    if (!y.includes('inflating')) return;
-
-    cur++;
+  proc.stdout.on('data', x => {
+    cur += x.toString().split('\n').length;
+  
     events.emit('installing-module-progress', {
       name,
       cur,
       total
     });
-  }));
+  });
 
   proc.on('close', () => {
     if (hasError) return;
