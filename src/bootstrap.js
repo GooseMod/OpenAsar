@@ -1,4 +1,4 @@
-const { app, session, dialog } = require('electron');
+const { app, session } = require('electron');
 const { readFileSync } = require('fs');
 const get = require('request');
 const { join } = require('path');
@@ -15,15 +15,7 @@ global.releaseChannel = buildInfo.releaseChannel;
 
 log('BuildInfo', buildInfo);
 
-const fatal = e => {
-  log('Fatal', e);
-
-  dialog.showMessageBox({
-    type: 'error',
-    message: 'A fatal Javascript error occured',
-    detail: e?.stack ?? String(e)
-  }).then(() => app.quit());
-};
+const fatal = e => log('Fatal', e);
 process.on('uncaughtException', console.error);
 
 
