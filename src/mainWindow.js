@@ -51,7 +51,7 @@ document.body.appendChild(el);
 
 openasar = {}; // Define global for any mods which want to know / etc
 
-
+DiscordNative.nativeModules.ensureModule('discord_voice');
 setInterval(() => { // Try init themesync
   try {
     themesync();
