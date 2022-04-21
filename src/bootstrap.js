@@ -49,12 +49,11 @@ const startCore = () => {
 
       const [ channel, hash ] = oaVersion.split('-'); // Split via -
 
-      const exec = bw.webContents.executeJavaScript;
-      exec(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
+      bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
         .replaceAll('<channel>', channel)
         .replaceAll('<hash>', hash || 'custom'));
 
-      if (oaConfig.js) exec(oaConfig.js);
+      if (oaConfig.js) bw.webContents.executeJavaScript(oaConfig.js);
     });
   });
 
@@ -83,7 +82,7 @@ const startCore = () => {
   });
 };
 
-const startUpdate = async () => {
+const startUpdate = () => {
   if (oaConfig.noTrack !== false) {
     const bl = { cancel: true }; // Standard block callback response
 
