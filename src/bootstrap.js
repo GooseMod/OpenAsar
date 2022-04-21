@@ -45,6 +45,7 @@ const startCore = () => {
 
   app.on('browser-window-created', (e, bw) => { // Main window injection
     bw.webContents.on('dom-ready', () => {
+      if (!bw.resizable) return; // Main window only
       splash.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
 
       const [ channel, hash ] = oaVersion.split('-'); // Split via -
