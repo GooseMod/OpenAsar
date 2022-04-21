@@ -1,12 +1,12 @@
 const https = require('https');
 
 // Generic polyfill for "request" npm package, wrapper for https
-const nodeReq = ({ method, url, headers, qs, timeout, body, stream }) => new Promise((resolve) => {
+const nodeReq = ({ method, url, headers, qs, timeout, body }) => new Promise((resolve) => {
   let req;
   try {
     req = https.request(url + (qs != null ? `?${(new URLSearchParams(qs)).toString()}` : ''), { method, headers, timeout }, async (res) => {
       const loc = res.headers.location;
-      if (loc) return resolve(await nodeReq({ url: loc, method, headers, timeout, body, stream }));
+      if (loc) return resolve(await nodeReq({ url: loc, method, headers, timeout, body }));
 
       resolve(res);
     });
