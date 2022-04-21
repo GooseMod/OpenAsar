@@ -16,7 +16,7 @@ let skipHost, skipModule,
   downloading, installing,
   basePath, manifestPath, downloadPath,
   hostUpdater,
-  baseUrl, baseQuery,
+  baseUrl, qs,
   checking, hostAvail, last;
 
 const resetTracking = () => {
@@ -113,7 +113,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   hostUpdater.setFeedURL(`${endpoint}/updates/${releaseChannel}?platform=${platform}&version=${version}`);
 
   baseUrl = `${endpoint}/modules/${releaseChannel}`;
-  baseQuery = {
+  qs = {
     host_version: version,
     platform
   };
@@ -136,10 +136,7 @@ const checkModules = async () => {
   try {
     const { body } = await request.get({
       url: baseUrl + '/versions.json',
-      qs: {
-        ...baseQuery,
-        _: Math.floor(Date.now() / 300000) // 5 min intervals
-      }
+      qs
     });
 
     checking = false;
@@ -196,7 +193,7 @@ const downloadModule = async (name, ver) => {
   try {
     const resp = await request.get({
       url,
-      qs: baseQuery,
+      qs,
       stream
     });
 
