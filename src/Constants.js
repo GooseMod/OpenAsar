@@ -1,5 +1,3 @@
-const { releaseChannel } = require('./utils/buildInfo');
-
 const titleCase = s => s[0].toUpperCase() + s.slice(1);
 
 const appNameSuffix = releaseChannel === 'stable' ? '' : titleCase(releaseChannel);
