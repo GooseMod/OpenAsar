@@ -80,13 +80,9 @@ exports.init = (endpoint, { releaseChannel, version }) => {
       succeeded: true,
       updateCount: 1
     });
-  
-    events.emit('downloading-module', {
-      name: 'host'
-    });
   });
 
-  hostUpdater.on('update-progress', progress => events.emit('downloading-module-progress', { name: 'host', progress }));
+  hostUpdater.on('update-progress', progress => events.emit('downloading-module', { name: 'host', progress }));
 
   hostUpdater.on('update-not-available', hostPassed);
 
