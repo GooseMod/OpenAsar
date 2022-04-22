@@ -4,7 +4,6 @@ const { join, resolve, basename } = require('path');
 const Constants = require('../Constants');
 
 const exec = process.execPath;
-const name = basename(exec);
 const app = resolve(exec, '..');
 const root = resolve(app, '..');
 
