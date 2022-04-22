@@ -8,18 +8,14 @@ const presets = {
 
 
 module.exports = () => {
-  for (const [ key, ...values ] of Object.values([ 'base', ...(oaConfig.cmdPreset || 'perf').split(',') ].reduce((acc, x) => {
-    for (const cmd of (presets[x] || '').split(' ')) {
-      if (!cmd) continue;
-  
-      const [ key, value ] = cmd.split('=');
-  
-      if (!acc[key]) acc[key] = [key];
-      acc[key].push(value);
-    }
-  
-    return acc;
-  }, {}))) {
-    app.commandLine.appendSwitch(key.replace('--', ''), values.join(','));
+  let c = {};
+  for (const x of ('base,' + (oaConfig.cmdPreset || 'perf')).split(',').reduce((a, x) => a.concat(presets[x]?.split(' ')), [])) {
+    const [ k, v ] = x.split('=');
+
+    (c[k] = c[k] || []).push(v);
+  }
+
+  for (const k in c) {
+    app.commandLine.appendSwitch(k.replace('--', ''), c[k].join(','));
   }
 };
