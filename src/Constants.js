@@ -7,7 +7,7 @@ const n = p + s; // Name as Discord<Channel> (if not stable)
 
 
 module.exports = {
-  APP_COMPANY: 'Discord Inc',
+  APP_COMPANY: p + ' Inc',
   APP_DESCRIPTION: p + ' - ' + d,
   APP_NAME: n,
   APP_NAME_FOR_HUMANS: p + (s !== '' ? ' ' + s : ''),
