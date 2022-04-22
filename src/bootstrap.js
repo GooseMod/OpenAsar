@@ -138,6 +138,10 @@ const startUpdate = () => {
 
 
 module.exports = () => {
+  app.on('second-instance', (e, a) => {
+    desktopCore?.handleOpenUrl?.(a.includes('--url') && a[a.indexOf('--') + 1]); // Change url of main window if protocol is used (uses like "discord --url -- discord://example")
+  });
+
   if (!app.requestSingleInstanceLock() && !(process.argv.includes('--multi-instance') || oaConfig.multiInstance === true)) {
     log('Bootstrap', 'Non-first instance');
     return app.quit();
