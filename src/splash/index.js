@@ -184,23 +184,25 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
     fail(check);
   };
 
-  on('update-check-finished', ({ succeeded, updateCount }) => {
+  on('checked', ({ failed, count }) => { // Finished check
     installs.reset();
     downloads.reset();
 
-    if (!succeeded) handleFail();
-      else if (updateCount === 0) launchMain();
+    if (failed) handleFail();
+      else if (count === 0) launchMain();
   });
+
+  on('downloaded', ({ failed }) => { // Downloaded all modules
+    toSend = 1;
+
+    if (failed > 0) handleFail();
+  });
+
+  on('installed', check); // Installed all modules
 
   on('downloading-module', ({ name, cur, total }) => {
     downloads.record(name, '', cur, total);
     installs.record(name, 'Waiting');
-  });
-
-  on('downloading-modules-finished', ({ failed }) => {
-    toSend = 1;
-
-    if (failed > 0) handleFail();
   });
   
   on('installing-module', ({ name, cur, total }) => {
@@ -215,10 +217,7 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
   on('downloaded-module', segment(downloads));
   on('installed-module', segment(installs));
 
-  on('installing-modules-finished', check);
-
-
-  on('manual', e => {
+  on('manual', e => { // Host manual update required
     splashState.details = e.details;
     sendState('manual');
   });

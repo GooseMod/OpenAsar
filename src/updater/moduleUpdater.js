@@ -76,9 +76,8 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   hostUpdater.on('update-available', () => {
     log('Modules', 'Host available');
   
-    events.emit('update-check-finished', {
-      succeeded: true,
-      updateCount: 1
+    events.emit('checked', {
+      count: 1
     });
   });
 
@@ -103,7 +102,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   hostUpdater.on('error', () => {
     log('Modules', 'Host error');
 
-    events.emit('update-check-finished', { succeeded: false });
+    events.emit('checked', { failed: true });
   });
 
   const platform = process.platform === 'darwin' ? 'osx' : 'linux';
@@ -117,9 +116,8 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 };
 
 const hostPassed = (skip = skipModule) => {
-  if (skip) return events.emit('update-check-finished', {
-    succeeded: true,
-    updateCount: 0
+  if (skip) return events.emit('checked', {
+    count: 0
   });
 
   log('Modules', 'Host good');
@@ -136,9 +134,8 @@ const checkModules = async () => {
   } catch (e) {
     log('Modules', 'Check failed', e);
 
-    return events.emit('update-check-finished', {
-      succeeded: false,
-      updateCount: 0
+    return events.emit('checked', {
+      failed: true
     });
   }
 
@@ -156,8 +153,7 @@ const checkModules = async () => {
   }
 
   events.emit('update-check-finished', {
-    succeeded: true,
-    updateCount: doing
+    count: doing
   });
 };
 
@@ -202,8 +198,7 @@ const downloadModule = async (name, ver) => {
   downloading.done++;
 
   if (downloading.done === downloading.total) {
-    events.emit('downloading-modules-finished', {
-      succeeded: downloading.total - downloading.fail,
+    events.emit('downloaded', {
       failed: downloading.fail
     });
   }
@@ -289,8 +284,7 @@ const finishInstall = (name, ver, success) => {
   if (installing.done === downloading.total) {
     if (!installing.fail) last = Date.now();
 
-    events.emit('installing-modules-finished', {
-      succeeded: installing.total - installing.fail,
+    events.emit('installed', {
       failed: installing.fail
     });
   
@@ -311,13 +305,13 @@ exports.checkForUpdates = () => {
 
 exports.quitAndInstallUpdates = () => hostUpdater.quitAndInstall();
 
-const isInstalled = exports.isInstalled = (n, v) => installed[n] && !(v && installed[n].installedVersion !== v);
+exports.isInstalled = (n, v) => installed[n] && !(v && installed[n].installedVersion !== v);
 exports.getInstalled = () => ({ ...installed });
 
 const commitManifest = () => fs.writeFileSync(manifestPath, JSON.stringify(installed, null, 2));
 
 exports.install = (name, def, { version } = {}) => {
-  if (isInstalled(name, version)) {
+  if (exports.isInstalled(name, version)) {
     if (!def) events.emit('installed-module', {
       name,
       succeeded: true
