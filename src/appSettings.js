@@ -2,17 +2,18 @@ const fs = require('fs');
 
 class Settings { // Heavily based on original for compat, but simplified and tweaked
   constructor(path) {
-    this.path = path;
-
     try {
-      this.store = JSON.parse(fs.readFileSync(this.path));
+      this.store = JSON.parse(fs.readFileSync(path));
     } catch (e) {
       this.store = {};
     }
 
-    this.mod = this.getMod();
+    Object.assign(this, {
+      path,
+      mod: this.getMod()
+    })
 
-    log('AppSettings', this.path, this.store);
+    log('Settings', this.path, this.store);
   }
 
   getMod() { // Get when file was last modified
@@ -21,12 +22,12 @@ class Settings { // Heavily based on original for compat, but simplified and twe
     } catch { }
   }
 
-  get(key, defaultValue) {
-    return this.store[key] ?? defaultValue;
+  get(k, d) {
+    return this.store[k] ?? d;
   }
 
-  set(key, value) {
-    this.store[key] = value;
+  set(k, v) {
+    this.store[k] = v;
   }
 
   save() {
@@ -36,9 +37,9 @@ class Settings { // Heavily based on original for compat, but simplified and twe
       fs.writeFileSync(this.path, JSON.stringify(this.store, null, 2));
       this.mod = this.getMod();
 
-      log('AppSettings', 'Saved');
+      log('Settings', 'Saved');
     } catch (e) {
-      log('AppSettings', e);
+      log('Settings', e);
     }
   }
 }
