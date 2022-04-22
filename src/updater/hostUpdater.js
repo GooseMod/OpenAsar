@@ -1,4 +1,4 @@
-const { app, autoUpdater } = require('electron');
+const { autoUpdater } = require('electron');
 
 const { get } = require('request');
 
@@ -8,12 +8,7 @@ module.exports = process.platform === 'linux' ? new (class HostLinux extends req
     this.url = url;
   }
 
-  quitAndInstall() {
-    app.relaunch();
-    app.quit();
-  }
-
-  async checkForUpdates() {
+  checkForUpdates() {
     get(this.url, (e, r, b) => {
       if (e) return this.emit('error');
 
