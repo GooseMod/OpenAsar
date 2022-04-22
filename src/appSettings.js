@@ -11,7 +11,7 @@ class Settings { // Heavily based on original for compat, but simplified and twe
     Object.assign(this, {
       path,
       mod: this.getMod()
-    })
+    });
 
     log('Settings', this.path, this.store);
   }
