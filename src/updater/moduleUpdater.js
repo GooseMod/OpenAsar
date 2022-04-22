@@ -3,9 +3,10 @@ const fs = require('fs');
 const mkdirp = require('mkdirp');
 const Module = require('module');
 const { execFile } = require('child_process');
+const { autoUpdater } = require('electron');
+const request = require('request');
 
 const paths = require('../paths');
-const request = require('request');
 
 const events = exports.events = new (require('events').EventEmitter)();
 exports.INSTALLED_MODULE = 'installed-module'; // Fixes DiscordNative ensureModule as it uses export
@@ -55,7 +56,22 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   }
 
 
-  hostUpdater = require('./hostUpdater');
+  hostUpdater = process.platform === 'linux' ? new (class HostLinux extends require('events').EventEmitter {
+    setFeedURL(url) {
+      this.url = url;
+    }
+  
+    checkForUpdates() {
+      request(this.url, (e, r, b) => {
+        if (e) return this.emit('error');
+  
+        if (r.statusCode === 204) return this.emit('update-not-available');
+  
+        this.emit('update-manually', b);
+      });
+    }
+  })() : autoUpdater;
+
 
   hostUpdater.on('update-available', () => {
     log('Modules', 'Host available');
