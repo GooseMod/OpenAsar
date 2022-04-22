@@ -8,31 +8,30 @@ const buildInfo = require('../utils/buildInfo');
 const desktopPath = join(app.getPath('appData'), 'autostart', app.name + '-' + buildInfo.releaseChannel + '.desktop');
 
 // Vars for use in desktop file content template
-const exePath = app.getPath('exe');
+const exec = app.getPath('exe');
 
 // Template for desktop file
 const desktopContent = `[Desktop Entry]
 Type=Application
-Exec=${exePath}
+Exec=${exec}
 Hidden=false
 NoDisplay=false
 Name=${basename(process.execPath)}
-Icon=${join(global.systemElectron ? '/usr/share/pixmaps/Discord' : dirname(exePath), 'discord.png')}
+Icon=${join(global.systemElectron ? '/usr/share/pixmaps/Discord' : dirname(exec), 'discord.png')}
 Comment=Text and voice chat for gamers.
 X-GNOME-Autostart-enabled=true`;
 
-exports.install = (callback) => {
+exports.install = (cb) => {
   try {
     mkdirp.sync(dirname(desktopPath));
-    return fs.writeFile(desktopPath, desktopContent, callback);
-  } catch (e) {
-    log('AutoStart', e);
-    return callback(); // Callback anyway
+    return fs.writeFile(desktopPath, desktopContent, cb);
+  } catch {
+    return cb(); // Callback anyway
   }
 };
 
-exports.update = (callback) => callback();
+exports.update = (cb) => cb();
 
-exports.uninstall = (callback) => fs.unlink(desktopPath, callback);
+exports.uninstall = (cb) => fs.unlink(desktopPath, cb);
 
-exports.isInstalled = (callback) => fs.access(desktopPath, fs.constants.F_OK, callback);
+exports.isInstalled = (cb) => fs.access(desktopPath, fs.constants.F_OK, cb);
