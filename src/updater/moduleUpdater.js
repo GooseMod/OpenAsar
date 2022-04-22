@@ -18,7 +18,7 @@ let skipHost, skipModule,
   basePath, manifestPath, downloadPath,
   hostUpdater,
   baseUrl, qs,
-  checking, last;
+  last;
 
 const resetTracking = () => {
   const base = {
@@ -88,7 +88,6 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 
   hostUpdater.on('update-manually', d => {
     log('Modules', 'Host manual');
-    checking = false;
   
     events.emit('manual', {
       details: d
@@ -96,8 +95,6 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   });
 
   hostUpdater.on('update-downloaded', () => {
-    checking = false;
-
     events.emit('downloaded-module', {
       name: 'host'
     });
@@ -105,8 +102,6 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 
   hostUpdater.on('error', () => {
     log('Modules', 'Host error');
-
-    checking = false;
 
     events.emit('update-check-finished', { succeeded: false });
   });
@@ -138,10 +133,7 @@ const checkModules = async () => {
       url: baseUrl + '/versions.json',
       qs
     }, (e, r, b) => res(JSON.parse(b))));
-
-    checking = false;
   } catch (e) {
-    checking = false;
     log('Modules', 'Check failed', e);
 
     return events.emit('update-check-finished', {
@@ -309,9 +301,6 @@ const finishInstall = (name, ver, success) => {
 
 exports.checkForUpdates = () => {
   log('Modules', 'Checking');
-
-  if (checking) return;
-  checking = true;
 
   events.emit('checking-for-updates');
 
