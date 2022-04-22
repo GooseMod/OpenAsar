@@ -10,7 +10,7 @@ module.exports = {
   APP_COMPANY: p + ' Inc',
   APP_DESCRIPTION: p + ' - ' + d,
   APP_NAME: n,
-  APP_NAME_FOR_HUMANS: p + (s !== '' ? ' ' + s : ''),
+  APP_NAME_FOR_HUMANS: (p + ' ' + s).trim(),
   APP_ID: [ 'com', 'squirrel', n, n ].join('.'),
   APP_PROTOCOL: p,
   API_ENDPOINT: settings.get('API_ENDPOINT') || (d + '/api'),
