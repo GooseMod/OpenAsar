@@ -17,7 +17,7 @@ let skipHost, skipModule,
   basePath, manifestPath, downloadPath,
   hostUpdater,
   baseUrl, qs,
-  checking, hostAvail, last;
+  checking, last;
 
 const resetTracking = () => {
   const base = {
@@ -60,7 +60,6 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   hostUpdater.on('update-available', () => {
     log('Modules', 'Host available');
   
-    hostAvail = true;
     events.emit('update-check-finished', {
       succeeded: true,
       updateCount: 1
@@ -131,8 +130,6 @@ const hostPassed = (skip = skipModule) => {
 };
 
 const checkModules = async () => {
-  hostAvail = false;
-
   try {
     remote = await new Promise((res) => request({
       url: baseUrl + '/versions.json',
@@ -320,17 +317,7 @@ exports.checkForUpdates = () => {
     else hostUpdater.checkForUpdates();
 };
 
-exports.quitAndInstallUpdates = () => {
-  log('Modules', 'Relaunching');
-
-  if (hostAvail) hostUpdater.quitAndInstall();
-  else {
-    const { app } = require('electron');
-
-    app.relaunch();
-    app.quit();
-  }
-};
+exports.quitAndInstallUpdates = () => hostUpdater.quitAndInstall();
 
 const isInstalled = exports.isInstalled = (n, v) => installed[n] && !(v && installed[n].installedVersion !== v);
 exports.getInstalled = () => ({ ...installed });
