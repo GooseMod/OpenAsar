@@ -14,12 +14,12 @@ module.exports = process.platform === 'linux' ? new (class HostLinux extends req
   }
 
   async checkForUpdates() {
-    get(this.url, (e, r) => {
+    get(this.url, (e, r, b) => {
       if (e) return this.emit('error');
 
       if (r.statusCode === 204) return this.emit('update-not-available');
 
-      this.emit('update-manually');
+      this.emit('update-manually', b);
     });
   }
 })() : autoUpdater;

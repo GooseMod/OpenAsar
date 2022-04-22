@@ -75,12 +75,12 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 
   hostUpdater.on('update-not-available', hostPassed);
 
-  hostUpdater.on('update-manually', v => {
+  hostUpdater.on('update-manually', d => {
     log('Modules', 'Host manual');
     checking = false;
   
     events.emit('update-manually', {
-      newVersion: v
+      details: d
     });
   
     events.emit('update-check-finished', {

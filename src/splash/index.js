@@ -1,4 +1,4 @@
-const { app } = require('electron');
+const { app, ipcMain } = require('electron');
 
 const moduleUpdater = require("../updater/moduleUpdater");
 const updater = require("../updater/updater");
@@ -67,6 +67,9 @@ const launchSplash = (startMin) => {
   }, 'splash');
 
   if (process.platform !== 'darwin') win.on('closed', () => !launched && app.quit());
+
+  ipcMain.on('ss', launchMain);
+  ipcMain.on('sq', app.quit);
 
   if (!startMin) win.once('ready-to-show', win.show);
 };
@@ -216,8 +219,8 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
 
 
   on('update-manually', e => {
-    splashState.newVersion = e.newVersion;
-    sendState('update-manually');
+    splashState.details = e.details;
+    sendState('manual');
   });
 
   sendState(CHECKING_FOR_UPDATES);
