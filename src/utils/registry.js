@@ -1,19 +1,19 @@
 const CP = require('child_process');
 
 
-exports.spawn = (args, callback) => {
+exports.spawn = (args, cb) => {
   const process = CP.spawn('reg.exe', args);
   let out = '';
 
   process.stdout.on('data', data => out += data);
 
-  process.on('error', e => callback(e, out));
-  process.on('exit', (c, s) => callback(c !== 0 ? (s ?? c) : null, out));
+  process.on('error', e => cb(e, out));
+  process.on('exit', (c, s) => cb(c !== 0 ? (s ?? c) : null, out));
 };
 
-exports.add = (todo, callback) => {
+exports.add = (todo, cb) => {
   const x = todo.shift();
-  if (!x) return callback();
+  if (!x) return cb();
 
-  exports.spawn([ 'add', ...x, '/f' ], () => exports.add(todo, callback));
+  exports.spawn([ 'add', ...x, '/f' ], () => exports.add(todo, cb));
 };
