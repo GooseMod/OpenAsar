@@ -218,7 +218,7 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
   on('installing-modules-finished', check);
 
 
-  on('update-manually', e => {
+  on('manual', e => {
     splashState.details = e.details;
     sendState('manual');
   });

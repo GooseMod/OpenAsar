@@ -90,13 +90,8 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     log('Modules', 'Host manual');
     checking = false;
   
-    events.emit('update-manually', {
+    events.emit('manual', {
       details: d
-    });
-  
-    events.emit('update-check-finished', {
-      succeeded: true,
-      updateCount: 1
     });
   });
 
@@ -105,10 +100,6 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 
     events.emit('downloaded-module', {
       name: 'host'
-    });
-
-    events.emit('downloading-modules-finished', {
-      succeeded: 1
     });
   });
 
