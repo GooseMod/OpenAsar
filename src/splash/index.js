@@ -3,9 +3,7 @@ const { app, ipcMain } = require('electron');
 const moduleUpdater = require("../updater/moduleUpdater");
 const updater = require("../updater/updater");
 
-let splashState = {},
-  launched,
-  win;
+let launched, win;
 
 
 exports.initSplash = (startMin) => {
@@ -53,10 +51,10 @@ const launchMain = () => {
   }
 };
 
-const sendState = (status) => {
+const sendState = (status, s = {}) => {
   try {
-    win.webContents.send('state', { status, ...splashState });
-  } catch (_e) {}
+    win.webContents.send('state', { status, ...s });
+  } catch { }
 };
 
 
@@ -109,13 +107,11 @@ class UIProgress { // Generic class to track updating and sent states to splash
       const progress = [...this.progress.values()].reduce((a, x) => a + x[0], 0) / [...this.progress.values()].reduce((a, x) => a + x[1], 0) * 100;
       if (progress > 100) return true;
 
-      splashState = {
+      sendState(this.st ? 'installing' : 'downloading', {
         current: this.done.size + 1,
         total: this.total.size,
         progress
-      };
-
-      sendState(this.st ? 'installing' : 'downloading');
+      });
 
       return true;
     }
@@ -217,9 +213,8 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
   on('downloaded-module', segment(downloads));
   on('installed-module', segment(installs));
 
-  on('manual', e => { // Host manual update required
-    splashState.details = e.details;
-    sendState('manual');
+  on('manual', ({ details }) => { // Host manual update required
+    sendState('manual', { details });
   });
 
   sendState(CHECKING_FOR_UPDATES);
@@ -228,9 +223,7 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
 };
 
 const fail = (c) => {
-  const s = 10;
-  splashState.seconds = s;
-  sendState('fail');
+  sendState('fail', { seconds: 10 });
 
-  setTimeout(c, s * 1000);
+  setTimeout(c, 10000);
 };
