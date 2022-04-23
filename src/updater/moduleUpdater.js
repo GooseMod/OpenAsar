@@ -73,14 +73,6 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   })() : autoUpdater;
 
 
-  hostUpdater.on('update-available', () => {
-    log('Modules', 'Host available');
-  
-    events.emit('checked', {
-      count: 1
-    });
-  });
-
   hostUpdater.on('update-progress', progress => events.emit('downloading-module', { name: 'host', progress }));
 
   hostUpdater.on('update-not-available', hostPassed);
@@ -139,21 +131,19 @@ const checkModules = async () => {
     });
   }
 
-  let doing = 0;
   for (const name in installed) {
     const inst = installed[name].installedVersion;
     const rem = remote[name];
 
     if (inst !== rem) {
       log('Modules', 'Update:', name, inst, '->', rem);
-      doing++;
   
       downloadModule(name, rem);
     }
   }
 
   events.emit('checked', {
-    count: doing
+    count: downloading.total
   });
 };
 
