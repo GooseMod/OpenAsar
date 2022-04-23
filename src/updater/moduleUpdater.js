@@ -152,7 +152,7 @@ const checkModules = async () => {
     }
   }
 
-  events.emit('update-check-finished', {
+  events.emit('checked', {
     count: doing
   });
 };
