@@ -85,11 +85,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     });
   });
 
-  hostUpdater.on('update-downloaded', () => {
-    events.emit('downloaded-module', {
-      name: 'host'
-    });
-  });
+  hostUpdater.on('update-downloaded', () => events.emit('downloaded-module', { name: 'host' }));
 
   hostUpdater.on('error', () => {
     log('Modules', 'Host error');
