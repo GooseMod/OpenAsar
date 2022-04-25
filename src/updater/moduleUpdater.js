@@ -3,7 +3,7 @@ const fs = require('fs');
 const mkdirp = require('mkdirp');
 const Module = require('module');
 const { execFile } = require('child_process');
-const { autoUpdater } = require('electron');
+const { app, autoUpdater } = require('electron');
 const request = require('request');
 
 const paths = require('../paths');
@@ -70,6 +70,11 @@ exports.init = (endpoint, { releaseChannel, version }) => {
         this.emit('update-manually', b);
       });
     }
+
+    quitAndInstall() {
+      app.relaunch();
+      app.quit();
+    }
   })() : autoUpdater;
 
 
@@ -77,13 +82,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 
   hostUpdater.on('update-not-available', hostPassed);
 
-  hostUpdater.on('update-manually', d => {
-    log('Modules', 'Host manual');
-  
-    events.emit('manual', {
-      details: d
-    });
-  });
+  hostUpdater.on('update-manually', e => events.emit('manual', e));
 
   hostUpdater.on('update-downloaded', hostUpdater.quitAndInstall);
 
