@@ -207,7 +207,6 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
 
   const segment = (tracker) => (({ name }) => {
     tracker.record(name, 'Complete');
-    if (name === 'host') moduleUpdater.quitAndInstallUpdates();
   });
 
   on('downloaded-module', segment(downloads));
