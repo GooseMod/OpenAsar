@@ -213,9 +213,7 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
   on('downloaded-module', segment(downloads));
   on('installed-module', segment(installs));
 
-  on('manual', ({ details }) => { // Host manual update required
-    sendState('manual', { details });
-  });
+  on('manual', (e) => sendState('manual', e)); // Host manual update required
 
   sendState(CHECKING_FOR_UPDATES);
 
