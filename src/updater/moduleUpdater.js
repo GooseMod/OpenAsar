@@ -203,7 +203,7 @@ const installModule = async (name, ver, path) => {
 
     log('Modules', 'Failed install', name, e);
 
-    finishInstall(name, ver, err);
+    finishInstall(name, ver, false);
   };
 
 
