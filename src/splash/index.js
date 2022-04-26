@@ -104,8 +104,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
 
   send() {
     if ((toSend === -1 && this.progress.size > 0 && this.progress.size > this.done.size) || toSend === this.st) {
-      const progress = [...this.progress.values()].reduce((a, x) => a + x[0], 0) / [...this.progress.values()].reduce((a, x) => a + x[1], 0) * 100;
-      if (progress > 100) return true;
+      const progress = Math.min(100, [...this.progress.values()].reduce((a, x) => a + x[0], 0) / [...this.progress.values()].reduce((a, x) => a + x[1], 0) * 100); // Clamp progress to 0-100
 
       sendState(this.st ? 'installing' : 'downloading', {
         current: this.done.size + 1,
