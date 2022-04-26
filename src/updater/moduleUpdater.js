@@ -196,57 +196,44 @@ const installModule = async (name, ver, path) => {
 
   // log('Modules', 'Installing', `${name}@${ver}`);
 
-  let hasError;
+  let err;
+  const onErr = e => {
+    if (err) return;
+    err = true;
 
-  const handleErr = e => {
-    if (hasError) return;
-    hasError = true;
+    log('Modules', 'Failed install', name, e);
 
-    log('Modules', 'Failed install', `${name}@${ver}`, e);
-
-    finishInstall(name, ver, false);
+    finishInstall(name, ver, err);
   };
 
 
   // Extract zip via unzip cmd line - replaces yauzl dep (speed++, size--, jank++)
+  let total = 0, cur = 0;
+  execFile('unzip', ['-l', path], (e, o) => total = parseInt(o.toString().match(/([0-9]+) files/)?.[1] ?? 0)); // Get total count and extract in parallel
+
   const ePath = join(basePath, name);
-
-  const total = await new Promise((res) => {
-    const p = execFile('unzip', ['-l', path]);
-
-    p.stdout.on('data', x => {
-      const m = x.toString().match(/([0-9]+) files/);
-      if (m) res(parseInt(m[1]));
-    });
-
-    p.stderr.on('data', res); // On error resolve undefined (??'d to 0)
-  }) ?? 0;
-
   mkdirp.sync(ePath);
 
   const proc = execFile('unzip', ['-o', path, '-d', ePath]);
 
-  proc.on('error', (err) => {
-    if (err.code === 'ENOENT') {
+  proc.on('error', (e) => {
+    if (e.code === 'ENOENT') {
       require('electron').dialog.showErrorBox('Failed Dependency', 'Please install "unzip"');
       process.exit(1); // Close now
     }
 
-    handleErr(err);
+    onErr(e);
+  });
+  proc.stderr.on('data', onErr);
+
+  proc.stdout.on('data', x => {
+    cur += x.toString().split('\n').length;
+
+    events.emit('installing-module', { name, cur, total });
   });
 
-  proc.stderr.on('data', handleErr);
-
-  let cur = 0;
-  proc.stdout.on('data', x => x.toString().split('\n').forEach(y => {
-    if (!y.includes('inflating')) return;
-
-    cur++;
-    events.emit('installing-module', { name, cur, total });
-  }));
-
   proc.on('close', () => {
-    if (hasError) return;
+    if (err) return;
   
     installed[name].installedVersion = ver;
     commitManifest();
