@@ -1,6 +1,5 @@
 module.exports = (o, n) => {
   const w = new (require('electron').BrowserWindow)({
-    center: true,
     frame: false,
     resizable: false,
     center: true,
