@@ -15,7 +15,7 @@ exports.do = (updater) => {
   const proto = Constants.APP_PROTOCOL;
   const base = 'HKCU\\Software\\Classes\\' + proto;
 
-  require('../utils/registry').add([[base, '/ve', '/d', `URL:${proto} Protocol`], [base, '/v', 'URL Protocol'], [base + '\\DefaultIcon', '/ve', '/d', `"${process.execPath}",-1`], [base + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], () => { // Make protocol
+  require('./utils/registry').add([[base, '/ve', '/d', `URL:${proto} Protocol`], [base, '/v', 'URL Protocol'], [base + '\\DefaultIcon', '/ve', '/d', `"${process.execPath}",-1`], [base + '\\shell\\open\\command', '/ve', '/d', `"${process.execPath}" --url -- "%1"`]], () => { // Make protocol
     try { // Make shortcuts
       const file = Constants.APP_NAME_FOR_HUMANS + '.lnk';
       const icon_path = join(root, 'app.ico');
