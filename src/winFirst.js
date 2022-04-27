@@ -1,7 +1,7 @@
 const fs = require('fs');
 const { join, resolve, basename } = require('path');
 
-const Constants = require('../Constants');
+const Constants = require('./Constants');
 
 const exec = process.execPath;
 const app = resolve(exec, '..');
