@@ -14,7 +14,7 @@ const getAsarHash = () => createHash('sha512').update(fs.readFileSync(asarPath))
 module.exports = async () => { // (Try) update asar
   log('AsarUpdate', 'Updating...');
 
-  if (!oaVersion.includes('-')) return log('AsarUpdate', 'Non-standard version');
+  if (!oaVersion.includes('-')) return;
 
   const originalHash = getAsarHash();
 
@@ -29,23 +29,8 @@ module.exports = async () => { // (Try) update asar
     request.get(asarUrl).on('response', r => r.pipe(file));
   });
 
-  if (fs.readFileSync(downloadPath, 'utf8').startsWith('<Error>')) return log('AsarUpdate', 'Download error');
+  if (fs.readFileSync(downloadPath, 'utf8').startsWith('<')) return log('AsarUpdate', 'Download error');
 
   fs.copyFileSync(downloadPath, asarPath); // Overwrite actual app.asar
   fs.unlinkSync(downloadPath); // Delete downloaded temp file
-
-
-  if (oaConfig.updatePrompt === true && originalHash !== getAsarHash()) {
-    const { response } = await dialog.showMessageBox(null, {
-      message: 'Updated OpenAsar',
-      detail: `Restart required to use new version.`,
-      buttons: ['Restart', 'Later'],
-      defaultId: 0
-    });
-
-    if (response === 0) {
-      app.relaunch();
-      app.exit();
-    }
-  }
 };
