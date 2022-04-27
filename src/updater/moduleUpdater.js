@@ -113,18 +113,10 @@ const hostPassed = (skip = skipModule) => {
 };
 
 const checkModules = async () => {
-  try {
-    remote = await new Promise((res) => request({
-      url: baseUrl + '/versions.json',
-      qs
-    }, (e, r, b) => res(JSON.parse(b))));
-  } catch (e) {
-    log('Modules', 'Check failed', e);
-
-    return events.emit('checked', {
-      failed: true
-    });
-  }
+  remote = await new Promise((res) => request({
+    url: baseUrl + '/versions.json',
+    qs
+  }, (e, r, b) => res(JSON.parse(b))));
 
   for (const name in installed) {
     const inst = installed[name].installedVersion;
