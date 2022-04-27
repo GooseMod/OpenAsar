@@ -162,8 +162,6 @@ const downloadModule = async (name, ver) => {
   await new Promise((res) => file.on('close', res));
 
 
-  if (!installed[name]) installed[name] = {};
-
   if (success) commitManifest();
     else downloading.fail++;
 
@@ -227,7 +225,7 @@ const installModule = async (name, ver, path) => {
   proc.on('close', () => {
     if (err) return;
   
-    installed[name].installedVersion = ver;
+    installed[name] = { installedVersion: ver };
     commitManifest();
   
     finishInstall(name, ver, true);
