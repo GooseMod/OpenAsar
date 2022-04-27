@@ -1,7 +1,6 @@
 const request = require('request');
 const fs = require('original-fs'); // Use original-fs, not Electron's modified fs
-const { createHash } = require('crypto');
-const { dialog, app } = require('electron');
+// const { createHash } = require('crypto');
 const { join } = require('path');
 
 const asarPath = join(require.main.filename, '..');
