@@ -9,14 +9,14 @@ const downloadPath = join(asarPath, '..', 'app.asar.download');
 
 const asarUrl = `https://github.com/GooseMod/OpenAsar/releases/download/${oaVersion.split('-')[0]}/app.asar`;
 
-const getAsarHash = () => createHash('sha512').update(fs.readFileSync(asarPath)).digest('hex');
+// const getAsarHash = () => createHash('sha512').update(fs.readFileSync(asarPath)).digest('hex');
 
 module.exports = async () => { // (Try) update asar
   log('AsarUpdate', 'Updating...');
 
   if (!oaVersion.includes('-')) return;
 
-  const originalHash = getAsarHash();
+  // const originalHash = getAsarHash();
 
   await new Promise((res) => {
     const file = fs.createWriteStream(downloadPath);
