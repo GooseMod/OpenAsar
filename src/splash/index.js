@@ -73,8 +73,6 @@ const launchSplash = (startMin) => {
 };
 
 
-const CHECKING_FOR_UPDATES = 'checking-for-updates';
-
 const events = exports.events = new (require('events').EventEmitter)();
 
 let toSend = 0; // Progress state to send for ModuleUpdater (0 = downloading, 1 = installing)
@@ -126,7 +124,7 @@ const initNew = async (inst) => {
   };
 
   while (true) {
-    sendState(CHECKING_FOR_UPDATES);
+    sendState('checking-for-updates');
 
     try {
       let installedAnything = false;
@@ -184,7 +182,7 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
     downloads.reset();
 
     if (failed) handleFail();
-      else if (count === 0) launchMain();
+      else if (!count) launchMain(); // Count is 0 / undefined
   });
 
   on('downloaded', ({ failed }) => { // Downloaded all modules
@@ -213,7 +211,7 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
 
   on('manual', (e) => sendState('manual', e)); // Host manual update required
 
-  sendState(CHECKING_FOR_UPDATES);
+  sendState('checking-for-updates');
 
   check();
 };
