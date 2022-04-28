@@ -80,8 +80,6 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 
   hostUpdater.on('update-progress', progress => events.emit('downloading-module', { name: 'host', progress }));
 
-  hostUpdater.on('update-not-available', hostPassed);
-
   hostUpdater.on('update-manually', e => events.emit('manual', e));
 
   hostUpdater.on('update-downloaded', hostUpdater.quitAndInstall);
@@ -102,16 +100,6 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   };
 };
 
-const hostPassed = (skip = skipModule) => {
-  if (skip) return events.emit('checked', {
-    count: 0
-  });
-
-  log('Modules', 'Host good');
-
-  checkModules();
-};
-
 const checkModules = async () => {
   remote = await new Promise((res) => request({
     url: baseUrl + '/versions.json',
@@ -129,9 +117,7 @@ const checkModules = async () => {
     }
   }
 
-  events.emit('checked', {
-    count: downloading.total
-  });
+  return downloading.total;
 };
 
 const downloadModule = async (name, ver) => {
@@ -255,14 +241,24 @@ const finishInstall = (name, ver, success) => {
 };
 
 
-exports.checkForUpdates = () => {
+exports.checkForUpdates = async () => {
   log('Modules', 'Checking');
 
-  events.emit('checking-for-updates');
+  const done = (e = {}) => events.emit('checked', e);
 
-  if (skipHost) hostPassed();
-    else if (last > Date.now() - 10000) hostPassed(true);
-    else hostUpdater.checkForUpdates();
+  if (last > Date.now() - 10000) return done();
+
+  let p = [];
+  if (!skipHost) {
+    p.push(new Promise((res) => hostUpdater.once('update-not-available', res)));
+    hostUpdater.checkForUpdates();
+  }
+
+  if (!skipModule) p.push(checkModules());
+
+  done({
+    count: (await Promise.all(p)).pop()
+  });
 };
 
 exports.quitAndInstallUpdates = () => hostUpdater.quitAndInstall();
