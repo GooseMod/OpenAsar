@@ -24,7 +24,7 @@ process.on('uncaughtException', console.error);
 const splash = require('./splash');
 const updater = require('./updater/updater');
 const moduleUpdater = require('./updater/moduleUpdater');
-const autoStart = require('./autoStart');
+const autoStart = require('./autoStart/' + process.platform);
 
 let desktopCore;
 const startCore = () => {
