@@ -16,7 +16,7 @@ let skipHost, skipModule,
   installed = {},
   downloading, installing,
   basePath, manifestPath, downloadPath,
-  hostUpdater,
+  host,
   baseUrl, qs,
   last;
 
@@ -56,7 +56,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   }
 
 
-  hostUpdater = process.platform === 'linux' ? new (class HostLinux extends require('events').EventEmitter {
+  host = process.platform === 'linux' ? new (class HostLinux extends require('events').EventEmitter {
     setFeedURL(url) {
       this.url = url;
     }
@@ -78,20 +78,20 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   })() : autoUpdater;
 
 
-  hostUpdater.on('update-progress', progress => events.emit('downloading-module', { name: 'host', progress }));
+  host.on('update-progress', progress => events.emit('downloading-module', { name: 'host', progress }));
 
-  hostUpdater.on('update-manually', e => events.emit('manual', e));
+  host.on('update-manually', e => events.emit('manual', e));
 
-  hostUpdater.on('update-downloaded', hostUpdater.quitAndInstall);
+  host.on('update-downloaded', host.quitAndInstall);
 
-  hostUpdater.on('error', () => {
+  host.on('error', () => {
     log('Modules', 'Host error');
 
     events.emit('checked', { failed: true });
   });
 
   const platform = process.platform === 'darwin' ? 'osx' : 'linux';
-  hostUpdater.setFeedURL(`${endpoint}/updates/${releaseChannel}?platform=${platform}&version=${version}`);
+  host.setFeedURL(`${endpoint}/updates/${releaseChannel}?platform=${platform}&version=${version}`);
 
   baseUrl = `${endpoint}/modules/${releaseChannel}`;
   qs = {
@@ -250,8 +250,8 @@ exports.checkForUpdates = async () => {
 
   let p = [];
   if (!skipHost) {
-    p.push(new Promise((res) => hostUpdater.once('update-not-available', res)));
-    hostUpdater.checkForUpdates();
+    p.push(new Promise((res) => host.once('update-not-available', res)));
+    host.checkForUpdates();
   }
 
   if (!skipModule) p.push(checkModules());
@@ -261,7 +261,7 @@ exports.checkForUpdates = async () => {
   });
 };
 
-exports.quitAndInstallUpdates = () => hostUpdater.quitAndInstall();
+exports.quitAndInstallUpdates = () => host.quitAndInstall();
 
 exports.isInstalled = (n, v) => installed[n] && !(v && installed[n].installedVersion !== v);
 exports.getInstalled = () => ({ ...installed });
