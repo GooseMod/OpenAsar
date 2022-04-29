@@ -1,5 +1,4 @@
 const fs = require('fs');
-const mkdirp = require('mkdirp');
 const { join, basename, dirname } = require('path');
 const { app } = require('electron');
 
@@ -23,10 +22,10 @@ X-GNOME-Autostart-enabled=true`;
 
 exports.install = (cb) => {
   try {
-    mkdirp.sync(dirname(desktopPath));
-    return fs.writeFile(desktopPath, desktopContent, cb);
+    fs.mkdirSync(dirname(desktopPath), { recursive: true });
+    fs.writeFile(desktopPath, desktopContent, cb);
   } catch {
-    return cb(); // Callback anyway
+    cb(); // Callback anyway
   }
 };
 
