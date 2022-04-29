@@ -1,12 +1,13 @@
 const { join } = require('path');
 const fs = require('fs');
-const mkdirp = require('mkdirp');
 const Module = require('module');
 const { execFile } = require('child_process');
 const { app, autoUpdater } = require('electron');
 const request = require('request');
 
 const paths = require('../paths');
+
+const mkdir = (x) => fs.mkdirSync(x, { recursive: true });
 
 const events = exports.events = new (require('events').EventEmitter)();
 exports.INSTALLED_MODULE = 'installed-module'; // Fixes DiscordNative ensureModule as it uses export
@@ -45,7 +46,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 
   // Purge pending
   fs.rmSync(downloadPath, { recursive: true, force: true });
-  mkdirp.sync(downloadPath);
+  mkdir(downloadPath);
 
   try {
     installed = JSON.parse(fs.readFileSync(manifestPath));
@@ -188,7 +189,7 @@ const installModule = async (name, ver, path) => {
   execFile('unzip', ['-l', path], (e, o) => total = parseInt(o.toString().match(/([0-9]+) files/)?.[1] ?? 0)); // Get total count and extract in parallel
 
   const ePath = join(basePath, name);
-  mkdirp.sync(ePath);
+  mkdir(ePath);
 
   const proc = execFile('unzip', ['-o', path, '-d', ePath]);
 
