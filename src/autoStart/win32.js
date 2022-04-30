@@ -1,6 +1,6 @@
 const { join, basename } = require('path');
 
-const reg = require('../utils/registry');
+const reg = (a, c) => require('child_process').execFile('reg.exe', a, c);
 
 const appName = basename(process.execPath, '.exe');
 const queuePrefix = [ 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName ];

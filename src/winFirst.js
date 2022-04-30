@@ -1,6 +1,8 @@
 const fs = require('fs');
 const { join, resolve, basename } = require('path');
 
+const reg = (a, c) => require('child_process').execFile('reg.exe', a, c);
+
 const Constants = require('./Constants');
 const reg = require('./utils/registry');
 
@@ -17,7 +19,8 @@ exports.do = (updater) => {
   const base = 'HKCU\\Software\\Classes\\' + proto;
 
   for (const x of [
-    [base, '/ve', '/d', `URL:${proto} Protocol`], [base, '/v', 'URL Protocol'],
+    [base, '/ve', '/d', `URL:${proto} Protocol`],
+    [base, '/v', 'URL Protocol'],
     [base + '\\DefaultIcon', '/ve', '/d', `"${exec}",-1`],
     [base + '\\shell\\open\\command', '/ve', '/d', `"${exec}" --url -- "%1"`]
   ]) reg([ 'add', ...x, '/f' ], e => {});
