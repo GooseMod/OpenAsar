@@ -20,7 +20,7 @@ const themesync = async () => {
 
 // Settings info version injection
 setInterval(() => {
-  const host = [...document.querySelectorAll('[class^="socialLinks-"] + [class^="info-"] [class^="colorMuted-"]')].find(x => x.textContent.startsWith('Host '));
+  const host = [...document.querySelectorAll('[class*="info-"] [class*="line-"]')].find(x => x.textContent.startsWith('Host '));
   if (!host || document.querySelector('#openasar-ver')) return;
 
   const el = document.createElement('span');
