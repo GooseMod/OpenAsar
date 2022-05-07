@@ -92,7 +92,7 @@ const startUpdate = () => {
     });
   }
 
-  const startMin = process.argv.includes('--start-minimized');
+  const startMin = process.argv?.includes?.('--start-minimized');
 
   if (updater.tryInitUpdater(buildInfo, Constants.NEW_UPDATE_ENDPOINT)) {
     const inst = updater.getUpdater();
@@ -120,7 +120,7 @@ const startUpdate = () => {
 
     setTimeout(() => { // Try to update our asar
       const config = require('./config');
-      if (oaConfig.setup !== true || process.argv.includes('--config')) config.open();
+      if (oaConfig.setup !== true) config.open();
 
       if (oaConfig.autoupdate !== false) { // If autoupdate disabled, don't update
         try {
@@ -141,7 +141,7 @@ module.exports = () => {
     desktopCore?.handleOpenUrl?.(a.includes('--url') && a[a.indexOf('--') + 1]); // Change url of main window if protocol is used (uses like "discord --url -- discord://example")
   });
 
-  if (!app.requestSingleInstanceLock() && !(process.argv.includes('--multi-instance') || oaConfig.multiInstance === true)) return app.quit();
+  if (!app.requestSingleInstanceLock() && !(process.argv?.includes?.('--multi-instance') || oaConfig.multiInstance === true)) return app.quit();
 
   if (app.isReady()) startUpdate();
     else app.once('ready', startUpdate);
