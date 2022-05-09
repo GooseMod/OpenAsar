@@ -3,7 +3,7 @@ const themesync = async () => {
   const getVar = (name, el = document.body) => el && (getComputedStyle(el).getPropertyValue(name) || getVar(name, el.parentElement))?.trim();
 
   const bgPrimary = getVar('--background-primary');
-  if (!bgPrimary || bgPrimary === '#36393f' || bgPrimary === lastBgPrimary) return; // Default primary bg or same as last
+  if (!bgPrimary || bgPrimary === '#36393f' || bgPrimary === '#fff' || bgPrimary === lastBgPrimary) return; // Default primary bg or same as last
   lastBgPrimary = bgPrimary;
 
   const vars = [ '--background-primary', '--background-secondary', '--brand-experiment', '--header-primary', '--text-muted' ];
