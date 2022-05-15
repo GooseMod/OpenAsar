@@ -4,9 +4,12 @@ class Settings { // Heavily based on original for compat, but simplified and twe
   constructor(path) {
     try {
       this.store = JSON.parse(fs.readFileSync(path));
-    } catch (e) {
+    } catch {
       this.store = {};
     }
+
+    this.path = path;
+    this.mod = this.getMod();
 
     Object.assign(this, {
       path,
