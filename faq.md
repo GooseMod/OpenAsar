@@ -35,3 +35,6 @@ Most likely, as any slight modification to Discord at all counts as breaking it.
 
 ### Can I use this in my project?
 Sure! Just make sure to properly [respect the license](LICENSE) and clearly / transparently credit OpenAsar.
+
+### Does OpenAsar update itself?
+Yes, with a catch. On Windows it works out of the box, however on macOS or Linux you'll need to change the permissions for the entire resources folder for it to work.
