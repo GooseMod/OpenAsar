@@ -16,7 +16,7 @@ Exec=${exec}
 Hidden=false
 NoDisplay=false
 Name=${basename(process.execPath)}
-Icon=${join(global.systemElectron ? '/usr/share/pixmaps/Discord' : dirname(exec), 'discord.png')}
+Icon=${join(global.systemElectron ? '/usr/share/pixmaps' : dirname(exec), 'discord.png')}
 Comment=Text and voice chat for gamers.
 X-GNOME-Autostart-enabled=true`;
 
