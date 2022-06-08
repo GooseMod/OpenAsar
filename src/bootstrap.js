@@ -85,7 +85,7 @@ const startUpdate = () => {
     }, async ({ url }, cb) => {
       if (url.endsWith('/science')) return cb(bl);
 
-      if (!sentry && (await new Promise((res) => get(url, (e, r, b) => res(b)))).includes('RecipeWebview')) sentry = url;
+      if (!sentry && ((res) => get(url, (e, r, b) => res(b))).includes('RecipeWebview')) sentry = url;
       if (sentry === url) return cb(bl);
 
       cb({});
