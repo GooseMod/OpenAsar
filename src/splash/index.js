@@ -18,7 +18,7 @@ exports.initSplash = (startMin) => {
     destroySplash();
 
     launchMain();
-    
+
     setTimeout(() => {
       events.emit('APP_SHOULD_SHOW');
     }, 100);
@@ -197,7 +197,7 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
     downloads.record(name, '', cur, total);
     installs.record(name, 'Waiting');
   });
-  
+
   on('installing-module', ({ name, cur, total }) => {
     installs.record(name, '', cur, total);
   });
@@ -209,7 +209,7 @@ const initOld = () => { // "Old" (not v2 / new, win32 only)
   on('downloaded-module', segment(downloads));
   on('installed-module', segment(installs));
 
-  on('manual', (e) => sendState('manual', e)); // Host manual update required
+  on('manual', (e) => sendState('manual', { details: e })); // Host manual update required
 
   sendState('checking-for-updates');
 
