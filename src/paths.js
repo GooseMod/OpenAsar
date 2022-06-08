@@ -32,7 +32,7 @@ exports.init = () => {
 
 
   // cleanOldVersions
-  if (installPath) for (const x of fs.readdirSync(installPath)) {
+  /* if (installPath) for (const x of fs.readdirSync(installPath)) {
     if (x.startsWith('app-') && !x.includes(buildInfo.version)) fs.rmSync(join(installPath, x), { recursive: true, force: true });
-  }
+  } */
 };
