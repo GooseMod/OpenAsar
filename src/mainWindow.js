@@ -2,7 +2,7 @@ if ('<notrack>' === 'true') { // Disable sentry
   try {
     window.__SENTRY__.hub.getClient().getOptions().enabled = false;
 
-    Object.keys(console).forEach(x => console[x] = console[x].__sentry_original__ ?? console[x]);
+    // Object.keys(console).forEach(x => console[x] = console[x].__sentry_original__ ?? console[x]);
   } catch { }
 }
 
