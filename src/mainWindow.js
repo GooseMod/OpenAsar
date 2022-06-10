@@ -1,6 +1,12 @@
 if ('<notrack>' === 'true') { // Disable sentry
   try {
     window.__SENTRY__.hub.getClient().getOptions().enabled = false;
+
+    window.__SENTRY__.hub.getClient().close();
+    window.__SENTRY__.hub.getScope().clear();
+
+    window.__SENTRY__.hub.addBreadcrumb = () => {};
+
     Object.keys(console).forEach(x => console[x] = console[x].__sentry_original__ ?? console[x]);
   } catch { }
 }
