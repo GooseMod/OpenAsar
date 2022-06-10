@@ -41,7 +41,8 @@ const startCore = () => {
       const [ channel, hash ] = oaVersion.split('-'); // Split via -
 
       bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
-        .replaceAll('<hash>', hash || 'custom'));
+        .replaceAll('<hash>', hash || 'custom'))
+        .replaceAll('<notrack>', oaConfig.noTrack);
 
       if (oaConfig.js) bw.webContents.executeJavaScript(oaConfig.js);
     });
@@ -73,24 +74,7 @@ const startCore = () => {
 };
 
 const startUpdate = () => {
-  if (oaConfig.noTrack !== false) {
-    const bl = { cancel: true }; // Standard block callback response
-
-    let sentry;
-    session.defaultSession.webRequest.onBeforeRequest({
-      urls: [
-        'https://*.discord.com/assets/*.js',
-        'https://*/api/*/science'
-      ]
-    }, async ({ url }, cb) => {
-      if (url.endsWith('/science')) return cb(bl);
-
-      if (!sentry && (await new Promise((res) => get(url, (e, r, b) => res(b)))).includes('RecipeWebview')) sentry = url;
-      if (sentry === url) return cb(bl);
-
-      cb({});
-    });
-  }
+  if (oaConfig.noTrack !== false) session.defaultSession.webRequest.onBeforeRequest({ urls: [ 'https://*/api/v9/science' ] }, async (e, cb) => cb({ cancel: true }));
 
   const startMin = process.argv?.includes?.('--start-minimized');
 

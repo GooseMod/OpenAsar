@@ -1,3 +1,10 @@
+if ('<notrack>' === 'true') { // Disable sentry
+  try {
+    window.__SENTRY__.hub.getClient().getOptions().enabled = false;
+    Object.keys(console).forEach(x => console[x] = console[x].__sentry_original__ ?? console[x]);
+  } catch { }
+}
+
 let lastBgPrimary = '';
 const themesync = async () => {
   const getVar = (name, el = document.body) => el && (getComputedStyle(el).getPropertyValue(name) || getVar(name, el.parentElement))?.trim();
