@@ -2,9 +2,9 @@
 These are rough milestones for OpenAsar progress over original Discord's asar.
 
 ## Milestone 3 - complete rewrite
-- [ ] Self-write 100% of code:
-  - [ ] Updater
-  - [ ] Splash backend
+- [X] Self-write 100% of code:
+  - [X] Updater
+  - [X] Splash backend
 - [ ] Make splash compatible with client mod theming
 - [ ] Full custom splashes
 
