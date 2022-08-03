@@ -4,5 +4,6 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('Native', {
   restart: () => ipcRenderer.send('cr'),
   set: c => ipcRenderer.send('cs', c),
-  get: () => ipcRenderer.sendSync('cg')
+  get: () => ipcRenderer.sendSync('cg'),
+  openFile: () => ipcRenderer.send('of')
 });
