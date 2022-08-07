@@ -30,4 +30,11 @@ exports.open = () => {
     app.relaunch();
     app.exit();
   });
+
+  ipcMain.on('of', () => {
+    const { shell } = require('electron')
+    const { getUserData } = require('../paths')
+    const {join} = require('path')
+      shell.openPath(join(getUserData(), 'settings.json'))
+  })
 };
