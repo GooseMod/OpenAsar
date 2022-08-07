@@ -1,4 +1,4 @@
-const { ipcMain, app } = require('electron');
+const { ipcMain, app, shell } = require('electron');
 
 ipcMain.on('DISCORD_UPDATED_QUOTES', (e, c) => {
   if (c === 'o') exports.open();
@@ -32,9 +32,6 @@ exports.open = () => {
   });
 
   ipcMain.on('of', () => {
-    const { shell } = require('electron')
-    const { getUserData } = require('../paths')
-    const {join} = require('path')
-      shell.openPath(join(getUserData(), 'settings.json'))
+    shell.openPath(require('../paths').getUserData() + '/settings.json')
   })
 };
