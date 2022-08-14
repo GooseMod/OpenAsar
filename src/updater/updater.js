@@ -209,5 +209,5 @@ module.exports = {
     valid: true
   }),
 
-  tryInitUpdater: () => {}
+  tryInitUpdater: () => true
 };
