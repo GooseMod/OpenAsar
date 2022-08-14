@@ -148,7 +148,9 @@ const installModule = async (moduleName, _progressCallback = () => {}, force = f
 };
 
 const commitModules = async () => {
-
+  for (const m of await getInstalled(false)) {
+    Module.globalPaths.push(join(modulesPath, m));
+  }
 };
 
 const queryCurrentVersions = async () => ({
@@ -158,7 +160,7 @@ const queryCurrentVersions = async () => ({
 const queryAndTruncateHistory = () => [];
 
 const updateToLatestWithOptions = async (options, callback) => {
-  const installed = await getInstalled(false);
+  let installed = await getInstalled();
   const manifest = await getManifest();
 
   const wanted = Object.keys(installed).concat(manifest.required_modules).filter((x, i, arr) => i === arr.indexOf(x)); // installed + required
@@ -181,6 +183,8 @@ const updateToLatestWithOptions = async (options, callback) => {
   const start = Date.now();
   await Promise.all(installs);
   if (installs.length > 0) log('Updater', `Updated ${installs.length} modules in ${(Date.now() - start).toFixed(2)}ms`);
+
+  await commitModules();
 
   // await new Promise(res => setTimeout(res, 100000));
 };
