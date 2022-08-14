@@ -195,6 +195,7 @@ log('Updater', 'Pending path:', pendingPath);
 fs.rmSync(pendingPath, { recursive: true, force: true });
 fs.mkdirSync(pendingPath, { recursive: true });
 
+const events = new (require('events').EventEmitter)();
 module.exports = {
   getUpdater: () => ({
     installModule,
@@ -206,7 +207,8 @@ module.exports = {
     startCurrentVersion,
     collectGarbage: () => {},
 
-    valid: true
+    valid: true,
+    on: events.on
   }),
 
   tryInitUpdater: () => true
