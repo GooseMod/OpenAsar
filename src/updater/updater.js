@@ -1,356 +1,210 @@
-const { spawn } = require('child_process');
+const cp = require('child_process');
 const { app } = require('electron');
 const Module = require('module');
-const { join, resolve, basename } = require('path');
-const { hrtime } = require('process');
+const { join, resolve, dirname, basename } = require('path');
+// const https = require('http');
+const https = require('https');
+const fs = require('fs');
+const zlib = require('zlib');
 
 const paths = require('../paths');
 
-let instance;
-const TASK_STATE_COMPLETE = 'Complete';
-const TASK_STATE_FAILED = 'Failed';
-const TASK_STATE_WAITING = 'Waiting';
-const TASK_STATE_WORKING = 'Working';
+const USE_MU = true;
 
+// const { releaseChannel, version: hostVersion } = require('../utils/buildInfo');
+const releaseChannel = 'canary';
+const { NEW_UPDATE_ENDPOINT: endpoint } = require('../Constants');
 
-class Updater extends require('events').EventEmitter {
-  constructor(options) {
-    super();
+const platform = process.platform === 'win32' ? 'win' : 'osx';
+const modulesPath = join(paths.getExeDir(), 'modules');
+const pendingPath = join(modulesPath, '..', 'pending');
 
-    let Native;
-    try {
-      Native = options.nativeUpdaterModule ?? require(paths.getExeDir() + '/updater');
-    } catch (e) {
-      log('Updater', e); // Error when requiring
+let _installed;
+const getInstalled = async (useCache = true) => (useCache && _installed) || (_installed = (await fs.promises.readdir(modulesPath)).sort((a, b) => parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])).reduce((acc, x) => {
+  const [ name, version ] = x.split('-');
+  acc[name] = parseInt(version);
+  return acc;
+}, {}));
 
-      if (e.code === 'MODULE_NOT_FOUND') return;
-      throw e;
-    }
+let _manifest;
+/* const getManifest = async (useCache = true) => (useCache && _manifest) || (_manifest = await new Promise(fin => https.get(`${endpoint}distributions/app/manifests/latest?platform=${platform}&channel=${releaseChannel}&arch=x86`, async res => {
+  let data = '';
 
-    this.committedHostVersion = null;
-    this.rootPath = options.root_path;
-    this.nextRequestId = 0;
-    this.requests = new Map();
-    this.updateEventHistory = [];
-    this.currentlyDownloading = {};
-    this.currentlyInstalling = {};
-    this.hasEmittedUnhandledException = false;
+  res.on('data', d => data += d.toString());
 
-    this.nativeUpdater = new Native.Updater({
-      response_handler: this._handleResponse.bind(this),
-      ...options
-    });
-  }
+  res.on('end', () => fin(JSON.parse(data)));
+}))); */
 
-  get valid() {
-    return this.nativeUpdater != null;
-  }
+const MU_ENDPOINT = 'https://mu.openasar.dev';
 
-  _sendRequest(detail, progressCallback = null) {
-    if (!this.valid) throw 'No native';
+const getManifest = async (useCache = true) => (useCache && _manifest) || (_manifest = await new Promise(fin => https.get(`${MU_ENDPOINT}/win/${releaseChannel}/modules.json`, async res => {
+  let data = '';
 
-    const requestId = this.nextRequestId++;
-    return new Promise((resolve, reject) => {
-      this.requests.set(requestId, {
-        resolve,
-        reject,
-        progressCallback
-      });
+  res.on('data', d => data += d.toString());
 
-      this.nativeUpdater.command(JSON.stringify([ requestId, detail ]));
-    });
-  }
+  res.on('end', () => {
+    const mods = JSON.parse(data);
 
-  _sendRequestSync(detail) {
-    if (!this.valid) throw 'No native';
-
-    return this.nativeUpdater.command_blocking(JSON.stringify([ this.nextRequestId++, detail ]));
-  }
-
-  _handleResponse(response) {
-    try {
-      const [ id, detail ] = JSON.parse(response);
-      const request = this.requests.get(id);
-
-      if (request == null) return log('Updater', id, detail); // No request handlers for id / type
-
-      if (detail['Error'] != null) {
-        const {
-          kind,
-          details,
-          severity
-        } = detail['Error'];
-        const e = new Error(`(${kind}) ${details}`);
-
-        if (severity === 'Fatal') {
-          if (!this.emit(kind, e)) throw e;
-        } else {
-          this.emit('update-error', e);
-          request.reject(e);
-          this.requests.delete(id);
-        }
-      } else if (detail === 'Ok') {
-        request.resolve();
-        this.requests.delete(id);
-      } else if (detail['VersionInfo'] != null) {
-        request.resolve(detail['VersionInfo']);
-        this.requests.delete(id);
-      } else if (detail['ManifestInfo'] != null) {
-        request.resolve(detail['ManifestInfo']);
-        this.requests.delete(id);
-      } else if (detail['TaskProgress'] != null) {
-        const msg = detail['TaskProgress'];
-        const progress = {
-          task: msg[0],
-          state: msg[1],
-          percent: msg[2],
-          bytesProcessed: msg[3]
+    fin({
+      modules: Object.keys(mods).reduce((acc, x) => {
+        acc[x] = {
+          full: {
+            module_version: mods[x],
+            url: `${MU_ENDPOINT}/win/${releaseChannel}/${x}`
+          }
         };
 
-        this._recordTaskProgress(progress);
-
-        request.progressCallback?.(progress);
-
-        if (progress.task['HostInstall'] != null && progress.state === TASK_STATE_COMPLETE) this.emit('host-updated');
-      } else log('Updater', id, detail); // Unknown response
-    } catch (e) {
-      log('Updater', e); // Error handling response
-
-      if (!this.hasEmittedUnhandledException) {
-        this.hasEmittedUnhandledException = true;
-        this.emit('unhandled-exception', e);
-      }
-    }
-  }
-
-  _handleSyncResponse(response) {
-    const detail = JSON.parse(response);
-
-    if (detail.Error != null) throw detail.Error;
-      else if (detail === 'Ok') return;
-      else if (detail.VersionInfo != null) return detail.VersionInfo;
-
-    log('Updater', detail); // Unknown response
-  }
-
-  _getHostPath() {
-    return join(this.rootPath, `app-${this.committedHostVersion.join('.')}`);
-  }
-
-  _startCurrentVersionInner(options, versions) {
-    if (this.committedHostVersion == null) this.committedHostVersion = versions.current_host;
-
-    const cur = resolve(process.execPath);
-    const next = resolve(join(this._getHostPath(), basename(process.execPath)));
-
-    if (next != cur && !options?.allowObsoleteHost) {
-      // Retain OpenAsar
-      const fs = require('original-fs');
-  
-      const getAsar = (p) => join(p, '..', 'resources', 'app.asar');
-      const cAsar = getAsar(cur);
-      const nAsar = getAsar(next);
-
-      try {
-        fs.copyFileSync(nAsar, nAsar + '.backup'); // Copy new app.asar to backup file (<new>/app.asar -> <new>/app.asar.backup)
-        fs.copyFileSync(cAsar, nAsar); // Copy old app.asar to new app.asar (<old>/app.asar -> <new>/app.asar)
-      } catch (e) {
-        log('Updater', 'Failed to retain OpenAsar', e);
-      }
-      
-      app.once('will-quit', () => spawn(next, [], {
-        detached: true,
-        stdio: 'inherit'
-      }));
-
-      log('Updater', 'Restarting', next);
-      return app.quit();
-    }
-
-    this._commitModulesInner(versions);
-  }
-
-  _commitModulesInner(versions) {
-    const base = join(this._getHostPath(), 'modules');
-
-    for (const m in versions.current_modules) Module.globalPaths.push(join(base, `${m}-${versions.current_modules[m]}`));
-  }
-
-  _recordDownloadProgress(name, progress) {
-    const now = String(hrtime.bigint());
-
-    if (progress.state === TASK_STATE_WORKING && !this.currentlyDownloading[name]) {
-      this.currentlyDownloading[name] = true;
-      this.updateEventHistory.push({
-        type: 'downloading-module',
-        name,
-        now
-      });
-    } else if (progress.state === TASK_STATE_COMPLETE || progress.state === TASK_STATE_FAILED) {
-      this.currentlyDownloading[name] = false;
-      this.updateEventHistory.push({
-        type: 'downloaded-module',
-        name,
-        now,
-        succeeded: progress.state === TASK_STATE_COMPLETE,
-        receivedBytes: progress.bytesProcessed
-      });
-    }
-  }
-
-  _recordInstallProgress(name, progress, newVersion, isDelta) {
-    const now = String(hrtime.bigint());
-
-    if (progress.state === TASK_STATE_WORKING && !this.currentlyInstalling[name]) {
-      this.currentlyInstalling[name] = true;
-      this.updateEventHistory.push({
-        type: 'installing-module',
-        name,
-        now,
-        newVersion
-      });
-    } else if (progress.state === TASK_STATE_COMPLETE || progress.state === TASK_STATE_FAILED) {
-      this.currentlyInstalling[name] = false;
-      this.updateEventHistory.push({
-        type: 'installed-module',
-        name,
-        now,
-        newVersion,
-        succeeded: progress.state === TASK_STATE_COMPLETE,
-        delta: isDelta
-      });
-    }
-  }
-
-  _recordTaskProgress(progress) {
-    if (progress.task.HostDownload != null) this._recordDownloadProgress('host', progress);
-      else if (progress.task.HostInstall != null) this._recordInstallProgress('host', progress, null, progress.task.HostInstall.from_version != null);
-      else if (progress.task.ModuleDownload != null) this._recordDownloadProgress(progress.task.ModuleDownload.version.module.name, progress);
-      else if (progress.task.ModuleInstall != null) this._recordInstallProgress(progress.task.ModuleInstall.version.module.name, progress, progress.task.ModuleInstall.version.version, progress.task.ModuleInstall.from_version != null);
-  }
-
-  queryCurrentVersions() {
-    return this._sendRequest('QueryCurrentVersions');
-  }
-
-  queryCurrentVersionsSync() {
-    return this._handleSyncResponse(this._sendRequestSync('QueryCurrentVersions'));
-  }
-
-  repair(progressCallback) {
-    return this.repairWithOptions(null, progressCallback);
-  }
-
-  repairWithOptions(options, progressCallback) {
-    return this._sendRequest({
-      Repair: {
-        options
-      }
-    }, progressCallback);
-  }
-
-  collectGarbage() {
-    return this._sendRequest('CollectGarbage');
-  }
-
-  setRunningManifest(manifest) {
-    return this._sendRequest({
-      SetManifests: ['Running', manifest]
+        return acc;
+      }, {}),
+      required_modules: []
     });
+    // fin(JSON.parse(data))
+  });
+})));
+
+const installModule = async (moduleName, _progressCallback = () => {}, force = false) => { // install module
+  log('Updater', `Installing module ${moduleName}...`);
+  const start = Date.now();
+
+  const manifest = await getManifest();
+
+  const remote = manifest.modules[moduleName].full;
+  const version = remote.module_version;
+
+  const installed = await getInstalled();
+
+  if (!force && installed[moduleName] === version) {
+    log('Updater', 'Aborting install of', moduleName, '- already installed!');
+    return;
   }
 
-  setPinnedManifestSync(manifest) {
-    return this._handleSyncResponse(this._sendRequestSync({
-      SetManifests: ['Pinned', manifest]
-    }));
-  }
+  log('Updater', `Downloading ${moduleName}@${version}...`);
 
-  installModule(name, progressCallback) {
-    return this.installModuleWithOptions(name, null, progressCallback);
-  }
+  const path = `${moduleName}-${version}`;
 
-  installModuleWithOptions(name, options, progressCallback) {
-    return this._sendRequest({
-      InstallModule: {
-        name,
-        options
+  const tarPath = join(pendingPath, path + '.tar');
+  const finalPath = join(modulesPath, path, moduleName);
+
+  // await fs.promises.mkdir(dirname(tarPath)).catch(_ => {});
+
+  const stream = zlib.createBrotliDecompress();
+  stream.pipe(fs.createWriteStream(tarPath));
+
+  const progressCallback = (type, percent) => _progressCallback({
+    state: percent === 100 ? 'Complete' : type,
+    task: {
+      ['Module' + type]: {
+        package_sha256: moduleName,
+        version: { module: { name: moduleName } }
       }
-    }, progressCallback);
+    },
+    percent
+  });
+
+  let downloadTotal = 0, downloadCurrent = 0;
+  https.get(remote.url, res => {
+    res.pipe(stream);
+
+    downloadTotal = parseInt(res.headers['content-length'] ?? 1, 10);
+
+    res.on('data', c => {
+      downloadCurrent += c.length;
+
+      progressCallback('Download', (downloadCurrent / downloadTotal) * 100);
+    });
+  });
+
+  await new Promise(res => stream.on('end', res));
+
+  progressCallback('Download', 100);
+
+  log('Updater', `Downloaded ${moduleName}@${version}`);
+
+  let extractTotal = 0, extractCurrent = 0;
+
+  // cp.execFile('tar', ['-tf', tarPath]).stdout.on('data', x => extractTotal += x.toString().split('\n').length - 1);
+
+  await fs.promises.mkdir(finalPath, { recursive: true }).catch(_ => {});
+
+  // const proc = cp.execFile('tar', ['--strip-components', '1', '-xvf', tarPath, '-C', finalPath]);
+  const proc = cp.execFile('tar', [/*'--strip-components', '1', */ '-xf', tarPath, '-C', finalPath]);
+
+  /* proc.stdout.on('data', x => {
+    extractCurrent += x.toString().split('\n').length - 1;
+    console.log('wow', extractCurrent, extractTotal);
+
+    progressCallback('Install', (extractCurrent / extractTotal) * 100);
+  }); */
+
+  await new Promise(res => proc.on('close', res));
+
+  progressCallback('Install', 100);
+
+  log('Updater', `Installed ${moduleName}@${version}`);
+  log('Updater', `Took ${(Date.now() - start).toFixed(2)}ms`);
+
+  // fs.rm(tarPath, () => {}); // clean up downloaded tar after
+  // getInstalled(false); // update cached installed after
+};
+
+const commitModules = async () => {
+
+};
+
+const queryCurrentVersions = async () => ({
+  current_modules: await getInstalled()
+});
+
+const queryAndTruncateHistory = () => [];
+
+const updateToLatestWithOptions = async (options, callback) => {
+  const installed = await getInstalled(false);
+  const manifest = await getManifest();
+
+  const wanted = Object.keys(installed).concat(manifest.required_modules).filter((x, i, arr) => i === arr.indexOf(x)); // installed + required
+
+  console.log('installed', installed);
+  console.log('wanted', wanted);
+
+  const installs = [];
+  for (const m of wanted) {
+    const local = installed[m] ?? -1;
+    const remote = manifest.modules[m]?.full;
+
+    const remoteVer = remote?.module_version;
+    if (remoteVer && remoteVer > local) {
+      log('Updater', 'Module update:', m, local, '->', remoteVer);
+      installs.push(installModule(m, callback));
+    }
   }
 
-  updateToLatest(progressCallback) {
-    return this.updateToLatestWithOptions(null, progressCallback);
-  }
+  const start = Date.now();
+  await Promise.all(installs);
+  if (installs.length > 0) log('Updater', `Updated ${installs.length} modules in ${(Date.now() - start).toFixed(2)}ms`);
 
-  updateToLatestWithOptions(options, progressCallback) {
-    return this._sendRequest({
-      UpdateToLatest: {
-        options
-      }
-    }, progressCallback);
-  }
+  // await new Promise(res => setTimeout(res, 100000));
+};
 
+const startCurrentVersion = async () => {
 
-  async startCurrentVersion(options) {
-    const versions = await this.queryCurrentVersions();
-    await this.setRunningManifest(versions.last_successful_update);
+};
 
-    this._startCurrentVersionInner(options, versions);
-  }
-
-  startCurrentVersionSync(options) {
-    this._startCurrentVersionInner(options, this.queryCurrentVersionsSync());
-  }
-
-  async commitModules(versions) {
-    if (this.committedHostVersion == null) throw 'No host';
-
-    this._commitModulesInner(versions ?? await this.queryCurrentVersions());
-  }
-
-  queryAndTruncateHistory() {
-    const history = this.updateEventHistory;
-    this.updateEventHistory = [];
-    return history;
-  }
-
-  getKnownFolder(name) {
-    if (!this.valid) throw 'No native';
-
-    return this.nativeUpdater.known_folder(name);
-  }
-
-  createShortcut(options) {
-    if (!this.valid) throw 'No native';
-
-    return this.nativeUpdater.create_shortcut(options);
-  }
-
-}
-
+fs.rmSync(pendingPath, { recursive: true, force: true });
+fs.mkdirSync(pendingPath);
 
 module.exports = {
-  Updater,
-  TASK_STATE_COMPLETE,
-  TASK_STATE_FAILED,
-  TASK_STATE_WAITING,
-  TASK_STATE_WORKING,
+  getUpdater: () => ({
+    installModule,
+    commitModules,
+    queryCurrentVersions,
+    queryAndTruncateHistory,
+    updateToLatestWithOptions,
 
-  INCONSISTENT_INSTALLER_STATE_ERROR: 'InconsistentInstallerState',
+    startCurrentVersion,
+    collectGarbage: () => {},
 
-  tryInitUpdater: (buildInfo, repository_url) => {
-    const root_path = paths.getInstallPath();
-    if (root_path == null) return false;
-  
-    instance = new Updater({
-      release_channel: buildInfo.releaseChannel,
-      platform: process.platform === 'win32' ? 'win' : 'osx',
-      repository_url,
-      root_path
-    });
-  
-    return instance.valid;
-  },
+    valid: true
+  }),
 
-  getUpdater: () => (instance != null && instance.valid && instance) || null
+  tryInitUpdater: () => {}
 };

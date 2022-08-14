@@ -4,6 +4,7 @@ const Module = require('module');
 const { execFile } = require('child_process');
 const { app, autoUpdater } = require('electron');
 const request = require('request');
+const https = require('https');
 
 const paths = require('../paths');
 
@@ -12,13 +13,15 @@ const mkdir = (x) => fs.mkdirSync(x, { recursive: true });
 const events = exports.events = new (require('events').EventEmitter)();
 exports.INSTALLED_MODULE = 'installed-module'; // Fixes DiscordNative ensureModule as it uses export
 
+const MU_ENDPOINT = 'https://mu.openasar.dev';
+
 let skipHost, skipModule,
   remote = {},
   installed = {},
   downloading, installing,
   basePath, manifestPath, downloadPath,
   host,
-  baseUrl, qs,
+  baseUrl,
   last;
 
 const resetTracking = () => {
@@ -61,13 +64,13 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     setFeedURL(url) {
       this.url = url;
     }
-  
+
     checkForUpdates() {
       request(this.url, (e, r, b) => {
         if (e) return this.emit('error');
-  
+
         if (r.statusCode === 204) return this.emit('update-not-available');
-  
+
         this.emit('update-manually', b);
       });
     }
@@ -94,17 +97,12 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   const platform = process.platform === 'darwin' ? 'osx' : 'linux';
   host.setFeedURL(`${endpoint}/updates/${releaseChannel}?platform=${platform}&version=${version}`);
 
-  baseUrl = `${endpoint}/modules/${releaseChannel}`;
-  qs = {
-    host_version: version,
-    platform
-  };
+  baseUrl = `${MU_ENDPOINT}/${platform}/${releaseChannel}`;
 };
 
 const checkModules = async () => {
   remote = await new Promise((res) => request({
-    url: baseUrl + '/versions.json',
-    qs
+    url: baseUrl + '/modules.json'
   }, (e, r, b) => res(JSON.parse(b))));
 
   for (const name in installed) {
@@ -113,7 +111,7 @@ const checkModules = async () => {
 
     if (inst !== rem) {
       log('Modules', 'Update:', name, inst, '->', rem);
-  
+
       downloadModule(name, rem);
     }
   }
@@ -124,29 +122,23 @@ const checkModules = async () => {
 const downloadModule = async (name, ver) => {
   downloading.total++;
 
-  const path = join(downloadPath, name + '-' + ver + '.zip');
-  const file = fs.createWriteStream(path);
+  const path = join(downloadPath, name + '-' + ver + '.tar');
 
   // log('Modules', 'Downloading', `${name}@${ver}`);
 
-  let success, total, cur = 0;
-  request({
-    url: baseUrl + '/' + name + '/' + ver,
-    qs
-  }).on('response', (res) => {
+  const stream = zlib.createBrotliDecompress();
+  stream.pipe(fs.createWriteStream(path));
+  // const path = join(downloadPath, name + '-' + ver + '.tar.br');
+  // const stream = fs.createWriteStream(path);
+
+  stream.on('progress', ([ cur, total ]) => events.emit('downloading-module', { name, cur, total }));
+
+  https.get(baseUrl + '/' + name, res => {
     success = res.statusCode === 200;
-    total = parseInt(res.headers['content-length'] ?? 1, 10);
-
-    res.pipe(file);
-
-    res.on('data', c => {
-      cur += c.length;
-
-      events.emit('downloading-module', { name, cur, total });
-    });
+    res.pipe(stream);
   });
 
-  await new Promise((res) => file.on('close', res));
+  await new Promise(res => stream.on('close', res));
 
 
   if (success) commitManifest();
@@ -186,21 +178,14 @@ const installModule = async (name, ver, path) => {
 
   // Extract zip via unzip cmd line - replaces yauzl dep (speed++, size--, jank++)
   let total = 0, cur = 0;
-  execFile('unzip', ['-l', path], (e, o) => total = parseInt(o.toString().match(/([0-9]+) files/)?.[1] ?? 0)); // Get total count and extract in parallel
+  execFile('tar', ['-tf', path], (e, o) => total = o.toString().split('\n').length); // Get total count and extract in parallel
 
   const ePath = join(basePath, name);
   mkdir(ePath);
 
-  const proc = execFile('unzip', ['-o', path, '-d', ePath]);
+  const proc = execFile('tar', ['-xvf', path, '-C', ePath]);
 
-  proc.on('error', (e) => {
-    if (e.code === 'ENOENT') {
-      require('electron').dialog.showErrorBox('Failed Dependency', 'Please install "unzip"');
-      process.exit(1); // Close now
-    }
-
-    onErr(e);
-  });
+  proc.on('error', onErr);
   proc.stderr.on('data', onErr);
 
   proc.stdout.on('data', x => {
@@ -211,10 +196,10 @@ const installModule = async (name, ver, path) => {
 
   proc.on('close', () => {
     if (err) return;
-  
+
     installed[name] = { installedVersion: ver };
     commitManifest();
-  
+
     finishInstall(name, ver, true);
   });
 };
@@ -236,7 +221,7 @@ const finishInstall = (name, ver, success) => {
     events.emit('installed', {
       failed: installing.fail
     });
-  
+
     resetTracking();
   }
 };
