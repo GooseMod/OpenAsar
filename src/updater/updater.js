@@ -189,6 +189,9 @@ const startCurrentVersion = async () => {
 
 };
 
+log('Updater', 'Modules path:', modulesPath);
+log('Updater', 'Pending path:', pendingPath);
+
 fs.rmSync(pendingPath, { recursive: true, force: true });
 fs.mkdirSync(pendingPath, { recursive: true });
 
