@@ -148,7 +148,7 @@ const installModule = async (moduleName, _progressCallback = () => {}, force = f
 };
 
 const commitModules = async () => {
-  for (const m of await getInstalled(false)) {
+  for (const m in await getInstalled(false)) {
     Module.globalPaths.push(join(modulesPath, m));
   }
 };
