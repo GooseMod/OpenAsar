@@ -56,7 +56,7 @@ const getManifest = async (useCache = true) => (useCache && _manifest) || (_mani
 
         return acc;
       }, {}),
-      required_modules: []
+      required_modules: [ 'discord_desktop_core', 'discord_utils' ]
     });
     // fin(JSON.parse(data))
   });
