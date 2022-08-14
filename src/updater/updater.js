@@ -11,12 +11,12 @@ const paths = require('../paths');
 
 const USE_MU = true;
 
-// const { releaseChannel, version: hostVersion } = require('../utils/buildInfo');
-const releaseChannel = 'canary';
+const { releaseChannel, version: hostVersion } = require('../utils/buildInfo');
+// const releaseChannel = 'canary';
 const { NEW_UPDATE_ENDPOINT: endpoint } = require('../Constants');
 
 const platform = process.platform === 'win32' ? 'win' : 'osx';
-const modulesPath = join(paths.getExeDir(), 'modules');
+const modulesPath = platform === 'win' ? join(paths.getExeDir(), 'modules') : join(paths.getUserDataVersioned(), 'modules');
 const pendingPath = join(modulesPath, '..', 'pending');
 
 let _installed;
@@ -37,7 +37,7 @@ let _manifest;
 
 const MU_ENDPOINT = 'https://mu.openasar.dev';
 
-const getManifest = async (useCache = true) => (useCache && _manifest) || (_manifest = await new Promise(fin => https.get(`${MU_ENDPOINT}/win/${releaseChannel}/modules.json`, async res => {
+const getManifest = async (useCache = true) => (useCache && _manifest) || (_manifest = await new Promise(fin => https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/modules.json`, async res => {
   let data = '';
 
   res.on('data', d => data += d.toString());
@@ -50,7 +50,7 @@ const getManifest = async (useCache = true) => (useCache && _manifest) || (_mani
         acc[x] = {
           full: {
             module_version: mods[x],
-            url: `${MU_ENDPOINT}/win/${releaseChannel}/${x}`
+            url: `${MU_ENDPOINT}/${platform}/${releaseChannel}/${x}`
           }
         };
 

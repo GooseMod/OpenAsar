@@ -101,7 +101,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 };
 
 const checkModules = async () => {
-  remote = await new Promise((res) => request({
+  remote = await new Promise(res => request({
     url: baseUrl + '/modules.json'
   }, (e, r, b) => res(JSON.parse(b))));
 
