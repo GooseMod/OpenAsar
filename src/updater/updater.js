@@ -20,7 +20,7 @@ const modulesPath = platform === 'win' ? join(paths.getExeDir(), 'modules') : jo
 const pendingPath = join(modulesPath, '..', 'pending');
 
 let _installed;
-const getInstalled = async (useCache = true) => (useCache && _installed) || (_installed = (await fs.promises.readdir(modulesPath)).sort((a, b) => parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])).reduce((acc, x) => {
+const getInstalled = async (useCache = true) => (useCache && _installed) || (_installed = (await fs.promises.readdir(modulesPath).catch(_ => [])).sort((a, b) => parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])).reduce((acc, x) => {
   const [ name, version ] = x.split('-');
   acc[name] = parseInt(version);
   return acc;
