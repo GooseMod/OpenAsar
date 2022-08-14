@@ -190,7 +190,7 @@ const startCurrentVersion = async () => {
 };
 
 fs.rmSync(pendingPath, { recursive: true, force: true });
-fs.mkdirSync(pendingPath);
+fs.mkdirSync(pendingPath, { recursive: true });
 
 module.exports = {
   getUpdater: () => ({
