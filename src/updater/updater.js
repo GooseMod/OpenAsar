@@ -31,9 +31,10 @@ const MU_ENDPOINT = 'https://mu.openasar.dev';
 let _manifest;
 let lastManifest;
 const getManifest = async () => {
-  if (_manifest && lastManifest > Date.now() - 1000 * 60 * 5) return _manifest; // cache for 5m
+  const manifestTime = Math.floor(Date.now() / 1000 / 60 / 5); // cache for ~5m, client and server
+  if (_manifest && lastManifest >= manifestTime) return _manifest;
 
-  return await new Promise(fin => https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/modules.json`, async res => {
+  return await new Promise(fin => https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/modules.json?_=${manifestTime}`, async res => {
     let data = '';
 
     res.on('data', d => data += d.toString());
@@ -48,7 +49,7 @@ const getManifest = async () => {
 
       fin(_manifest);
 
-      lastManifest = Date.now();
+      lastManifest = manifestTime;
     });
   }));
 };
@@ -98,6 +99,7 @@ const installModule = async (name, _progressCallback = () => {}, force = false) 
 
     res.on('data', c => {
       downloadCurrent += c.length;
+      console.log(name, (downloadCurrent / downloadTotal) * 100);
 
       progressCallback('Download', (downloadCurrent / downloadTotal) * 100);
     });
