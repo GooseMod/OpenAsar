@@ -92,7 +92,7 @@ const installModule = async (name, _progressCallback = () => {}, force = false) 
   });
 
   let downloadTotal = 0, downloadCurrent = 0;
-  https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/${name}`, res => {
+  https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/${name}?v=${version}`, res => { // query for caching
     res.pipe(stream);
 
     downloadTotal = parseInt(res.headers['content-length'] ?? 1, 10);
