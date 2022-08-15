@@ -83,9 +83,6 @@ const installModule = async (name, force = false) => { // install module
 
   // await fs.promises.mkdir(dirname(tarPath)).catch(_ => {});
 
-  const stream = zlib.createBrotliDecompress();
-  stream.pipe(fs.createWriteStream(tarPath));
-
   const progressCb = (type, percent) => progressCallback({
     state: percent === 100 ? 'Complete' : type,
     task: {
@@ -97,24 +94,33 @@ const installModule = async (name, force = false) => { // install module
     percent
   });
 
-  let downloadTotal = 0, downloadCurrent = 0;
-  https.get(`${DOWNLOAD_ENDPOINT}/${platform}/${releaseChannel}/${name}?v=${version}`, res => { // query for caching
-    res.pipe(stream);
+  const download = [];
 
+  let downloadTotal = 0, downloadCurrent = 0;
+  await new Promise(resv => https.get(`${DOWNLOAD_ENDPOINT}/${platform}/${releaseChannel}/${name}?v=${version}`, res => { // query for caching
     downloadTotal = parseInt(res.headers['content-length'] ?? 1, 10);
 
     res.on('data', c => {
       downloadCurrent += c.length;
+      download.push(c);
 
       progressCb('Download', (downloadCurrent / downloadTotal) * 100);
     });
-  });
 
-  await new Promise(res => stream.on('end', res));
+    res.on('end', resv);
+  }));
 
   progressCb('Download', 100);
 
   log('Updater', `Downloaded ${name}@${version} (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
+
+  log('Updater', `Decompressing ${name}@${version}...`);
+
+  await new Promise(res => zlib.brotliDecompress(Buffer.concat(download), (e, out) => {
+    fs.writeFile(tarPath, out, res);
+  }));
+
+  log('Updater', `Decompressed ${name}@${version}`);
 
   let extractTotal = 0, extractCurrent = 0;
 
