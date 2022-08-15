@@ -120,6 +120,7 @@ const installModule = async (name, force = false) => { // install module
   log('Updater', `Decompressing ${name}@${version}...`);
 
   await new Promise(res => zlib.brotliDecompress(download, (e, out) => {
+    console.log(`saving @ ${(Date.now() - decompressStart).toFixed(2)}ms`);
     fs.writeFile(tarPath, out, res);
   }));
 
