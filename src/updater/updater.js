@@ -151,10 +151,11 @@ const queryCurrentVersions = async () => ({
 
 const queryAndTruncateHistory = () => [];
 
-let lastCheck;
+let lastCheck, checking;
 const updateToLatestWithOptions = async (options, callback) => {
   progressCallback = callback;
-  if (lastCheck > Date.now() - 5000) return; // don't check again if already checked in the last 5s
+  if (!checking && lastCheck > Date.now() - 5000) return; // don't check again if already checked in the last 5s
+  checking = true;
 
   let installed = await getInstalled();
   const manifest = await getManifest();
@@ -182,6 +183,8 @@ const updateToLatestWithOptions = async (options, callback) => {
   await commitModules();
 
   lastCheck = Date.now();
+  checking = false;
+
   // await new Promise(res => setTimeout(res, 100000));
 };
 
