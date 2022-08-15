@@ -54,7 +54,9 @@ const getManifest = async () => {
   }));
 };
 
-const installModule = async (name, _progressCallback = () => {}, force = false) => { // install module
+let progressCallback;
+
+const installModule = async (name, force = false) => { // install module
   log('Updater', `Installing module ${name}...`);
   const start = Date.now();
 
@@ -80,7 +82,7 @@ const installModule = async (name, _progressCallback = () => {}, force = false) 
   const stream = zlib.createBrotliDecompress();
   stream.pipe(fs.createWriteStream(tarPath));
 
-  const progressCallback = (type, percent) => _progressCallback({
+  const progressCb = (type, percent) => progressCallback({
     state: percent === 100 ? 'Complete' : type,
     task: {
       ['Module' + type]: {
@@ -100,13 +102,13 @@ const installModule = async (name, _progressCallback = () => {}, force = false) 
     res.on('data', c => {
       downloadCurrent += c.length;
 
-      progressCallback('Download', (downloadCurrent / downloadTotal) * 100);
+      progressCb('Download', (downloadCurrent / downloadTotal) * 100);
     });
   });
 
   await new Promise(res => stream.on('end', res));
 
-  progressCallback('Download', 100);
+  progressCb('Download', 100);
 
   log('Updater', `Downloaded ${name}@${version} (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
 
@@ -123,12 +125,12 @@ const installModule = async (name, _progressCallback = () => {}, force = false) 
     extractCurrent += x.toString().split('\n').length - 1;
     console.log('wow', extractCurrent, extractTotal);
 
-    progressCallback('Install', (extractCurrent / extractTotal) * 100);
+    progressCb('Install', (extractCurrent / extractTotal) * 100);
   }); */
 
   await new Promise(res => proc.on('close', res));
 
-  progressCallback('Install', 100);
+  progressCb('Install', 100);
 
   log('Updater', `Installed ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms`);
 
@@ -151,6 +153,7 @@ const queryAndTruncateHistory = () => [];
 
 let lastCheck;
 const updateToLatestWithOptions = async (options, callback) => {
+  progressCallback = callback;
   if (lastCheck > Date.now() - 5000) return; // don't check again if already checked in the last 5s
 
   let installed = await getInstalled();
@@ -168,7 +171,7 @@ const updateToLatestWithOptions = async (options, callback) => {
 
     if (remote > local) {
       log('Updater', 'Module update:', m, local, '->', remote);
-      installs.push(installModule(m, callback));
+      installs.push(installModule(m));
     }
   }
 
@@ -189,12 +192,16 @@ const startCurrentVersion = async () => {
 log('Updater', 'Modules path:', modulesPath);
 log('Updater', 'Pending path:', pendingPath);
 
-fs.rmSync(pendingPath, { recursive: true, force: true });
-fs.mkdirSync(pendingPath, { recursive: true });
+try {
+  fs.mkdirSync(pendingPath, { recursive: true });
+} catch { }
 
 // prefetch manifest and preget installed in background on require to get ready as it'll be used very soon
-getInstalled();
-getManifest();
+// getInstalled();
+// getManifest();
+
+// begin updating on require
+updateToLatestWithOptions({}, _ => {});
 
 const events = new (require('events').EventEmitter)();
 module.exports = {
