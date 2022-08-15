@@ -15,7 +15,7 @@ const { releaseChannel, version: hostVersion } = require('../utils/buildInfo');
 // const releaseChannel = 'canary';
 const { NEW_UPDATE_ENDPOINT: endpoint } = require('../Constants');
 
-const platform = process.platform === 'win32' ? 'win' : 'osx';
+const platform = process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'osx' : 'linux');
 const modulesPath = platform === 'win' ? join(paths.getExeDir(), 'modules') : join(paths.getUserDataVersioned(), 'modules');
 const pendingPath = join(modulesPath, '..', 'pending');
 
