@@ -112,15 +112,16 @@ const installModule = async (name, force = false) => { // install module
 
   progressCb('Download', 100);
 
-  log('Updater', `Downloaded ${name}@${version} (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
+  log('Updater', `Downloaded ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
 
+  let decompressStart = Date.now();
   log('Updater', `Decompressing ${name}@${version}...`);
 
   await new Promise(res => zlib.brotliDecompress(Buffer.concat(download), (e, out) => {
     fs.writeFile(tarPath, out, res);
   }));
 
-  log('Updater', `Decompressed ${name}@${version}`);
+  log('Updater', `Decompressed ${name}@${version} in ${(Date.now() - decompressStart).toFixed(2)}ms`);
 
   let extractTotal = 0, extractCurrent = 0;
 
