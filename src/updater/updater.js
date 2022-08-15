@@ -28,9 +28,9 @@ const getInstalled = async (useCache = true) => (useCache && _installed) || (_in
 
 const MU_ENDPOINT = 'https://mu.openasar.dev';
 
-const DOWNLOAD_ENDPOINT = 'https://cdn.jsdelivr.net/gh/OpenAsar/Mu@319fe77fb74356a1a166f35f8a899b23cd19c218';
+// const DOWNLOAD_ENDPOINT = 'https://cdn.jsdelivr.net/gh/OpenAsar/Mu@319fe77fb74356a1a166f35f8a899b23cd19c218';
 // const DOWNLOAD_ENDPOINT = 'https://cdn.jsdelivr.net/gh/OpenAsar/Mu@gh-pages';
-// const DOWNLOAD_ENDPOINT = MU_ENDPOINT;
+const DOWNLOAD_ENDPOINT = MU_ENDPOINT;
 
 let _manifest;
 let lastManifest;
