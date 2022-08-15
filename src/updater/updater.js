@@ -94,7 +94,7 @@ const installModule = async (name, force = false) => { // install module
     percent
   });
 
-  const download = [];
+  let download = [];
 
   let downloadTotal = 0, downloadCurrent = 0;
   await new Promise(resv => https.get(`${DOWNLOAD_ENDPOINT}/${platform}/${releaseChannel}/${name}?v=${version}`, res => { // query for caching
@@ -114,10 +114,12 @@ const installModule = async (name, force = false) => { // install module
 
   log('Updater', `Downloaded ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
 
+  download = Buffer.concat(download);
+
   let decompressStart = Date.now();
   log('Updater', `Decompressing ${name}@${version}...`);
 
-  await new Promise(res => zlib.brotliDecompress(Buffer.concat(download), (e, out) => {
+  await new Promise(res => zlib.brotliDecompress(download, (e, out) => {
     fs.writeFile(tarPath, out, res);
   }));
 
