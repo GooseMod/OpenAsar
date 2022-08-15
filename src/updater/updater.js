@@ -99,7 +99,6 @@ const installModule = async (name, _progressCallback = () => {}, force = false) 
 
     res.on('data', c => {
       downloadCurrent += c.length;
-      console.log(name, (downloadCurrent / downloadTotal) * 100);
 
       progressCallback('Download', (downloadCurrent / downloadTotal) * 100);
     });
