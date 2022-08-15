@@ -154,7 +154,7 @@ const queryAndTruncateHistory = () => [];
 let lastCheck, checking;
 const updateToLatestWithOptions = async (options, callback) => {
   progressCallback = callback;
-  if (!checking && lastCheck > Date.now() - 5000) return; // don't check again if already checked in the last 5s
+  if (checking || lastCheck > Date.now() - 5000) return; // don't check again if already checked in the last 5s
   checking = true;
 
   let installed = await getInstalled();
