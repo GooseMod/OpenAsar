@@ -204,6 +204,10 @@ log('Updater', 'Pending path:', pendingPath);
 fs.rmSync(pendingPath, { recursive: true, force: true });
 fs.mkdirSync(pendingPath, { recursive: true });
 
+// prefetch manifest and preget installed in background on require to get ready as it'll be used very soon
+getInstalled();
+getManifest();
+
 const events = new (require('events').EventEmitter)();
 module.exports = {
   getUpdater: () => ({
