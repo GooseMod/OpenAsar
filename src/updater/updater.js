@@ -130,8 +130,7 @@ const installModule = async (name, _progressCallback = () => {}, force = false) 
 
   progressCallback('Install', 100);
 
-  log('Updater', `Installed ${name}@${version}`);
-  log('Updater', `Took ${(Date.now() - start).toFixed(2)}ms`);
+  log('Updater', `Installed ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms`);
 
   // fs.rm(tarPath, () => {}); // clean up downloaded tar after
   // getInstalled(false); // update cached installed after
