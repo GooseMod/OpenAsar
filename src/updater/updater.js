@@ -27,6 +27,7 @@ const getInstalled = async (useCache = true) => (useCache && _installed) || (_in
 }, {}));
 
 const MU_ENDPOINT = 'https://mu.openasar.dev';
+const DOWNLOAD_ENDPOINT = 'https://cdn.jsdelivr.net/gh/OpenAsar/Mu@gh-pages';
 
 let _manifest;
 let lastManifest;
@@ -94,7 +95,7 @@ const installModule = async (name, force = false) => { // install module
   });
 
   let downloadTotal = 0, downloadCurrent = 0;
-  https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/${name}?v=${version}`, res => { // query for caching
+  https.get(`${DOWNLOAD_ENDPOINT}/${platform}/${releaseChannel}/${name}?v=${version}`, res => { // query for caching
     res.pipe(stream);
 
     downloadTotal = parseInt(res.headers['content-length'] ?? 1, 10);
@@ -200,11 +201,11 @@ try {
 } catch { }
 
 // prefetch manifest and preget installed in background on require to get ready as it'll be used very soon
-// getInstalled();
-// getManifest();
+getInstalled();
+getManifest();
 
 // begin updating on require
-updateToLatestWithOptions({}, _ => {});
+// updateToLatestWithOptions({}, _ => {});
 
 const events = new (require('events').EventEmitter)();
 module.exports = {
