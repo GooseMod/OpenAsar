@@ -160,9 +160,12 @@ const queryCurrentVersions = async () => ({
 
 const queryAndTruncateHistory = () => [];
 
+let lastCheck;
 const updateToLatestWithOptions = async (options, callback) => {
+  if (lastCheck > Date.now() - 5000) return; // don't check again if already checked in the last 5s
+
   let installed = await getInstalled();
-  const manifest = await getManifest();
+  const manifest = await getManifest(false);
 
   const wanted = Object.keys(installed).concat(manifest.required_modules).filter((x, i, arr) => i === arr.indexOf(x)); // installed + required
 
@@ -187,6 +190,7 @@ const updateToLatestWithOptions = async (options, callback) => {
 
   await commitModules();
 
+  lastCheck = Date.now();
   // await new Promise(res => setTimeout(res, 100000));
 };
 
