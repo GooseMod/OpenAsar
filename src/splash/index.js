@@ -1,15 +1,12 @@
 const { app, ipcMain } = require('electron');
 
-const moduleUpdater = require("../updater/moduleUpdater");
-const updater = require("../updater/updater");
+const updater = require("../updater");
 
 let launched, win;
 
 
-exports.initSplash = (startMin) => {
-  const inst = updater.getUpdater();
-  if (inst) initNew(inst);
-    else initOld();
+exports.initSplash = startMin => {
+  update(updater.getUpdater());
 
   launchSplash(startMin);
 
@@ -41,8 +38,6 @@ const destroySplash = () => {
 };
 
 const launchMain = () => {
-  moduleUpdater.events.removeAllListeners(); // Remove updater v1 listeners
-
   if (!launched && win != null) {
     sendState('starting');
 
@@ -75,7 +70,6 @@ const launchSplash = (startMin) => {
 
 const events = exports.events = new (require('events').EventEmitter)();
 
-let toSend = 0; // Progress state to send for ModuleUpdater (0 = downloading, 1 = installing)
 class UIProgress { // Generic class to track updating and sent states to splash
   constructor(st) {
     this.st = st;
@@ -101,7 +95,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
   }
 
   send() {
-    if ((toSend === -1 && this.progress.size > 0 && this.progress.size > this.done.size) || toSend === this.st) {
+    if (this.progress.size > 0 && this.progress.size > this.done.size) {
       const progress = Math.min(100, [...this.progress.values()].reduce((a, x) => a + x[0], 0) / [...this.progress.values()].reduce((a, x) => a + x[1], 0) * 100); // Clamp progress to 0-100
 
       sendState(this.st ? 'installing' : 'downloading', {
@@ -115,9 +109,7 @@ class UIProgress { // Generic class to track updating and sent states to splash
   }
 }
 
-const initNew = async (inst) => {
-  toSend = -1;
-
+const update = async inst => {
   const retryOptions = {
     skip_host_delta: false,
     skip_module_delta: {}
@@ -166,55 +158,6 @@ const initNew = async (inst) => {
   }
 };
 
-const initOld = () => { // "Old" (not v2 / new, win32 only)
-  const on = (k, v) => moduleUpdater.events.on(k, v);
-
-  const check = () => moduleUpdater.checkForUpdates();
-
-  const downloads = new UIProgress(0), installs = new UIProgress(1);
-
-  const handleFail = () => {
-    fail(check);
-  };
-
-  on('checked', ({ failed, count }) => { // Finished check
-    installs.reset();
-    downloads.reset();
-
-    if (failed) handleFail();
-      else if (!count) launchMain(); // Count is 0 / undefined
-  });
-
-  on('downloaded', ({ failed }) => { // Downloaded all modules
-    toSend = 1;
-
-    if (failed > 0) handleFail();
-  });
-
-  on('installed', check); // Installed all modules
-
-  on('downloading-module', ({ name, cur, total }) => {
-    downloads.record(name, '', cur, total);
-    installs.record(name, 'Waiting');
-  });
-
-  on('installing-module', ({ name, cur, total }) => {
-    installs.record(name, '', cur, total);
-  });
-
-  const segment = (tracker) => (({ name }) => {
-    tracker.record(name, 'Complete');
-  });
-
-  on('downloaded-module', segment(downloads));
-  on('installed-module', segment(installs));
-
-  on('manual', (e) => sendState('manual', { details: e })); // Host manual update required
-
-  sendState('checking-for-updates');
-
-  check();
-};
 
 const fail = (c) => {
   sendState('fail', { seconds: 10 });

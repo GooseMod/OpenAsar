@@ -2,18 +2,15 @@ const cp = require('child_process');
 const { app } = require('electron');
 const Module = require('module');
 const { join, resolve, dirname, basename } = require('path');
-// const https = require('http');
-const https = require('https');
+// const https = require('https');
+const https = require('http');
 const fs = require('fs');
 const zlib = require('zlib');
 
-const paths = require('../paths');
+const paths = require('./paths');
 
-const USE_MU = true;
-
-const { releaseChannel, version: hostVersion } = require('../utils/buildInfo');
-// const releaseChannel = 'canary';
-const { NEW_UPDATE_ENDPOINT: endpoint } = require('../Constants');
+const { releaseChannel, version: hostVersion } = require('./utils/buildInfo');
+const { NEW_UPDATE_ENDPOINT: endpoint } = require('./Constants');
 
 const platform = process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'osx' : 'linux');
 const modulesPath = platform === 'win' ? join(paths.getExeDir(), 'modules') : join(paths.getUserDataVersioned(), 'modules');
@@ -26,11 +23,8 @@ const getInstalled = async (useCache = true) => (useCache && _installed) || (_in
   return acc;
 }, {}));
 
-const MU_ENDPOINT = 'https://mu.openasar.dev';
-
-// const DOWNLOAD_ENDPOINT = 'https://cdn.jsdelivr.net/gh/OpenAsar/Mu@319fe77fb74356a1a166f35f8a899b23cd19c218';
-// const DOWNLOAD_ENDPOINT = 'https://cdn.jsdelivr.net/gh/OpenAsar/Mu@gh-pages';
-const DOWNLOAD_ENDPOINT = MU_ENDPOINT;
+// const MU_ENDPOINT = 'https://mu.openasar.dev';
+const MU_ENDPOINT = 'http://localhost:9999/electron-alpha';
 
 let _manifest;
 let lastManifest;
@@ -83,6 +77,9 @@ const installModule = async (name, force = false) => { // install module
 
   // await fs.promises.mkdir(dirname(tarPath)).catch(_ => {});
 
+  const stream = zlib.createBrotliDecompress();
+  stream.pipe(fs.createWriteStream(tarPath));
+
   const progressCb = (type, percent) => progressCallback({
     state: percent === 100 ? 'Complete' : type,
     task: {
@@ -94,37 +91,24 @@ const installModule = async (name, force = false) => { // install module
     percent
   });
 
-  let download = [];
-
   let downloadTotal = 0, downloadCurrent = 0;
-  await new Promise(resv => https.get(`${DOWNLOAD_ENDPOINT}/${platform}/${releaseChannel}/${name}?v=${version}`, res => { // query for caching
+  https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/${name}?v=${version}`, res => { // query for caching
+    res.pipe(stream);
+
     downloadTotal = parseInt(res.headers['content-length'] ?? 1, 10);
 
     res.on('data', c => {
       downloadCurrent += c.length;
-      download.push(c);
 
       progressCb('Download', (downloadCurrent / downloadTotal) * 100);
     });
+  });
 
-    res.on('end', resv);
-  }));
+  await new Promise(res => stream.on('end', res));
 
   progressCb('Download', 100);
 
-  log('Updater', `Downloaded ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
-
-  download = Buffer.concat(download);
-
-  let decompressStart = Date.now();
-  log('Updater', `Decompressing ${name}@${version}...`);
-
-  await new Promise(res => zlib.brotliDecompress(download, (e, out) => {
-    console.log(`saving @ ${(Date.now() - decompressStart).toFixed(2)}ms`);
-    fs.writeFile(tarPath, out, res);
-  }));
-
-  log('Updater', `Decompressed ${name}@${version} in ${(Date.now() - decompressStart).toFixed(2)}ms`);
+  log('Updater', `Downloaded ${name}@${version} (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
 
   let extractTotal = 0, extractCurrent = 0;
 
@@ -154,6 +138,7 @@ const installModule = async (name, force = false) => { // install module
 
 const commitModules = async () => {
   const installed = await getInstalled(false);
+
   for (const m in installed) {
     Module.globalPaths.push(join(modulesPath, m + '-' + installed[m]));
   }
@@ -163,7 +148,7 @@ const queryCurrentVersions = async () => ({
   current_modules: await getInstalled()
 });
 
-const queryAndTruncateHistory = () => [];
+const queryAndTruncateHistory = () => []; // todo: log events for history
 
 let lastCheck, checking;
 const updateToLatestWithOptions = async (options, callback) => {
@@ -176,8 +161,8 @@ const updateToLatestWithOptions = async (options, callback) => {
 
   const wanted = Object.keys(installed).concat(manifest.required_modules).filter((x, i, arr) => i === arr.indexOf(x)); // installed + required
 
-  console.log('installed', installed);
-  console.log('wanted', wanted);
+  log('Updater', 'Modules installed:', Object.keys(installed).map(x => `${x}@${installed[x]}`).join(', '));
+  log('Updater', 'Modules needed:', wanted.join(', '));
 
   const installs = [];
   for (const m of wanted) {
@@ -207,7 +192,7 @@ const startCurrentVersion = async () => {
 };
 
 log('Updater', 'Modules path:', modulesPath);
-log('Updater', 'Pending path:', pendingPath);
+// log('Updater', 'Pending path:', pendingPath);
 
 try {
   fs.mkdirSync(pendingPath, { recursive: true });
@@ -217,11 +202,12 @@ try {
 getInstalled();
 getManifest();
 
-// begin updating on require
+// begin updating on require?
 // updateToLatestWithOptions({}, _ => {});
 
 const events = new (require('events').EventEmitter)();
 module.exports = {
+  events,
   getUpdater: () => ({
     installModule,
     commitModules,
@@ -236,8 +222,10 @@ module.exports = {
     createShortcut: _ => {},
 
     valid: true,
-    on: events.on
+    on: events.on // much extends such wow
   }),
 
-  tryInitUpdater: () => true
+  createShortcut: _ => {}, // shortcut deez nuts
+
+  tryInitUpdater: _ => true
 };

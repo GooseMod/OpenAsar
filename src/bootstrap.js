@@ -17,13 +17,11 @@ app.setAppUserModelId(Constants.APP_ID);
 
 app.name = 'discord'; // Force name as sometimes breaks
 
-const fatal = e => log('Fatal', e);
 process.on('uncaughtException', console.error);
 
 
 const splash = require('./splash');
-const updater = require('./updater/updater');
-const moduleUpdater = require('./updater/moduleUpdater');
+const updater = require('./updater');
 const autoStart = require('./autoStart');
 
 let desktopCore;
@@ -52,7 +50,6 @@ const startCore = () => {
 
   desktopCore.startup({
     splashScreen: splash,
-    moduleUpdater,
     buildInfo,
     Constants,
     updater,
@@ -78,18 +75,9 @@ const startUpdate = () => {
 
   const startMin = process.argv?.includes?.('--start-minimized');
 
-  if (updater.tryInitUpdater(buildInfo, Constants.NEW_UPDATE_ENDPOINT)) {
-    const inst = updater.getUpdater();
-
-    inst.on('host-updated', () => autoStart.update(() => {}));
-    inst.on('unhandled-exception', fatal);
-    inst.on('InconsistentInstallerState', fatal);
-    inst.on('update-error', console.error);
-
-    if (process.platform === 'win32') require('./winFirst').do(inst);
-  } else {
-    moduleUpdater.init(Constants.UPDATE_ENDPOINT, buildInfo);
-  }
+  const inst = updater.getUpdater();
+  inst.on('host-updated', () => autoStart.update(() => {}));
+  if (process.platform === 'win32') require('./winFirst')(inst);
 
   splash.events.once('APP_SHOULD_LAUNCH', () => {
     if (!process.env.OPENASAR_NOSTART) startCore();

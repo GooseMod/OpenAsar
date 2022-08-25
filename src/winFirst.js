@@ -9,7 +9,7 @@ const app = resolve(exec, '..');
 const root = resolve(app, '..');
 
 
-exports.do = (updater) => {
+module.exports = updater => {
   const flag = join(app, '.first-run');
   if (fs.existsSync(flag)) return; // Already done, skip
 
