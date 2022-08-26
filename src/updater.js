@@ -2,8 +2,8 @@ const cp = require('child_process');
 const { app } = require('electron');
 const Module = require('module');
 const { join, resolve, dirname, basename } = require('path');
-// const https = require('https');
-const https = require('http');
+const https = require('https');
+// const https = require('http');
 const fs = require('fs');
 const zlib = require('zlib');
 
@@ -23,14 +23,16 @@ const getInstalled = async (useCache = true) => (useCache && _installed) || (_in
   return acc;
 }, {}));
 
-// const MU_ENDPOINT = 'https://mu.openasar.dev';
-const MU_ENDPOINT = 'http://localhost:9999/electron-alpha';
+const MU_ENDPOINT = 'https://mu.openasar.dev/electron-alpha';
+// const MU_ENDPOINT = 'http://localhost:9999/electron-alpha';
 
 let _manifest;
 let lastManifest;
 const getManifest = async () => {
   const manifestTime = Math.floor(Date.now() / 1000 / 60 / 5); // cache for ~5m, client and server
   if (_manifest && lastManifest >= manifestTime) return _manifest;
+
+  console.log(`${MU_ENDPOINT}/${platform}/${releaseChannel}/modules.json?_=${manifestTime}`);
 
   return await new Promise(fin => https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/modules.json?_=${manifestTime}`, async res => {
     let data = '';
@@ -180,6 +182,8 @@ const updateToLatestWithOptions = async (options, callback) => {
   if (installs.length > 0) log('Updater', `Updated ${installs.length} modules in ${(Date.now() - start).toFixed(2)}ms`);
 
   await commitModules();
+
+  // todo: host check
 
   lastCheck = Date.now();
   checking = false;
