@@ -110,51 +110,33 @@ class UIProgress { // Generic class to track updating and sent states to splash
 }
 
 const update = async inst => {
-  const retryOptions = {
-    skip_host_delta: false,
-    skip_module_delta: {}
-  };
+  sendState('checking-for-updates');
 
-  while (true) {
-    sendState('checking-for-updates');
+  try {
+    let installedAnything = false;
+    const downloads = new UIProgress(0);
+    const installs = new UIProgress(1);
 
-    try {
-      let installedAnything = false;
-      const downloads = new UIProgress(0);
-      const installs = new UIProgress(1);
+    await inst.updateToLatestWithOptions({ canRestart: true }, ({ task, state, percent }) => {
+      const download = task.HostDownload || task.ModuleDownload;
+      const install = task.HostInstall || task.ModuleInstall;
 
-      await inst.updateToLatestWithOptions(retryOptions, ({ task, state, percent }) => {
-        const download = task.HostDownload || task.ModuleDownload;
-        const install = task.HostInstall || task.ModuleInstall;
+      installedAnything = true;
 
-        installedAnything = true;
+      const simpleRecord = (tracker, x) => tracker.record(x.name, state, percent);
 
-        const simpleRecord = (tracker, x) => tracker.record(x.package_sha256, state, percent);
+      if (download != null) simpleRecord(downloads, download);
 
-        if (download != null) simpleRecord(downloads, download);
+      if (!downloads.send()) installs.send();
 
-        if (!downloads.send()) installs.send();
+      if (install == null) return;
+      simpleRecord(installs, install);
+    });
 
-        if (install == null) return;
-        simpleRecord(installs, install);
-
-        if (task.HostInstall != null) {
-          retryOptions.skip_host_delta = true;
-        } else if (task.ModuleInstall != null) {
-          retryOptions.skip_module_delta[install.version.module.name] = true;
-        }
-      });
-
-      if (!installedAnything) {
-        await inst.startCurrentVersion();
-        inst.collectGarbage();
-
-        return launchMain();
-      }
-    } catch (e) {
-      log('Splash', e);
-      await new Promise(r => fail(r));
-    }
+    return launchMain();
+  } catch (e) {
+    log('Splash', e);
+    await new Promise(r => fail(r));
   }
 };
 
