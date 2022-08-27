@@ -21,7 +21,7 @@ require('./cmdSwitches')();
 // Force u2QuickLoad (pre-"minified" ish)
 const M = require('module'); // Module
 
-const b = process.platform === 'win32' ? join(paths.getExeDir(), 'modules') : join(paths.getUserDataVersioned(), 'modules');
+const b = process.platform === 'win32' ? join(paths.getExeDir(), 'modules') : join(paths.getUserData(), 'modules');
 try {
   for (const m of require('fs').readdirSync(b)) M.globalPaths.push(join(b, m)); // For each module dir, add to globalPaths
 } catch { log('QS', 'Failed') }

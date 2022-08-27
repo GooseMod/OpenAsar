@@ -2,29 +2,34 @@ const cp = require('child_process');
 const { app } = require('electron');
 const Module = require('module');
 const { join, resolve, dirname, basename } = require('path');
-const https = require('https');
-// const https = require('http');
 const fs = require('fs');
 const zlib = require('zlib');
 
 const paths = require('./paths');
 
-const { releaseChannel, version: hostVersion } = require('./utils/buildInfo');
-const { NEW_UPDATE_ENDPOINT: endpoint } = require('./Constants');
+const { releaseChannel: channel, version: hostVersion } = require('./utils/buildInfo');
+// const { NEW_UPDATE_ENDPOINT: endpoint } = require('./Constants');
+
+const exeDir = paths.getExeDir();
 
 const platform = process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'osx' : 'linux');
-const modulesPath = platform === 'win' ? join(paths.getExeDir(), 'modules') : join(paths.getUserDataVersioned(), 'modules');
+const modulesPath = platform === 'win' ? join(exeDir, 'modules') : join(paths.getUserData(), 'modules');
 const pendingPath = join(modulesPath, '..', 'pending');
 
 let _installed;
-const getInstalled = async (useCache = true) => (useCache && _installed) || (_installed = (await fs.promises.readdir(modulesPath).catch(_ => [])).sort((a, b) => parseInt(a.split('-')[1]) - parseInt(b.split('-')[1])).reduce((acc, x) => {
-  const [ name, version ] = x.split('-');
-  acc[name] = parseInt(version);
-  return acc;
-}, {}));
+const getInstalled = async (useCache = true) => (useCache && _installed) ||
+  (_installed = (await fs.promises.readdir(modulesPath).catch(_ => []))
+  .sort((a, b) => parseInt(a.split('-')[1]) - parseInt(b.split('-')[1]))
+  .concat('host-' + parseInt(hostVersion.split('.').pop()))
+  .reduce((acc, x) => {
+    const [ name, version ] = x.split('-');
+    acc[name] = parseInt(version);
+    return acc;
+  }, {}));
 
 const MU_ENDPOINT = 'https://mu.openasar.dev/electron-alpha';
 // const MU_ENDPOINT = 'http://localhost:9999/electron-alpha';
+const https = MU_ENDPOINT.startsWith('https') ? require('https') : require('http');
 
 let _manifest;
 let lastManifest;
@@ -32,9 +37,9 @@ const getManifest = async () => {
   const manifestTime = Math.floor(Date.now() / 1000 / 60 / 5); // cache for ~5m, client and server
   if (_manifest && lastManifest >= manifestTime) return _manifest;
 
-  console.log(`${MU_ENDPOINT}/${platform}/${releaseChannel}/modules.json?_=${manifestTime}`);
+  // console.log(`${MU_ENDPOINT}/${platform}/${channel}/modules.json?_=${manifestTime}`);
 
-  return await new Promise(fin => https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/modules.json?_=${manifestTime}`, async res => {
+  return await new Promise(fin => https.get(`${MU_ENDPOINT}/${platform}/${channel}/modules.json?_=${manifestTime}`, async res => {
     let data = '';
 
     res.on('data', d => data += d.toString());
@@ -42,12 +47,10 @@ const getManifest = async () => {
     res.on('end', () => {
       const modules = JSON.parse(data);
 
-      _manifest = {
+      fin(_manifest = {
         modules,
         required_modules: [ 'discord_desktop_core', 'discord_utils' ]
-      };
-
-      fin(_manifest);
+      });
 
       lastManifest = manifestTime;
     });
@@ -75,7 +78,7 @@ const installModule = async (name, force = false) => { // install module
   const path = `${name}-${version}`;
 
   const tarPath = join(pendingPath, path + '.tar');
-  const finalPath = join(modulesPath, path, name);
+  const finalPath = name === 'host' ? join(exeDir, '..', 'app-1.0.' + version) : join(modulesPath, path, name);
 
   // await fs.promises.mkdir(dirname(tarPath)).catch(_ => {});
 
@@ -86,7 +89,7 @@ const installModule = async (name, force = false) => { // install module
     state: percent === 100 ? 'Complete' : type,
     task: {
       ['Module' + type]: {
-        package_sha256: name,
+        name,
         version: { module: { name } }
       }
     },
@@ -94,7 +97,7 @@ const installModule = async (name, force = false) => { // install module
   });
 
   let downloadTotal = 0, downloadCurrent = 0;
-  https.get(`${MU_ENDPOINT}/${platform}/${releaseChannel}/${name}?v=${version}`, res => { // query for caching
+  https.get(`${MU_ENDPOINT}/${platform}/${channel}/${name}?v=${version}`, res => { // query for caching
     res.pipe(stream);
 
     downloadTotal = parseInt(res.headers['content-length'] ?? 1, 10);
@@ -112,14 +115,13 @@ const installModule = async (name, force = false) => { // install module
 
   log('Updater', `Downloaded ${name}@${version} (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
 
-  let extractTotal = 0, extractCurrent = 0;
+  // let extractTotal = 0, extractCurrent = 0;
 
   // cp.execFile('tar', ['-tf', tarPath]).stdout.on('data', x => extractTotal += x.toString().split('\n').length - 1);
 
   await fs.promises.mkdir(finalPath, { recursive: true }).catch(_ => {});
 
-  // const proc = cp.execFile('tar', ['--strip-components', '1', '-xvf', tarPath, '-C', finalPath]);
-  const proc = cp.execFile('tar', [/*'--strip-components', '1', */ '-xf', tarPath, '-C', finalPath]);
+  const proc = cp.execFile('tar', [ '-xf', tarPath, '-C', finalPath]);
 
   /* proc.stdout.on('data', x => {
     extractCurrent += x.toString().split('\n').length - 1;
@@ -134,8 +136,7 @@ const installModule = async (name, force = false) => { // install module
 
   log('Updater', `Installed ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms`);
 
-  // fs.rm(tarPath, () => {}); // clean up downloaded tar after
-  // getInstalled(false); // update cached installed after
+  return [ name, version, finalPath ];
 };
 
 const commitModules = async () => {
@@ -164,26 +165,39 @@ const updateToLatestWithOptions = async (options, callback) => {
   const wanted = Object.keys(installed).concat(manifest.required_modules).filter((x, i, arr) => i === arr.indexOf(x)); // installed + required
 
   log('Updater', 'Modules installed:', Object.keys(installed).map(x => `${x}@${installed[x]}`).join(', '));
-  log('Updater', 'Modules needed:', wanted.join(', '));
+  log('Updater', 'Modules wanted:', wanted.join(', '));
 
-  const installs = [];
+  let installs = [];
   for (const m of wanted) {
     const local = installed[m] ?? -1;
     const remote = manifest.modules[m];
 
-    if (remote > local) {
+    if (remote !== local) { // allow downgrading (!= not >)
       log('Updater', 'Module update:', m, local, '->', remote);
       installs.push(installModule(m));
     }
   }
 
   const start = Date.now();
-  await Promise.all(installs);
+  installs = await Promise.all(installs);
   if (installs.length > 0) log('Updater', `Updated ${installs.length} modules in ${(Date.now() - start).toFixed(2)}ms`);
 
   await commitModules();
 
-  // todo: host check
+  const hostInstall = installs.find(x => x[0] === 'host');
+  if (hostInstall && options.canRestart) {
+    const [ , ver, path ] = hostInstall;
+    const next = join(path, basename(process.execPath));
+
+    log('Updater', 'Updated host, restarting at', next);
+
+    process.once('exit', () => cp.spawn(next, [], {
+      detached: true,
+      stdio: 'inherit'
+    }));
+
+    app.exit();
+  }
 
   lastCheck = Date.now();
   checking = false;
@@ -191,23 +205,10 @@ const updateToLatestWithOptions = async (options, callback) => {
   // await new Promise(res => setTimeout(res, 100000));
 };
 
-const startCurrentVersion = async () => {
-
-};
-
 log('Updater', 'Modules path:', modulesPath);
-// log('Updater', 'Pending path:', pendingPath);
 
-try {
-  fs.mkdirSync(pendingPath, { recursive: true });
-} catch { }
-
-// prefetch manifest and preget installed in background on require to get ready as it'll be used very soon
-getInstalled();
-getManifest();
-
-// begin updating on require?
-// updateToLatestWithOptions({}, _ => {});
+fs.rmSync(pendingPath, { recursive: true, force: true });
+fs.mkdirSync(pendingPath, { recursive: true });
 
 const events = new (require('events').EventEmitter)();
 module.exports = {
@@ -218,9 +219,6 @@ module.exports = {
     queryCurrentVersions,
     queryAndTruncateHistory,
     updateToLatestWithOptions,
-
-    startCurrentVersion,
-    collectGarbage: () => {},
 
     getKnownFolder: _ => '',
     createShortcut: _ => {},
