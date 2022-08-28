@@ -155,13 +155,44 @@ const queryCurrentVersions = async () => ({
 
 const queryAndTruncateHistory = () => []; // todo: log events for history
 
+const restartInto = x => {
+  process.once('exit', () => cp.spawn(join(x, basename(process.execPath)), [], {
+    detached: true,
+    stdio: 'inherit'
+  }));
+
+  app.exit();
+};
+
 let lastCheck, checking;
 const updateToLatestWithOptions = async (options, callback) => {
   progressCallback = callback;
   if (checking || lastCheck > Date.now() - 5000) return; // don't check again if already checked in the last 5s
+
   checking = true;
 
   let installed = await getInstalled();
+
+  if (platform === 'win' && options.canRestart) { // manage app dirs on startup
+    const installDir = join(exeDir, '..');
+    const otherApps = fs.readdirSync(installDir).filter(x => x.startsWith('app-') && !x.includes(installed.host)).map(x => parseInt(x.split('.').pop()));
+
+    for (const x of otherApps.filter(x => installed.host > x)) { // delete old app dirs
+      const p = join(installDir, 'app-1.0.' + x);
+
+      log('Updater', 'Deleting old app dir', p);
+      fs.promises.rm(p, { recursive: true });
+    }
+
+    const newest = Math.max(...otherApps); // if newer app dir, restart into
+    if (newest > installed.host) {
+      const p = join(installDir, 'app-1.0.' + newest);
+
+      log('Updater', 'Detected new app dir, restarting into', p);
+      restartInto(p);
+    }
+  }
+
   const manifest = await getManifest();
 
   const wanted = Object.keys(installed).concat(manifest.required_modules).filter((x, i, arr) => i === arr.indexOf(x)); // installed + required
@@ -188,17 +219,10 @@ const updateToLatestWithOptions = async (options, callback) => {
 
   const hostInstall = installs.find(x => x[0] === 'host');
   if (hostInstall && options.canRestart) {
-    const [ , ver, path ] = hostInstall;
-    const next = join(path, basename(process.execPath));
+    const [ ,, path ] = hostInstall;
 
-    log('Updater', 'Updated host, restarting at', next);
-
-    process.once('exit', () => cp.spawn(next, [], {
-      detached: true,
-      stdio: 'inherit'
-    }));
-
-    app.exit();
+    log('Updater', 'Updated host, restarting into', path);
+    restartInto(path);
   }
 
   lastCheck = Date.now();
