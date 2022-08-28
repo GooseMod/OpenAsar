@@ -136,6 +136,8 @@ const installModule = async (name, force = false) => { // install module
 
   log('Updater', `Installed ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms`);
 
+  if (name !== 'host') fs.promises.rm(join(modulesPath, name + '-' + localVersion), { recursive: true }); // delete old module
+
   return [ name, version, finalPath ];
 };
 
