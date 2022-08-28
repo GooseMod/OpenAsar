@@ -27,8 +27,8 @@ const getInstalled = async (useCache = true) => (useCache && _installed) ||
     return acc;
   }, {}));
 
-const MU_ENDPOINT = 'https://mu.openasar.dev/electron-alpha';
-// const MU_ENDPOINT = 'http://localhost:9999/electron-alpha';
+const MU_ENDPOINT = oaConfig.muEndpoint ?? 'https://mu.openasar.dev';
+// const MU_ENDPOINT = 'http://localhost:9999';
 const https = MU_ENDPOINT.startsWith('https') ? require('https') : require('http');
 
 let _manifest;
