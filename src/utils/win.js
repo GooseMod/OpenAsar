@@ -17,7 +17,9 @@ module.exports = (o, n) => {
     } catch { }
   });
 
-  w.loadURL('https://cdn.openasar.dev/' + n);
+  // w.loadURL('https://cdn.openasar.dev/' + n);
+  w.loadURL('https://openasar.dev/cdn_alpha/' + n);
+  // w.loadURL('http://localhost:1337/' + n);
 
   return w;
 };
