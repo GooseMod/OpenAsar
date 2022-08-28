@@ -172,7 +172,7 @@ const updateToLatestWithOptions = async (options, callback) => {
     const local = installed[m] ?? -1;
     const remote = manifest.modules[m];
 
-    if (remote !== local) { // allow downgrading (!= not >)
+    if (remote && remote !== local) { // allow downgrading (!= not >)
       log('Updater', 'Module update:', m, local, '->', remote);
       installs.push(installModule(m));
     }
