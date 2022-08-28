@@ -227,8 +227,6 @@ const updateToLatestWithOptions = async (options, callback) => {
 
   lastCheck = Date.now();
   checking = false;
-
-  // await new Promise(res => setTimeout(res, 100000));
 };
 
 log('Updater', 'Modules path:', modulesPath);
