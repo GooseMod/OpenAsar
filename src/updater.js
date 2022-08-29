@@ -172,28 +172,28 @@ const updateToLatestWithOptions = async (options, callback) => {
   checking = true;
 
   let installed = await getInstalled();
+  const manifest = await getManifest();
 
-  if (platform === 'win' && options.canRestart) { // manage app dirs on startup
+  if (platform === 'win' && options.restart) { // manage app dirs on startup
     const installDir = join(exeDir, '..');
-    const otherApps = fs.readdirSync(installDir).filter(x => x.startsWith('app-') && !x.includes(installed.host)).map(x => parseInt(x.split('.').pop()));
+    const otherApps = fs.readdirSync(installDir).filter(x => x.startsWith('app-') && x !== basename(dirname(process.execPath))).map(x => parseInt(x.split('.').pop()));
+    // use process.execPath to handle possible buildInfo mismatch (should never normally)
 
-    for (const x of otherApps.filter(x => installed.host > x)) { // delete old app dirs
+    for (const x of otherApps.filter(x => x < installed.host)) { // delete older app dirs
       const p = join(installDir, 'app-1.0.' + x);
 
       log('Updater', 'Deleting old app dir', p);
       fs.promises.rm(p, { recursive: true });
     }
 
-    const newest = Math.max(...otherApps); // if newer app dir, restart into
-    if (newest > installed.host) {
-      const p = join(installDir, 'app-1.0.' + newest);
+    const latest = Math.max(...otherApps);
+    if (latest > installed.host) {
+      const p = join(installDir, 'app-1.0.' + manifest.modules.host);
 
       log('Updater', 'Detected new app dir, restarting into', p);
-      restartInto(p);
+      return restartInto(p);
     }
   }
-
-  const manifest = await getManifest();
 
   const wanted = Object.keys(installed).concat(manifest.required_modules).filter((x, i, arr) => i === arr.indexOf(x)); // installed + required
 
@@ -218,7 +218,7 @@ const updateToLatestWithOptions = async (options, callback) => {
   await commitModules();
 
   const hostInstall = installs.find(x => x[0] === 'host');
-  if (hostInstall && options.canRestart) {
+  if (hostInstall && options.restart) {
     const [ ,, path ] = hostInstall;
 
     log('Updater', 'Updated host, restarting into', path);
