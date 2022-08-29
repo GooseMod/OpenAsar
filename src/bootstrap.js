@@ -93,14 +93,6 @@ const startUpdate = () => {
     setTimeout(() => { // Try to update our asar
       const config = require('./config');
       if (oaConfig.setup !== true) config.open();
-
-      if (oaConfig.autoupdate !== false) { // If autoupdate disabled, don't update
-        try {
-          require('./asarUpdate')();
-        } catch (e) {
-          log('AsarUpdate', e);
-        }
-      }
     }, 3000);
   });
 
