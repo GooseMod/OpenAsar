@@ -66,9 +66,10 @@ const installModule = async (name, force = false) => { // install module
   const installed = await getInstalled();
   const manifest = await getManifest();
 
+  const localVersion = installed[name];
   const version = manifest.modules[name];
 
-  if (!force && installed[name] === version) {
+  if (!force && localVersion === version) {
     log('Updater', 'Aborting install of', name, '- already installed!');
     return;
   }
@@ -138,7 +139,7 @@ const installModule = async (name, force = false) => { // install module
 
   log('Updater', `Installed ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms`);
 
-  if (name !== 'host') fs.promises.rm(join(modulesPath, name + '-' + localVersion), { recursive: true }); // delete old module
+  if (localVersion && name !== 'host') fs.promises.rm(join(modulesPath, name + '-' + localVersion), { recursive: true }); // delete old module
 
   return [ name, version, finalPath ];
 };
