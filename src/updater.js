@@ -49,7 +49,9 @@ const getManifest = async () => {
 
       fin(_manifest = {
         modules,
-        required_modules: [ 'discord_desktop_core', 'discord_utils' ]
+        // required_modules: [ 'discord_desktop_core', 'discord_utils' ]
+        required_modules: [ 'discord_desktop_core', 'discord_erlpack', 'discord_spellcheck', 'discord_utils', 'discord_voice' ]
+        // required_modules: [ 'discord_desktop_core', 'discord_erlpack', 'discord_spellcheck', 'discord_utils', 'discord_voice', 'discord_krisp', 'discord_game_utils', 'discord_rpc', 'discord_overlay2', 'discord_cloudsync' ]
       });
 
       lastManifest = manifestTime;
