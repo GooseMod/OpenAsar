@@ -85,15 +85,16 @@ const installModule = async (name, force = false) => { // install module
   const stream = zlib.createBrotliDecompress();
   stream.pipe(fs.createWriteStream(tarPath));
 
-  const progressCb = (type, percent) => progressCallback({
-    state: percent === 100 ? 'Complete' : type,
+  const progressCb = (type, current, total) => progressCallback({
+    state: current === total ? 'Complete' : type,
     task: {
       ['Module' + type]: {
         name,
         version: { module: { name } }
       }
     },
-    percent
+    current, total,
+    percent: (current / total) * 100
   });
 
   let downloadTotal = 0, downloadCurrent = 0;
@@ -105,13 +106,14 @@ const installModule = async (name, force = false) => { // install module
     res.on('data', c => {
       downloadCurrent += c.length;
 
-      progressCb('Download', (downloadCurrent / downloadTotal) * 100);
+      // await new Promise(res => setTimeout(res, 5000));
+      progressCb('Download', downloadCurrent, downloadTotal);
     });
   });
 
   await new Promise(res => stream.on('end', res));
 
-  progressCb('Download', 100);
+  progressCb('Download', downloadTotal, downloadTotal);
 
   log('Updater', `Downloaded ${name}@${version} (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
 
@@ -132,7 +134,7 @@ const installModule = async (name, force = false) => { // install module
 
   await new Promise(res => proc.on('close', res));
 
-  progressCb('Install', 100);
+  progressCb('Install', 1, 1);
 
   log('Updater', `Installed ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms`);
 
