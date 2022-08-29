@@ -7,9 +7,7 @@ let launched, win;
 
 exports.initSplash = startMin => {
   update(updater.getUpdater());
-
   launchSplash(startMin);
-
 
   if (process.env.OPENASAR_QUICKSTART || oaConfig.quickstart) setTimeout(() => {
     destroySplash();
@@ -70,78 +68,35 @@ const launchSplash = (startMin) => {
 
 const events = exports.events = new (require('events').EventEmitter)();
 
-class UIProgress { // Generic class to track updating and sent states to splash
-  constructor(st) {
-    this.st = st;
-
-    this.reset();
-  }
-
-  reset() {
-    Object.assign(this, {
-      progress: new Map(),
-      done: new Set(),
-      total: new Set()
-    });
-  }
-
-  record(id, state, current, outOf) {
-    this.total.add(id);
-
-    if (current) this.progress.set(id, [ current, outOf ?? 100 ]);
-    if (state === 'Complete') this.done.add(id);
-
-    this.send();
-  }
-
-  send() {
-    if (this.progress.size > 0 && this.progress.size > this.done.size) {
-      const progress = Math.min(100, [...this.progress.values()].reduce((a, x) => a + x[0], 0) / [...this.progress.values()].reduce((a, x) => a + x[1], 0) * 100); // Clamp progress to 0-100
-
-      sendState(this.st ? 'installing' : 'downloading', {
-        current: this.done.size + 1,
-        total: this.total.size,
-        progress
-      });
-
-      return true;
-    }
-  }
-}
-
 const update = async inst => {
   sendState('checking-for-updates');
 
   try {
-    let installedAnything = false;
-    const downloads = new UIProgress(0);
-    const installs = new UIProgress(1);
+    const progress = {};
 
-    await inst.updateToLatestWithOptions({ canRestart: true }, ({ task, state, percent }) => {
+    await inst.updateToLatestWithOptions({ restart: true }, ({ task, current, total, percent }) => {
       const download = task.HostDownload || task.ModuleDownload;
-      const install = task.HostInstall || task.ModuleInstall;
 
-      installedAnything = true;
+      if (download != null) progress[download.name] = { current, total, percent };
 
-      const simpleRecord = (tracker, x) => tracker.record(x.name, state, percent);
-
-      if (download != null) simpleRecord(downloads, download);
-
-      if (!downloads.send()) installs.send();
-
-      if (install == null) return;
-      simpleRecord(installs, install);
+      const progVals = Object.values(progress);
+      sendState('modules', {
+        current: progVals.filter(x => x.current === x.total).length + 1,
+        total: progVals.length,
+        progress: Math.min(100, progVals.reduce((a, x) => a + x.current, 0) / progVals.reduce((a, x) => a + x.total, 0) * 100),
+        details: progress
+      });
     });
 
     return launchMain();
   } catch (e) {
     log('Splash', e);
-    await new Promise(r => fail(r));
+    await new Promise(fail);
   }
 };
 
 
-const fail = (c) => {
+const fail = c => {
   sendState('fail', { seconds: 10 });
 
   setTimeout(c, 10000);
