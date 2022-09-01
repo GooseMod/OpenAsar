@@ -1,5 +1,5 @@
 const { app, session } = require('electron');
-const { readFileSync } = require('fs');
+const fs = require('fs');
 const { join } = require('path');
 
 if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
@@ -36,7 +36,7 @@ const startCore = () => {
 
       const [ , hash ] = oaVersion.split('-'); // Split via -
 
-      bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
+      bw.webContents.executeJavaScript(fs.readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
         .replaceAll('<hash>', hash || 'custom')
         .replaceAll('<notrack>', oaConfig.noTrack));
 
