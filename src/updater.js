@@ -120,20 +120,9 @@ const installModule = async (name, force = false) => { // install module
 
   log('Updater', `Downloaded ${name}@${version} (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
 
-  // let extractTotal = 0, extractCurrent = 0;
-
-  // cp.execFile('tar', ['-tf', tarPath]).stdout.on('data', x => extractTotal += x.toString().split('\n').length - 1);
-
   await fs.promises.mkdir(finalPath, { recursive: true }).catch(_ => {});
 
   const proc = cp.execFile('tar', [ '-xf', tarPath, '-C', finalPath]);
-
-  /* proc.stdout.on('data', x => {
-    extractCurrent += x.toString().split('\n').length - 1;
-    console.log('wow', extractCurrent, extractTotal);
-
-    progressCb('Install', (extractCurrent / extractTotal) * 100);
-  }); */
 
   await new Promise(res => proc.on('close', res));
 
