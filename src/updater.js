@@ -167,6 +167,7 @@ const restartInto = x => {
   }));
 
   app.exit();
+  return new Promise(res => {}); // don't do anything else
 };
 
 let lastCheck, checking;
@@ -184,19 +185,19 @@ const updateToLatestWithOptions = async (options, callback) => {
     const otherApps = fs.readdirSync(installDir).filter(x => x.startsWith('app-') && x !== basename(dirname(process.execPath))).map(x => parseInt(x.split('.').pop()));
     // use process.execPath to handle possible buildInfo mismatch (should never normally)
 
-    for (const x of otherApps.filter(x => x < installed.host)) { // delete older app dirs
+    const wanted = manifest.modules.host;
+    for (const x of otherApps.filter(x => x !== wanted)) { // delete older app dirs
       const p = join(installDir, 'app-1.0.' + x);
 
       log('Updater', 'Deleting old app dir', p);
       fs.promises.rm(p, { recursive: true });
     }
 
-    const latest = Math.max(...otherApps);
-    if (latest > installed.host) {
-      const p = join(installDir, 'app-1.0.' + manifest.modules.host);
+    if (otherApps.includes(wanted)) {
+      const p = join(installDir, 'app-1.0.' + wanted);
 
       log('Updater', 'Detected new app dir, restarting into', p);
-      return restartInto(p);
+      await restartInto(p);
     }
   }
 
@@ -227,7 +228,7 @@ const updateToLatestWithOptions = async (options, callback) => {
     const [ ,, path ] = hostInstall;
 
     log('Updater', 'Updated host, restarting into', path);
-    restartInto(path);
+    await restartInto(path);
   }
 
   lastCheck = Date.now();
