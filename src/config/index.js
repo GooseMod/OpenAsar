@@ -5,7 +5,7 @@ ipcMain.on('DISCORD_UPDATED_QUOTES', (e, c) => {
 });
 
 exports.open = () => {
-  const win = require('../utils/win')({
+  require('../utils/win')({
     width: 500,
     height: 650
   }, 'config');
@@ -21,9 +21,7 @@ exports.open = () => {
     settings.save(); // Ensure saving
   });
 
-  ipcMain.on('cg', e => {
-    e.returnValue = config;
-  });
+  ipcMain.on('cg', e => e.returnValue = config);
 
   ipcMain.on('cr', () => {
     settings.save();
@@ -32,6 +30,6 @@ exports.open = () => {
   });
 
   ipcMain.on('of', () => {
-    shell.openPath(require('../paths').getUserData() + '/settings.json')
+    shell.openPath(require('../paths').getUserData() + '/settings.json');
   })
 };
