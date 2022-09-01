@@ -1,46 +1,37 @@
 const fs = require('fs');
 
-class Settings { // Heavily based on original for compat, but simplified and tweaked
-  constructor(path) {
-    try {
-      this.store = JSON.parse(fs.readFileSync(path));
-    } catch {
-      this.store = {};
-    }
+const path = require('path').join(require('./paths').getUserData(), 'settings.json');
 
-    this.path = path;
-    this.mod = this.getMod();
+const getMod = () => { try {
+  return fs.statSync(this.path).mtime.getTime();
+} catch { } };
 
-    log('Settings', this.path, this.store);
-  }
+let mod = getMod();
 
-  getMod() { // Get when file was last modified
-    try {
-      return fs.statSync(this.path).mtime.getTime();
-    } catch { }
-  }
+let store = {};
+try {
+  store = JSON.parse(fs.readFileSync(path));
+} catch { }
 
-  get(k, d) {
-    return this.store[k] ?? d;
-  }
+log('Settings', path, store);
 
-  set(k, v) {
-    this.store[k] = v;
-  }
 
-  save() {
-    if (this.mod && this.mod !== this.getMod()) return; // File was last modified after Settings was made, so was externally edited therefore we don't save over
+exports.getSettings = () => ({
+  getMod,
+
+  get: (k, d) => store[k] ?? d,
+  set: (k, v) => store[k] = v,
+
+  save: () => {
+    if (this.mod && this.mod !== this.getMod()) return; // file has been modified externally, so don't overwrite
 
     try {
-      fs.writeFileSync(this.path, JSON.stringify(this.store, null, 2));
-      this.mod = this.getMod();
+      fs.writeFileSync(path, JSON.stringify(store, null, 2));
+      mod = getMod();
 
       log('Settings', 'Saved');
     } catch (e) {
       log('Settings', e);
     }
   }
-}
-
-let inst; // Instance of class
-exports.getSettings = () => inst = inst ?? new Settings(require('path').join(require('./paths').getUserData(), 'settings.json'));
+})
