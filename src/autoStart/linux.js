@@ -7,7 +7,7 @@ const buildInfo = require('../utils/buildInfo');
 const desktopPath = join(app.getPath('appData'), 'autostart', app.name + '-' + buildInfo.releaseChannel + '.desktop');
 
 // Vars for use in desktop file content template
-const exec = app.getPath('exe');
+const exec = process.execPath;
 
 // Template for desktop file
 const desktopContent = `[Desktop Entry]
@@ -15,7 +15,7 @@ Type=Application
 Exec=${exec}
 Hidden=false
 NoDisplay=false
-Name=${basename(process.execPath)}
+Name=${basename(exec)}
 Icon=${join(global.systemElectron ? '/usr/share/pixmaps' : dirname(exec), 'discord.png')}
 Comment=Text and voice chat for gamers.
 X-GNOME-Autostart-enabled=true`;
