@@ -1,7 +1,7 @@
 const cp = require('child_process');
 const { app } = require('electron');
 const Module = require('module');
-const { join, resolve, dirname, basename } = require('path');
+const { join, dirname, basename } = require('path');
 const fs = require('fs');
 const zlib = require('zlib');
 
@@ -16,19 +16,24 @@ const platform = process.platform === 'win32' ? 'win' : (process.platform === 'd
 const modulesPath = platform === 'win' ? join(exeDir, 'modules') : join(paths.getUserData(), 'modules');
 const pendingPath = join(modulesPath, '..', 'pending');
 
+const handleInstalled = dir => {
+  const inst = dir.sort((a, b) => parseInt(a.split('-')[1]) - parseInt(b.split('-')[1]))
+    .concat('host-' + parseInt(hostVersion.split('.').pop()))
+    .reduce((acc, x) => {
+      const [ name, version ] = x.split('-');
+      acc[name] = parseInt(version);
+      return acc;
+    }, {});
+
+  Module.globalPaths = dir.map(x => join(modulesPath, x));
+
+  return _installed = inst;
+};
+
 let _installed;
-const getInstalled = async (useCache = true) => (useCache && _installed) ||
-  (_installed = (await fs.promises.readdir(modulesPath).catch(_ => []))
-  .sort((a, b) => parseInt(a.split('-')[1]) - parseInt(b.split('-')[1]))
-  .concat('host-' + parseInt(hostVersion.split('.').pop()))
-  .reduce((acc, x) => {
-    const [ name, version ] = x.split('-');
-    acc[name] = parseInt(version);
-    return acc;
-  }, {}));
+const getInstalled = async (useCache = true) => (useCache && _installed) || handleInstalled(await fs.promises.readdir(modulesPath).catch(_ => []));
 
 const MU_ENDPOINT = oaConfig.muEndpoint ?? 'https://mu.openasar.dev';
-// const MU_ENDPOINT = 'http://localhost:9999';
 const https = MU_ENDPOINT.startsWith('https') ? require('https') : require('http');
 
 let _manifest;
@@ -36,8 +41,6 @@ let lastManifest;
 const getManifest = async () => {
   const manifestTime = Math.floor(Date.now() / 1000 / 60 / 5); // cache for ~5m, client and server
   if (_manifest && lastManifest >= manifestTime) return _manifest;
-
-  // console.log(`${MU_ENDPOINT}/${platform}/${channel}/modules.json?_=${manifestTime}`);
 
   return await new Promise(fin => https.get(`${MU_ENDPOINT}/${platform}/${channel}/modules.json?_=${manifestTime}`, async res => {
     let data = '';
@@ -49,9 +52,7 @@ const getManifest = async () => {
 
       fin(_manifest = {
         modules,
-        // required_modules: [ 'discord_desktop_core', 'discord_utils' ]
         required_modules: [ 'discord_desktop_core', 'discord_erlpack', 'discord_spellcheck', 'discord_utils', 'discord_voice' ]
-        // required_modules: [ 'discord_desktop_core', 'discord_erlpack', 'discord_spellcheck', 'discord_utils', 'discord_voice', 'discord_krisp', 'discord_game_utils', 'discord_rpc', 'discord_overlay2', 'discord_cloudsync' ]
       });
 
       lastManifest = manifestTime;
@@ -109,7 +110,6 @@ const installModule = async (name, force = false) => { // install module
     res.on('data', c => {
       downloadCurrent += c.length;
 
-      // await new Promise(res => setTimeout(res, 5000));
       progressCb('Download', downloadCurrent, downloadTotal);
     });
   });
@@ -141,17 +141,10 @@ const installModule = async (name, force = false) => { // install module
 
   log('Updater', `Installed ${name}@${version} in ${(Date.now() - start).toFixed(2)}ms`);
 
-  if (localVersion && name !== 'host') fs.promises.rm(join(modulesPath, name + '-' + localVersion), { recursive: true }); // delete old module
+  if (localVersion && name !== 'host') fs.promises.rm(join(modulesPath, name + '-' + localVersion), { recursive: true }); // delete old module (later)
+  getInstalled(false); // update installed cache (later)
 
   return [ name, version, finalPath ];
-};
-
-const commitModules = async () => {
-  const installed = await getInstalled(false);
-
-  for (const m in installed) {
-    Module.globalPaths.push(join(modulesPath, m + '-' + installed[m]));
-  }
 };
 
 const queryCurrentVersions = async () => ({
@@ -167,7 +160,7 @@ const restartInto = x => {
   }));
 
   app.exit();
-  return new Promise(res => {}); // don't do anything else
+  return new Promise(() => {}); // don't do anything else
 };
 
 let lastCheck, checking;
@@ -182,8 +175,7 @@ const updateToLatestWithOptions = async (options, callback) => {
 
   if (platform === 'win' && options.restart) { // manage app dirs on startup
     const installDir = join(exeDir, '..');
-    const otherApps = fs.readdirSync(installDir).filter(x => x.startsWith('app-') && x !== basename(dirname(process.execPath))).map(x => parseInt(x.split('.').pop()));
-    // use process.execPath to handle possible buildInfo mismatch (should never normally)
+    const otherApps = fs.readdirSync(installDir).filter(x => x.startsWith('app-') && x !== basename(dirname(process.execPath))).map(x => parseInt(x.split('.').pop())); // use process.execPath to handle possible buildInfo mismatch (should never normally)
 
     const wanted = manifest.modules.host;
     for (const x of otherApps.filter(x => x !== wanted)) { // delete older app dirs
@@ -221,8 +213,6 @@ const updateToLatestWithOptions = async (options, callback) => {
   installs = await Promise.all(installs);
   if (installs.length > 0) log('Updater', `Updated ${installs.length} modules in ${(Date.now() - start).toFixed(2)}ms`);
 
-  await commitModules();
-
   const hostInstall = installs.find(x => x[0] === 'host');
   if (hostInstall && options.restart) {
     const [ ,, path ] = hostInstall;
@@ -245,19 +235,15 @@ module.exports = {
   events,
   getUpdater: () => ({
     installModule,
-    commitModules,
+    commitModules: () => {},
     queryCurrentVersions,
     queryAndTruncateHistory,
     updateToLatestWithOptions,
 
-    getKnownFolder: _ => '',
-    createShortcut: _ => {},
-
-    valid: true,
-    on: events.on // much extends such wow
+    valid: true
   }),
 
-  createShortcut: _ => {}, // shortcut deez nuts
+  requireNative: (mod, path = '') => require(join(modulesPath, mod + '-' + (_installed ?? handleInstalled(fs.readdirSync(modulesPath)))[mod], mod, path)),
 
-  tryInitUpdater: _ => true
+  createShortcut: _ => {} // shortcut deez nuts
 };
