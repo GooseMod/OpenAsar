@@ -243,7 +243,5 @@ module.exports = {
     valid: true
   }),
 
-  requireNative: (mod, path = '') => require(join(modulesPath, mod + '-' + (_installed ?? handleInstalled(fs.readdirSync(modulesPath)))[mod], mod, path)),
-
-  createShortcut: _ => {} // shortcut deez nuts
+  requireNative: (mod, path = '') => require(join(modulesPath, mod + '-' + (_installed ?? handleInstalled(fs.readdirSync(modulesPath)))[mod], mod, path))
 };
