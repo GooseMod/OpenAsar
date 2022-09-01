@@ -20,7 +20,7 @@ Icon=${join(global.systemElectron ? '/usr/share/pixmaps' : dirname(exec), 'disco
 Comment=Text and voice chat for gamers.
 X-GNOME-Autostart-enabled=true`;
 
-exports.install = (cb) => {
+exports.install = cb => {
   try {
     fs.mkdirSync(dirname(desktopPath), { recursive: true });
     fs.writeFile(desktopPath, desktopContent, cb);
@@ -29,8 +29,8 @@ exports.install = (cb) => {
   }
 };
 
-exports.update = (cb) => cb();
+exports.update = cb => cb();
 
-exports.uninstall = (cb) => fs.unlink(desktopPath, cb);
+exports.uninstall = cb => fs.unlink(desktopPath, cb);
 
-exports.isInstalled = (cb) => fs.access(desktopPath, fs.constants.F_OK, cb);
+exports.isInstalled = cb => fs.access(desktopPath, fs.constants.F_OK, cb);
