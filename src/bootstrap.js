@@ -1,6 +1,5 @@
 const { app, session } = require('electron');
 const { readFileSync } = require('fs');
-const get = require('request');
 const { join } = require('path');
 
 if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
