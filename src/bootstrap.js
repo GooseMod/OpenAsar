@@ -13,7 +13,6 @@ log('BuildInfo', buildInfo);
 
 const Constants = require('./Constants');
 app.setAppUserModelId(Constants.APP_ID);
-
 app.name = 'discord'; // Force name as sometimes breaks
 
 process.on('uncaughtException', console.error);
@@ -35,7 +34,7 @@ const startCore = () => {
       if (!bw.resizable) return; // Main window only
       splash.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
 
-      const [ channel, hash ] = oaVersion.split('-'); // Split via -
+      const [ , hash ] = oaVersion.split('-'); // Split via -
 
       bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
         .replaceAll('<hash>', hash || 'custom')
