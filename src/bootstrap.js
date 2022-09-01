@@ -20,7 +20,7 @@ process.on('uncaughtException', console.error);
 
 const splash = require('./splash');
 const updater = require('./updater');
-const autoStart = require('./autoStart');
+const autoStart = require('./autoStart/' + process.platform);
 
 let desktopCore;
 const startCore = () => {
