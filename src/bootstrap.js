@@ -73,9 +73,7 @@ const startUpdate = () => {
 
   const startMin = process.argv?.includes?.('--start-minimized');
 
-  const inst = updater.getUpdater();
-  inst.on('host-updated', () => autoStart.update(() => {}));
-  if (process.platform === 'win32') require('./winFirst')(inst);
+  if (process.platform === 'win32') require('./winFirst')(updater);
 
   splash.events.once('APP_SHOULD_LAUNCH', () => {
     if (!process.env.OPENASAR_NOSTART) startCore();
