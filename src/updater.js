@@ -63,7 +63,7 @@ const getManifest = async () => {
 let progressCallback;
 
 const installModule = async (name, force = false) => { // install module
-  log('Updater', `Installing module ${name}...`);
+  log('Updater', `Installing ${name}...`);
   const start = Date.now();
 
   const installed = await getInstalled();
@@ -73,11 +73,11 @@ const installModule = async (name, force = false) => { // install module
   const version = manifest.modules[name];
 
   if (!force && localVersion === version) {
-    log('Updater', 'Aborting install of', name, '- already installed!');
+    log('Updater', 'Already installed', name);
     return;
   }
 
-  log('Updater', `Downloading ${name}@${version}...`);
+  log('Updater', `Downloading ${name}@${version}`);
 
   const path = `${name}-${version}`;
 
@@ -118,7 +118,7 @@ const installModule = async (name, force = false) => { // install module
 
   progressCb('Download', downloadTotal, downloadTotal);
 
-  log('Updater', `Downloaded ${name}@${version} (${(downloadTotal / 1024 / 1024).toFixed(2)} MB)`);
+  log('Updater', `Downloaded ${name}@${version}`);
 
   await fs.promises.mkdir(finalPath, { recursive: true }).catch(_ => {});
 
@@ -143,6 +143,8 @@ const queryCurrentVersions = async () => ({
 const queryAndTruncateHistory = () => []; // todo: log events for history
 
 const restartInto = x => {
+  log('Restarting into', x);
+
   process.once('exit', () => cp.spawn(join(x, basename(process.execPath)), [], {
     detached: true,
     stdio: 'inherit'
@@ -177,7 +179,6 @@ const updateToLatestWithOptions = async (options, callback) => {
     if (otherApps.includes(wanted)) {
       const p = join(installDir, 'app-1.0.' + wanted);
 
-      log('Updater', 'Detected new app dir, restarting into', p);
       await restartInto(p);
     }
   }
@@ -206,7 +207,6 @@ const updateToLatestWithOptions = async (options, callback) => {
   if (hostInstall && options.restart) {
     const [ ,, path ] = hostInstall;
 
-    log('Updater', 'Updated host, restarting into', path);
     await restartInto(path);
   }
 
