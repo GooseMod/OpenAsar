@@ -72,10 +72,7 @@ const installModule = async (name, force = false) => { // install module
   const localVersion = installed[name];
   const version = manifest.modules[name];
 
-  if (!force && localVersion === version) {
-    log('Updater', 'Already installed', name);
-    return;
-  }
+  if (!force && localVersion === version) return log('Updater', 'Already installed', name);
 
   log('Updater', `Downloading ${name}@${version}`);
 
