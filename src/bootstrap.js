@@ -20,7 +20,18 @@ process.on('uncaughtException', console.error);
 
 const splash = require('./splash');
 const updater = require('./updater');
-const autoStart = require('./autoStart/' + process.platform);
+
+let autoStart;
+try {
+  autoStart = require('./autoStart/' + process.platform)
+} catch { // stub (darwin)
+  autoStart = {
+    install: c => c(),
+    update: c => c(),
+    uninstall: c => c(),
+    isInstalled: c => c(false)
+  };
+}
 
 let desktopCore;
 const startCore = () => {
