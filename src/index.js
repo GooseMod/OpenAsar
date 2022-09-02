@@ -16,8 +16,5 @@ global.oaConfig = settings.get('openasar', {});
 require('./cmdSwitches')();
 
 
-if (process.argv.includes('--overlay-host')) { // If overlay
-  require('./updater').requireNative('discord_overlay2', 'standalone_host.js'); // Start overlay
-} else {
-  require('./bootstrap')(); // Start bootstrap
-}
+if (process.argv.includes('--overlay-host')) require('./updater').requireNative('discord_overlay2', 'standalone_host.js'); // Start overlay
+  else require('./bootstrap')(); // Start bootstrap
