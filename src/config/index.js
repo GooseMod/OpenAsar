@@ -29,7 +29,7 @@ exports.open = () => {
     app.exit();
   });
 
-  ipcMain.on('of', () => {
+  ipcMain.on('co', () => {
     shell.openPath(require('../paths').getUserData() + '/settings.json');
   })
 };
