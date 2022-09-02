@@ -17,6 +17,9 @@ app.name = 'discord'; // Force name as sometimes breaks
 
 process.on('uncaughtException', console.error);
 
+const userData = join(app.getPath('appData'), 'discord' + (releaseChannel === 'stable' ? '' : releaseChannel));
+global.moduleDataPath = join(userData, 'module_data'); // used by modules
+app.setPath('userData', userData);
 
 const splash = require('./splash');
 const updater = require('./updater');
@@ -66,7 +69,10 @@ const startCore = () => {
 
     // Just requires
     appSettings: require('./appSettings'),
-    paths: require('./paths'),
+
+    paths: {
+      getUserData: () => userData
+    },
 
     // Stubs
     GPUSettings: {

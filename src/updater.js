@@ -1,17 +1,17 @@
 const cp = require('child_process');
+const { app } = require('electron');
 const Module = require('module');
 const { join, dirname, basename } = require('path');
 const fs = require('fs');
 const zlib = require('zlib');
 
-const paths = require('./paths');
-
 const { releaseChannel: channel, version: hostVersion } = require('./utils/buildInfo');
 
-const exeDir = paths.getExeDir();
+const exec = process.execPath;
+const exeDir = dirname(exec);
 
 const platform = process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'osx' : 'linux');
-const modulesPath = platform === 'win' ? join(exeDir, 'modules') : join(paths.getUserData(), 'modules');
+const modulesPath = platform === 'win' ? join(exeDir, 'modules') : join(app.getPath('userData'), 'modules');
 const pendingPath = join(modulesPath, '..', 'pending');
 
 const handleInstalled = dir => {
@@ -131,12 +131,13 @@ const installModule = async (name, force = false) => { // install module
 const restartInto = x => {
   log('Updater', 'Restarting into', x);
 
-  process.once('exit', () => cp.spawn(join(x, basename(process.execPath)), [], {
+  process.once('exit', () => cp.spawn(join(x, basename(exec)), [], {
     detached: true,
     stdio: 'inherit'
   }));
 
-  process.exit(); // immediately exit
+  app.exit(); // immediately exit
+  return new Promise(() => {});
 };
 
 let lastCheck, checking;
@@ -151,9 +152,10 @@ const updateToLatestWithOptions = async (options, callback) => {
 
   if (platform === 'win' && options.restart) { // manage app dirs on startup
     const installDir = join(exeDir, '..');
-    const otherApps = fs.readdirSync(installDir).filter(x => x.startsWith('app-') && x !== basename(dirname(process.execPath))).map(x => parseInt(x.split('.').pop())); // use process.execPath to handle possible buildInfo mismatch (should never normally)
+    const otherApps = fs.readdirSync(installDir).filter(x => x.startsWith('app-') && x !== basename(dirname(exec))).map(x => parseInt(x.split('.').pop()));
 
     const wanted = manifest.modules.host;
+    console.log(wanted);
     for (const x of otherApps.filter(x => x !== wanted)) { // delete older app dirs
       const p = join(installDir, 'app-1.0.' + x);
 
@@ -163,15 +165,14 @@ const updateToLatestWithOptions = async (options, callback) => {
 
     if (otherApps.includes(wanted)) {
       const p = join(installDir, 'app-1.0.' + wanted);
-
-      restartInto(p);
+      await restartInto(p);
     }
   }
 
   const wanted = Object.keys(installed).concat(manifest.required_modules).filter((x, i, arr) => i === arr.indexOf(x)); // installed + required
 
-  log('Updater', 'Modules installed:', Object.keys(installed).map(x => `${x}@${installed[x]}`).join(', '));
-  log('Updater', 'Modules wanted:', wanted.join(', '));
+  log('Updater', 'Installed:', Object.keys(installed).map(x => `${x}@${installed[x]}`).join(', '));
+  log('Updater', 'Wanted:', wanted.join(', '));
 
   let installs = [];
   for (const m of wanted) {
@@ -179,7 +180,7 @@ const updateToLatestWithOptions = async (options, callback) => {
     const remote = manifest.modules[m];
 
     if (remote && remote !== local) { // allow downgrading (!= not >)
-      log('Updater', 'Module update:', m, local, '->', remote);
+      log('Updater', 'Update:', m, local, '->', remote);
       installs.push(installModule(m));
     }
   }
@@ -191,8 +192,7 @@ const updateToLatestWithOptions = async (options, callback) => {
   const hostInstall = installs.find(x => x[0] === 'host');
   if (hostInstall && options.restart) {
     const [ ,, path ] = hostInstall;
-
-    restartInto(path);
+    await restartInto(path);
   }
 
   lastCheck = Date.now();
@@ -220,5 +220,5 @@ module.exports = {
     queryAndTruncateHistory: () => []
   }),
 
-  requireNative: (mod, path = '') => require(join(modulesPath, mod + '-' + (_installed ?? handleInstalled(fs.readdirSync(modulesPath)))[mod], mod, path))
+  requireNative: (mod, path = '') => require(join(modulesPath, mod + '-' + handleInstalled(fs.readdirSync(modulesPath))[mod], mod, path))
 };

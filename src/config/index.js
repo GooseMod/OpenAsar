@@ -30,6 +30,6 @@ exports.open = () => {
   });
 
   ipcMain.on('co', () => {
-    shell.openPath(require('../paths').getUserData() + '/settings.json');
+    shell.openPath(app.getPath('userData') + '/settings.json');
   })
 };
