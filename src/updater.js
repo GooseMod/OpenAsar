@@ -137,15 +137,14 @@ const installModule = async (name, force = false) => { // install module
 };
 
 const restartInto = x => {
-  log('Restarting into', x);
+  log('Updater', 'Restarting into', x);
 
   process.once('exit', () => cp.spawn(join(x, basename(process.execPath)), [], {
     detached: true,
     stdio: 'inherit'
   }));
 
-  app.exit();
-  return new Promise(() => {}); // don't do anything else
+  process.exit(); // immediately exit
 };
 
 let lastCheck, checking;
@@ -173,7 +172,7 @@ const updateToLatestWithOptions = async (options, callback) => {
     if (otherApps.includes(wanted)) {
       const p = join(installDir, 'app-1.0.' + wanted);
 
-      await restartInto(p);
+      restartInto(p);
     }
   }
 
@@ -201,7 +200,7 @@ const updateToLatestWithOptions = async (options, callback) => {
   if (hostInstall && options.restart) {
     const [ ,, path ] = hostInstall;
 
-    await restartInto(path);
+    restartInto(path);
   }
 
   lastCheck = Date.now();
