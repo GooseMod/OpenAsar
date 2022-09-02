@@ -75,8 +75,7 @@ const update = async inst => {
     const progress = {};
 
     await inst.updateToLatestWithOptions({ restart: true }, ({ task, current, total, percent }) => {
-      const download = task.HostDownload || task.ModuleDownload;
-
+      const download = task.ModuleDownload;
       if (download != null) progress[download.name] = { current, total, percent };
 
       const progVals = Object.values(progress);
