@@ -11,7 +11,15 @@ global.releaseChannel = buildInfo.releaseChannel;
 
 log('BuildInfo', buildInfo);
 
-const Constants = require('./Constants');
+const r = releaseChannel;
+const n = 'Discord' + (r === 'stable' ? '' : (r[0].toUpperCase() + r.slice(1))); // Discord<Channel>
+
+const Constants = {
+  APP_NAME: n,
+  APP_ID: [ 'com', 'squirrel', n, n ].join('.'),
+  API_ENDPOINT: settings.get('API_ENDPOINT') ?? 'https://discord.com/api'
+};
+
 app.setAppUserModelId(Constants.APP_ID);
 app.name = 'discord'; // Force name as sometimes breaks
 
