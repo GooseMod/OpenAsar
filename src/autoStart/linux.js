@@ -2,8 +2,6 @@ const fs = require('fs');
 const { join, basename, dirname } = require('path');
 const { app } = require('electron');
 
-const buildInfo = require('../utils/buildInfo');
-
 const desktopPath = join(app.getPath('appData'), 'autostart', app.name + '-' + buildInfo.releaseChannel + '.desktop');
 
 const exec = process.execPath;

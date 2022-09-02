@@ -13,6 +13,7 @@ process.resourcesPath = join(__dirname, '..'); // Force resourcesPath for system
 global.settings = require('./appSettings').getSettings();
 global.oaConfig = settings.get('openasar', {});
 
+global.buildInfo = JSON.parse(require('fs').readFileSync(require('path').join(process.resourcesPath, 'build_info.json'), 'utf8'));
 require('./cmdSwitches')();
 
 

@@ -5,7 +5,7 @@ const { join, dirname, basename } = require('path');
 const fs = require('fs');
 const zlib = require('zlib');
 
-const { releaseChannel: channel, version: hostVersion } = require('./utils/buildInfo');
+const { releaseChannel: channel, version: hostVersion } = buildInfo;
 
 const exec = process.execPath;
 const exeDir = dirname(exec);

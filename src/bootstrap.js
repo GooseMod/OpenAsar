@@ -5,7 +5,6 @@ const { join } = require('path');
 if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
 process.env.PULSE_LATENCY_MSEC = process.env.PULSE_LATENCY_MSEC ?? 30;
 
-const buildInfo = require('./utils/buildInfo');
 app.setVersion(buildInfo.version); // More global because discord / electron
 global.releaseChannel = buildInfo.releaseChannel;
 
