@@ -1,5 +1,4 @@
 const cp = require('child_process');
-const { app } = require('electron');
 const Module = require('module');
 const { join, dirname, basename } = require('path');
 const fs = require('fs');
@@ -8,7 +7,6 @@ const zlib = require('zlib');
 const paths = require('./paths');
 
 const { releaseChannel: channel, version: hostVersion } = require('./utils/buildInfo');
-// const { NEW_UPDATE_ENDPOINT: endpoint } = require('./Constants');
 
 const exeDir = paths.getExeDir();
 
