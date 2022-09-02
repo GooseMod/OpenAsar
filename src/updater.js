@@ -136,12 +136,6 @@ const installModule = async (name, force = false) => { // install module
   return [ name, version, finalPath ];
 };
 
-const queryCurrentVersions = async () => ({
-  current_modules: await getInstalled()
-});
-
-const queryAndTruncateHistory = () => []; // todo: log events for history
-
 const restartInto = x => {
   log('Restarting into', x);
 
@@ -223,13 +217,16 @@ const events = new (require('events').EventEmitter)();
 module.exports = {
   events,
   getUpdater: () => ({
+    valid: true,
     installModule,
-    commitModules: () => {},
-    queryCurrentVersions,
-    queryAndTruncateHistory,
     updateToLatestWithOptions,
+    commitModules: () => {},
 
-    valid: true
+    queryCurrentVersions: async () => ({
+      current_modules: await getInstalled()
+    }),
+
+    queryAndTruncateHistory: () => []
   }),
 
   requireNative: (mod, path = '') => require(join(modulesPath, mod + '-' + (_installed ?? handleInstalled(fs.readdirSync(modulesPath)))[mod], mod, path))
