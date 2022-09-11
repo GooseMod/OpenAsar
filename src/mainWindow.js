@@ -57,11 +57,13 @@ document.body.appendChild(el);
 
 openasar = {}; // Define global for any mods which want to know / etc
 
-DiscordNative.nativeModules.ensureModule('discord_voice'); // Ensure discord_voice to generally prevent corruption message / broken VC, also for deferring for fresh start
+if (window.DiscordNative) {
+  DiscordNative.nativeModules.ensureModule('discord_voice'); // Ensure discord_voice to generally prevent corruption message / broken VC, also for deferring for fresh start
 
-setInterval(() => { // Try init themesync
-  try {
-    themesync();
-  } catch (e) { }
-}, 10000);
-themesync();
+  setInterval(() => { // Try init themesync
+    try {
+      themesync();
+    } catch (e) { }
+  }, 10000);
+  themesync();
+}
