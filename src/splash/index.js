@@ -80,7 +80,7 @@ const update = async inst => {
 
       const progVals = Object.values(progress);
       sendState('modules', {
-        current: progVals.filter(x => x.current === x.total).length + 1,
+        current: Math.min(progVals.filter(x => x.current === x.total).length + 1, progVals.length),
         total: progVals.length,
         progress: Math.min(100, progVals.reduce((a, x) => a + x.current, 0) / progVals.reduce((a, x) => a + x.total, 0) * 100),
         details: progress
