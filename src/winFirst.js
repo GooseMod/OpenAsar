@@ -10,11 +10,9 @@ module.exports = () => {
   const flag = join(exec, '..', '.first-run');
   if (fs.existsSync(flag)) return; // Already done, skip
 
-  const proto = 'Discord';
-  const base = 'HKCU\\Software\\Classes\\' + proto;
-
+  const base = 'HKCU\\Software\\Classes\\Discord';
   for (const x of [
-    [base, '/ve', '/d', `URL:${proto} Protocol`],
+    [base, '/ve', '/d', `URL:Discord Protocol`],
     [base, '/v', 'URL Protocol'],
     [base + '\\DefaultIcon', '/ve', '/d', `"${exec}",-1`],
     [base + '\\shell\\open\\command', '/ve', '/d', `"${exec}" --url -- "%1"`]
