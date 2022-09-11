@@ -18,7 +18,7 @@ exports.open = () => {
   ipcMain.on('cs', (e, c) => {
     config = c;
     settings.set('openasar', config);
-    settings.save(); // Ensure saving
+    settings.save();
   });
 
   ipcMain.on('cg', e => e.returnValue = config);
@@ -30,6 +30,6 @@ exports.open = () => {
   });
 
   ipcMain.on('co', () => {
-    shell.openPath(app.getPath('userData') + '/settings.json');
+    shell.openPath(require('path').join(userData, 'settings.json'));
   })
 };

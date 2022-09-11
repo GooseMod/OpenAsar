@@ -11,7 +11,7 @@ const exec = process.execPath;
 const exeDir = dirname(exec);
 
 const platform = process.platform === 'win32' ? 'win' : (process.platform === 'darwin' ? 'osx' : 'linux');
-const modulesPath = platform === 'win' ? join(exeDir, 'modules') : join(app.getPath('userData'), 'modules');
+const modulesPath = platform === 'win' ? join(exeDir, 'modules') : join(userData, 'modules');
 const pendingPath = join(modulesPath, '..', 'pending');
 
 const handleInstalled = dir => {

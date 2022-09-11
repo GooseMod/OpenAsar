@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const path = require('path').join(require('electron').app.getPath('userData'), 'settings.json');
+const path = require('path').join(userData, 'settings.json');
 
 const getMod = () => { try {
   return fs.statSync(this.path).mtime.getTime();

@@ -13,7 +13,7 @@ module.exports = (o, n) => {
   const c = w.webContents;
   c.once('dom-ready', () => {
     if (oaConfig.themeSync !== false) try {
-      c.insertCSS(JSON.parse(require('fs').readFileSync(require('path').join(require('electron').app.getPath('userData'), 'userDataCache.json'), 'utf8')).openasarSplashCSS);
+      c.insertCSS(JSON.parse(require('fs').readFileSync(require('path').join(userData, 'userDataCache.json'), 'utf8')).openasarSplashCSS);
     } catch { }
   });
 
