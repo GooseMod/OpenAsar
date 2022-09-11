@@ -90,13 +90,7 @@ const update = async inst => {
     return launchMain();
   } catch (e) {
     log('Splash', e);
-    await new Promise(fail);
+    sendState('fail', { seconds: 10 });
+    await new Promise(res => setTimeout(res, 10000));
   }
-};
-
-
-const fail = c => {
-  sendState('fail', { seconds: 10 });
-
-  setTimeout(c, 10000);
 };
