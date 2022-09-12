@@ -34,4 +34,4 @@ exports.getSettings = () => ({
       log('Settings', e);
     }
   }
-})
+});
