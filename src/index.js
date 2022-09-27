@@ -6,7 +6,7 @@ global.log = (area, ...args) => console.log(`[\x1b[38;2;88;101;242mOpenAsar\x1b[
 global.oaVersion = 'nightly';
 
 log('Init', 'OpenAsar', oaVersion);
-log('Versions', `Electron ${process.versions.electron} | Node ${process.version} ${process.arch}`)
+log('Versions', `Electron ${process.versions.electron} | Node ${process.version} ${process.arch}`);
 
 if (process.resourcesPath.startsWith('/usr/lib/electron')) global.systemElectron = true; // Using system electron, flag for other places
 process.resourcesPath = join(__dirname, '..'); // Force resourcesPath for system electron
