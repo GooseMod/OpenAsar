@@ -114,7 +114,7 @@ const installModule = async (name, force = false) => { // install module
 
   await fs.promises.mkdir(finalPath, { recursive: true }).catch(_ => {});
 
-  const proc = cp.execFile('tar', [ '-xf', tarPath, '-C', finalPath]);
+  const proc = cp.execFile(platform === 'win' ? 'C:\\Windows\\System32\\tar.exe' : 'tar', [ '-xf', tarPath, '-C', finalPath]);
 
   await new Promise(res => proc.on('close', res));
 
