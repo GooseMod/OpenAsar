@@ -50,7 +50,7 @@ const getManifest = async () => {
 
       fin(_manifest = {
         modules,
-        required_modules: [ 'discord_desktop_core', 'discord_erlpack', 'discord_spellcheck', 'discord_utils', 'discord_voice' ]
+        required_modules: [ 'discord_desktop_core', 'discord_erlpack', 'discord_spellcheck', 'discord_utils', 'discord_voice', 'open_react_devtools' ]
       });
 
       lastManifest = manifestTime;
