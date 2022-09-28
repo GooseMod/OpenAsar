@@ -28,7 +28,7 @@ const autoStart = require('./autoStart');
 
 let desktopCore;
 const startCore = () => {
-  if (oaConfig.js) session.defaultSession.webRequest.onHeadersReceived((d, cb) => {
+  if (oaConfig.js || oaConfig.css) session.defaultSession.webRequest.onHeadersReceived((d, cb) => {
     delete d.responseHeaders['content-security-policy'];
     cb(d);
   });
