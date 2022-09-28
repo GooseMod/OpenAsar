@@ -40,9 +40,13 @@ setInterval(() => {
   host.append(document.createTextNode(' | '), el);
 }, 2000);
 
+const injCSS = x => {
+  const el = document.createElement('style');
+  el.appendChild(document.createTextNode(x));
+  document.body.appendChild(el);
+};
 
-const el = document.createElement('style');
-el.appendChild(document.createTextNode(`<css>
+injCSS(document.createTextNode(`
 [class^="socialLinks-"] + [class^="info-"] {
   padding-right: 0;
 }
@@ -56,7 +60,8 @@ el.appendChild(document.createTextNode(`<css>
   text-decoration: underline;
   color: var(--text-normal);
 }`));
-document.body.appendChild(el);
+
+injCSS(`<css>`);
 
 openasar = {}; // Define global for any mods which want to know / etc
 
