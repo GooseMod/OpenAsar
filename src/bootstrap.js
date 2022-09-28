@@ -42,10 +42,10 @@ const startCore = () => {
 
       bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
         .replaceAll('<hash>', hash || 'custom')
-        .replaceAll('<notrack>', oaConfig.noTrack));
+        .replaceAll('<notrack>', oaConfig.noTrack)
+        .replace('<css>', oaConfig.css.replaceAll('`', '\\`').replaceAll('\\', '\\\\')));
 
       if (oaConfig.js) bw.webContents.executeJavaScript(oaConfig.js);
-      if (oaConfig.css) bw.webContents.insertCSS(oaConfig.css);
     });
   });
 

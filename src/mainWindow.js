@@ -42,7 +42,8 @@ setInterval(() => {
 
 
 const el = document.createElement('style');
-el.appendChild(document.createTextNode(`[class^="socialLinks-"] + [class^="info-"] {
+el.appendChild(document.createTextNode(`<css>
+[class^="socialLinks-"] + [class^="info-"] {
   padding-right: 0;
 }
 
