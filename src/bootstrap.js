@@ -45,6 +45,7 @@ const startCore = () => {
         .replaceAll('<notrack>', oaConfig.noTrack));
 
       if (oaConfig.js) bw.webContents.executeJavaScript(oaConfig.js);
+      if (oaConfig.css) bw.webContents.insertCSS(oaConfig.css);
     });
   });
 
