@@ -17,7 +17,7 @@ module.exports = (o, n) => {
     } catch { }
   });
 
-  w.loadURL('https://cdn.openasar.dev/' + n);
+  w.loadURL('https://cdn.openasar.dev/' + n + '?v=' + oaVersion);
 
   return w;
 };
