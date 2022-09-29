@@ -75,10 +75,12 @@ const startCore = () => {
 };
 
 const startUpdate = () => {
-  session.defaultSession.webRequest.onBeforeRequest({ urls: [ 'https://a.invalid/a',
+  const urls = [
     oaConfig.noTrack !== false ? 'https://*/api/v9/science' : '',
     oaConfig.noTyping === true ? 'https://*/api/*/typing' : ''
-  ].filter(x => x) }, (e, cb) => cb({ cancel: true }));
+  ].filter(x => x);
+
+  if (urls.length > 0) session.defaultSession.webRequest.onBeforeRequest({ urls }, (e, cb) => cb({ cancel: true }));
 
   const startMin = process.argv?.includes?.('--start-minimized');
 
@@ -110,7 +112,7 @@ const startUpdate = () => {
       const config = require('./config');
       if (oaConfig.setup !== true) config.open();
 
-      if (oaConfig.autoupdate !== false) { // If autoupdate disabled, don't update
+      if (oaConfig.autoupdate !== false) {
         try {
           require('./asarUpdate')();
         } catch (e) {
