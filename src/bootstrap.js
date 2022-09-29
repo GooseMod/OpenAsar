@@ -78,7 +78,7 @@ const startUpdate = () => {
   session.defaultSession.webRequest.onBeforeRequest({ urls: [
     oaConfig.noTrack ? 'https://*/api/v9/science' : '',
     oaConfig.noTyping ? 'https://*/api/*/typing' : ''
-  ].filter(x => x) }, async (e, cb) => cb({ cancel: true }));
+  ].filter(x => x) }, (e, cb) => cb({ cancel: true }));
 
   const startMin = process.argv?.includes?.('--start-minimized');
 
