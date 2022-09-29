@@ -75,7 +75,10 @@ const startCore = () => {
 };
 
 const startUpdate = () => {
-  if (oaConfig.noTrack !== false) session.defaultSession.webRequest.onBeforeRequest({ urls: [ 'https://*/api/v9/science' ] }, async (e, cb) => cb({ cancel: true }));
+  session.defaultSession.webRequest.onBeforeRequest({ urls: [
+    oaConfig.noTrack ? 'https://*/api/v9/science' : '',
+    oaConfig.noTyping ? 'https://*/api/*/typing' : ''
+  ].filter(x => x) }, async (e, cb) => cb({ cancel: true }));
 
   const startMin = process.argv?.includes?.('--start-minimized');
 
