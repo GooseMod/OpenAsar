@@ -46,7 +46,7 @@ const injCSS = x => {
   document.body.appendChild(el);
 };
 
-injCSS(document.createTextNode(`
+injCSS(`
 [class^="socialLinks-"] + [class^="info-"] {
   padding-right: 0;
 }
@@ -59,7 +59,7 @@ injCSS(document.createTextNode(`
 #openasar-ver:hover {
   text-decoration: underline;
   color: var(--text-normal);
-}`));
+}`);
 
 injCSS(`<css>`);
 
