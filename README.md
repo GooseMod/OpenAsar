@@ -1,6 +1,8 @@
 # OpenAsar
 ![Nightly Status](https://github.com/GooseMod/OpenAsar/actions/workflows/nightly.yml/badge.svg) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://choosealicense.com/licenses/mit/l) ![GitHub Sponsors](https://img.shields.io/github/sponsors/CanadaHonk?label=Sponsors&logo=github)
 
+### Acrylic fork (Windows only) - uses [`@pyke/vibe`](https://github.com/pykeio/vibe) under [Apache 2.0](https://github.com/pykeio/vibe/blob/main/LICENSE)
+
 **An open-source alternative of Discord desktop's `app.asar`**
 
 ## Features

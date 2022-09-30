@@ -99,6 +99,7 @@ const startUpdate = () => {
 
   splash.events.once('APP_SHOULD_LAUNCH', () => {
     if (!process.env.OPENASAR_NOSTART) startCore();
+    // require('./config').open();
   });
 
   let done;

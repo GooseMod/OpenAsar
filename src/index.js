@@ -4,6 +4,9 @@ global.log = (area, ...args) => console.log(`[\x1b[38;2;88;101;242mOpenAsar\x1b[
 
 global.oaVersion = 'nightly';
 
+global.vibe = require('./vibe.node');
+vibe.setup(require('electron').app);
+
 log('Init', 'OpenAsar', oaVersion);
 
 if (process.resourcesPath.startsWith('/usr/lib/electron')) global.systemElectron = true; // Using system electron, flag for other places
