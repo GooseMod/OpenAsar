@@ -46,6 +46,9 @@ const startCore = () => {
         .replace('<css>', (oaConfig.css ?? '').replaceAll('`', '\\`').replaceAll('\\', '\\\\')));
 
       if (oaConfig.js) bw.webContents.executeJavaScript(oaConfig.js);
+
+      bw.setBackgroundColor('#00000000');
+      vibe.applyEffect(bw, 'acrylic');
     });
   });
 
