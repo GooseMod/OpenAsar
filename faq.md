@@ -22,7 +22,7 @@ OpenAsar optimizes Chromium (the web engine / browser Discord uses) to help incr
 The main speed increase (default options) is mostly accidental / coincidental (not intended) as it is mostly a side effect of rewriting it.
 
 ### How is this so small?
-Compared to Discord's original, OpenAsar is <2% of the size. This is because when rewriting we remove NPM dependencies with our own custom code for more performance and efficiency. These are replaced with custom polyfills (compatible replacements).
+Compared to Discord's original, OpenAsar is <2% of the size. This is because when rewriting we remove NPM dependencies with our own custom code for more performance and efficiency.
 
 ### What is Quickstart?
 Quickstart "skips" a few Discord features like the splash screen and waiting for updates in favour of speed. It is currently experimental and not fully recommended for normal use.
