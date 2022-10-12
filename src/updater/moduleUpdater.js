@@ -104,7 +104,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 };
 
 const checkModules = async () => {
-  remote = JSON.parse((await req(baseUrl + '/versions.json' + qs)[1]));
+  remote = JSON.parse((await req(baseUrl + '/versions.json' + qs))[1]);
 
   for (const name in installed) {
     const inst = installed[name].installedVersion;
