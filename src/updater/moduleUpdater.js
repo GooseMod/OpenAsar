@@ -3,7 +3,7 @@ const fs = require('fs');
 const Module = require('module');
 const { execFile } = require('child_process');
 const { app, autoUpdater } = require('electron');
-const request = require('request');
+const { get } = require('https');
 
 const paths = require('../paths');
 
@@ -31,6 +31,13 @@ const resetTracking = () => {
   downloading = Object.assign({}, base);
   installing = Object.assign({}, base);
 };
+
+const req = (url) => new Promise(res => get(url, r => {
+  let dat = '';
+  r.on('data', b => dat += b.toString());
+
+  r.on('end', () => res(r, dat));
+}));
 
 exports.init = (endpoint, { releaseChannel, version }) => {
   skipHost = settings.get('SKIP_HOST_UPDATE');
@@ -61,13 +68,11 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     setFeedURL(url) {
       this.url = url;
     }
-  
+
     checkForUpdates() {
-      request(this.url, (e, r, b) => {
-        if (e) return this.emit('error');
-  
+      req(this.url).then((r, b) => {
         if (r.statusCode === 204) return this.emit('update-not-available');
-  
+
         this.emit('update-manually', b);
       });
     }
@@ -95,17 +100,11 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   host.setFeedURL(`${endpoint}/updates/${releaseChannel}?platform=${platform}&version=${version}`);
 
   baseUrl = `${endpoint}/modules/${releaseChannel}`;
-  qs = {
-    host_version: version,
-    platform
-  };
+  qs = `?host_version=${version}&platform=${platform}`;
 };
 
 const checkModules = async () => {
-  remote = await new Promise((res) => request({
-    url: baseUrl + '/versions.json',
-    qs
-  }, (e, r, b) => res(JSON.parse(b))));
+  remote = JSON.parse((await req(baseUrl + '/versions.json' + qs)[1]));
 
   for (const name in installed) {
     const inst = installed[name].installedVersion;
@@ -113,7 +112,7 @@ const checkModules = async () => {
 
     if (inst !== rem) {
       log('Modules', 'Update:', name, inst, '->', rem);
-  
+
       downloadModule(name, rem);
     }
   }
@@ -130,10 +129,7 @@ const downloadModule = async (name, ver) => {
   // log('Modules', 'Downloading', `${name}@${ver}`);
 
   let success, total, cur = 0;
-  request({
-    url: baseUrl + '/' + name + '/' + ver,
-    qs
-  }).on('response', (res) => {
+  get(baseUrl + '/' + name + '/' + ver + qs, res => {
     success = res.statusCode === 200;
     total = parseInt(res.headers['content-length'] ?? 1, 10);
 
@@ -148,14 +144,12 @@ const downloadModule = async (name, ver) => {
 
   await new Promise((res) => file.on('close', res));
 
-
   if (success) commitManifest();
     else downloading.fail++;
 
   events.emit('downloaded-module', {
     name
   });
-
 
   downloading.done++;
 
@@ -211,10 +205,10 @@ const installModule = async (name, ver, path) => {
 
   proc.on('close', () => {
     if (err) return;
-  
+
     installed[name] = { installedVersion: ver };
     commitManifest();
-  
+
     finishInstall(name, ver, true);
   });
 };
@@ -236,7 +230,7 @@ const finishInstall = (name, ver, success) => {
     events.emit('installed', {
       failed: installing.fail
     });
-  
+
     resetTracking();
   }
 };
