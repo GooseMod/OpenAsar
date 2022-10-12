@@ -1,4 +1,4 @@
-const request = require('request');
+const { get } = require('https');
 const fs = require('original-fs'); // Use original-fs, not Electron's modified fs
 const { join } = require('path');
 
@@ -20,7 +20,7 @@ module.exports = async () => { // (Try) update asar
       res();
     });
 
-    request.get(asarUrl).on('response', r => r.pipe(file));
+    get(asarUrl, r => r.pipe(file));
   });
 
   if (fs.readFileSync(downloadPath, 'utf8').startsWith('<')) return log('AsarUpdate', 'Download error');
