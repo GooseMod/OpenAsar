@@ -32,11 +32,11 @@ const resetTracking = () => {
   installing = Object.assign({}, base);
 };
 
-const req = (url) => new Promise(res => get(url, r => {
+const req = url => new Promise(res => get(url, r => {
   let dat = '';
   r.on('data', b => dat += b.toString());
 
-  r.on('end', () => res(r, dat));
+  r.on('end', () => res([ r, dat ]));
 }));
 
 exports.init = (endpoint, { releaseChannel, version }) => {
@@ -70,7 +70,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     }
 
     checkForUpdates() {
-      req(this.url).then((r, b) => {
+      req(this.url).then(([ r, b ]) => {
         if (r.statusCode === 204) return this.emit('update-not-available');
 
         this.emit('update-manually', b);
