@@ -40,7 +40,7 @@ const startCore = () => {
       const [ channel, hash ] = oaVersion.split('-'); // Split via -
 
       bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
-        .replaceAll('<hash>', hash || 'custom')
+        .replaceAll('<hash>', hash || channel)
         .replaceAll('<notrack>', oaConfig.noTrack)
         .replace('<css>', (oaConfig.css ?? '').replaceAll('\\', '\\\\').replaceAll('`', '\\`')));
 
