@@ -32,11 +32,18 @@ const resetTracking = () => {
   installing = Object.assign({}, base);
 };
 
-const req = url => new Promise(res => get(url, r => {
+const req = url => new Promise(res => get(url, r => { // Minimal wrapper around https.get to include body
   let dat = '';
   r.on('data', b => dat += b.toString());
 
   r.on('end', () => res([ r, dat ]));
+}));
+
+const redirs = url => new Promise(res => get(url, r => { // Minimal wrapper around https.get to follow redirects
+  const loc = r.headers.location;
+  if (loc) return redirs(loc).then(res);
+
+  res(r);
 }));
 
 exports.init = (endpoint, { releaseChannel, version }) => {
@@ -128,18 +135,17 @@ const downloadModule = async (name, ver) => {
 
   // log('Modules', 'Downloading', `${name}@${ver}`);
 
-  let success, total, cur = 0;
-  get(baseUrl + '/' + name + '/' + ver + qs, res => {
-    success = res.statusCode === 200;
-    total = parseInt(res.headers['content-length'] ?? 1, 10);
+  let success, total, cur =  0;
+  const res = await redirs(baseUrl + '/' + name + '/' + ver + qs);
+  success = res.statusCode === 200;
+  total = parseInt(res.headers['content-length'] ?? 1, 10);
 
-    res.pipe(file);
+  res.pipe(file);
 
-    res.on('data', c => {
-      cur += c.length;
+  res.on('data', c => {
+    cur += c.length;
 
-      events.emit('downloading-module', { name, cur, total });
-    });
+    events.emit('downloading-module', { name, cur, total });
   });
 
   await new Promise((res) => file.on('close', res));
