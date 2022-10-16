@@ -153,7 +153,7 @@ jobs:
         gh release create ${{ env.VERSION }} -t "$(echo "${{ env.VERSION }}" | sed 's/.*/\u&/')" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        VERSION: '$(strings app.asar | grep -oP "oaVersion='.*?-" | grep -oP "(?<=').*?(?=-)")'
+        VERSION: $(strings app.asar | grep -oP "oaVersion='.*?-" | grep -oP "(?<=').*?(?=-)")
         FILES: app.asar
 
   # debug-linux:
