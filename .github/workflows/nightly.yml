@@ -144,15 +144,16 @@ jobs:
 
     - name: GitHub Release
       run: |
+        echo ${{ env.VERSION }}
         git tag -d ${{ env.VERSION }} || true
         git push origin --delete ${{ env.VERSION }} || true
         git tag ${{ env.VERSION }}
         git push origin ${{ env.VERSION }}
         gh release delete ${{ env.VERSION }} -y || true
-        gh release create ${{ env.VERSION }} -t "${{ env.VERSION^ }}" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" ${{ env.FILES }}
+        gh release create ${{ env.VERSION }} -t "$(echo "${{ env.VERSION }}" | sed 's/.*/\u&/')" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        VERSION: '${GITHUB_REF##*/}'
+        VERSION: "$(strings app.asar | grep -oP "oaVersion='.*?-" | grep -oP "(?<=').*?(?=-)")"
         FILES: app.asar
 
   # debug-linux:
