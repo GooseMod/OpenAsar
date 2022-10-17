@@ -150,7 +150,7 @@ jobs:
         git tag ${{ env.VERSION }}-cirelease
         git push origin ${{ env.VERSION }}-cirelease
         gh release delete ${{ env.VERSION }}-cirelease -y || true
-        gh release create ${{ env.VERSION }}-cirelease -t "$(echo "${{ env.VERSION }}" | sed 's/.*/\u&/')" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" "$([ "${{ env.VERSION }}" != "nightly" ] && echo "-p")" ${{ env.FILES }}
+        gh release create ${{ env.VERSION }}-cirelease -t "$(echo "${{ env.VERSION }}" | sed 's/.*/\u&/' | sed "s/nt/n't/")" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" "$([ "${{ env.VERSION }}" != "nightly" ] && echo "-p")" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
         VERSION: $(strings app.asar | grep -oP "oaVersion='.*?-" | grep -oP "(?<=').*?(?=-)")
