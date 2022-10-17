@@ -5,7 +5,7 @@ const { join } = require('path');
 const asarPath = join(require.main.filename, '..');
 const downloadPath = join(asarPath, '..', 'app.asar.download');
 
-const asarUrl = `https://github.com/GooseMod/OpenAsar/releases/download/${oaVersion.split('-')[0]}/app.asar`;
+const asarUrl = `https://github.com/GooseMod/OpenAsar/releases/download/${oaVersion.split('-')[0]}-cirelease/app.asar`;
 
 module.exports = async () => { // (Try) update asar
   log('AsarUpdate', 'Updating...');
