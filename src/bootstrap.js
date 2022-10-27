@@ -77,6 +77,7 @@ const startCore = () => {
 const startUpdate = () => {
   const urls = [
     oaConfig.noTrack !== false ? 'https://*/api/v9/science' : '',
+    oaConfig.noTrack !== false ? 'https://*/api/*/metrics' : '',
     oaConfig.noTyping === true ? 'https://*/api/*/typing' : ''
   ].filter(x => x);
 
