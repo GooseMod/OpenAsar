@@ -2,7 +2,7 @@ const { join } = require('path');
 
 global.log = (area, ...args) => console.log(`[\x1b[38;2;88;101;242mOpenAsar\x1b[0m > ${area}]`, ...args); // Make log global for easy usage everywhere
 
-global.oaVersion = 'polynt';
+global.oaVersion = 'nightly';
 
 log('Init', 'OpenAsar', oaVersion);
 
