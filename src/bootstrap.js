@@ -1,6 +1,5 @@
 const { app, session } = require('electron');
 const { readFileSync } = require('fs');
-const get = require('request');
 const { join } = require('path');
 
 if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
@@ -41,7 +40,7 @@ const startCore = () => {
       const [ channel, hash ] = oaVersion.split('-'); // Split via -
 
       bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
-        .replaceAll('<hash>', hash || 'custom')
+        .replaceAll('<hash>', hash)
         .replaceAll('<notrack>', oaConfig.noTrack)
         .replace('<css>', (oaConfig.css ?? '').replaceAll('\\', '\\\\').replaceAll('`', '\\`')));
 
@@ -92,7 +91,7 @@ const startUpdate = () => {
     inst.on('InconsistentInstallerState', fatal);
     inst.on('update-error', console.error);
 
-    require('./winFirst').do(inst);
+    require('./winFirst').do();
   } else {
     moduleUpdater.init(Constants.UPDATE_ENDPOINT, buildInfo);
   }

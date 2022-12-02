@@ -18,7 +18,7 @@ exports.open = () => {
   ipcMain.on('cs', (e, c) => {
     config = c;
     settings.set('openasar', config);
-    settings.save(); // Ensure saving
+    settings.save();
   });
 
   ipcMain.on('cg', e => {
