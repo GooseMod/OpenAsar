@@ -24,7 +24,7 @@ jobs:
     - name: Pack base asar
       run: |
         npm i -g asar
-        sed -i -e "s/oaVersion = '\(.*\)'/oaVersion = '\1-$(git rev-parse HEAD | cut -c 1-7)'/" src/index.js
+        sed -i -e "s/nightly/nightly-$(git rev-parse HEAD | cut -c 1-7)/" src/index.js
         node scripts/strip.js
         npx asar pack src app.asar
 
@@ -145,16 +145,15 @@ jobs:
 
     - name: GitHub Release
       run: |
-        echo ${{ env.VERSION }}
-        git tag -d ${{ env.VERSION }} || true
-        git push origin --delete ${{ env.VERSION }} || true
-        git tag ${{ env.VERSION }}
-        git push origin ${{ env.VERSION }}
+        git tag -d nightly || true
+        git push origin --delete nightly || true
+        git tag nightly
+        git push origin nightly
         gh release delete ${{ env.VERSION }} -y || true
-        gh release create ${{ env.VERSION }} -t "$(echo "${{ env.VERSION }}" | sed 's/.*/\u&/' | sed "s/nt/n't/")" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" "$([ "${{ env.VERSION }}" != "nightly" ] && echo "-p")" ${{ env.FILES }}
+        gh release create ${{ env.VERSION }} -t "Nightly" -n "$(git rev-parse HEAD | cut -c 1-7) | $(git log -1 --pretty=%B)" ${{ env.FILES }}
       env:
         GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-        VERSION: $(strings app.asar | grep -oP "oaVersion='.*?-" | grep -oP "(?<=').*?(?=-)")
+        VERSION: 'nightly'
         FILES: app.asar
 
   # debug-linux:
