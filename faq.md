@@ -32,7 +32,7 @@ Compared to Discord's original, OpenAsar is <2% of the size. This is because whe
 Most likely, as any slight modification to Discord at all counts as breaking it. You shouldn't really be that worried though, as there is very little history of anyone being banned just for modding.
 
 ### Does OpenAsar support X mod?
-Most likely, yes! OpenAsar is known to widely support BD, PC, GM, and others. It's very unlikely to cause any issues with your mods.
+Most likely, yes! OpenAsar is very unlikely to cause any issues with your mods.
 
 ### Does OpenAsar update itself?
 Yes, with a catch. On Windows it works out of the box, however on macOS or Linux you'll need to change the permissions for the entire resources folder for it to work.
@@ -73,12 +73,11 @@ Try rerunning it, and not running it as admin. If not, install it manually follo
 2. Scroll to the bottom where the versions are (Stable ..., Canary ..., etc)
 3. Click the OpenAsar version (next to the Host ...)
 
-### How can I use Custom CSS?
-Open OpenAsar's config window (see previous section), then go into the theming tab and put your Custom CSS there.
-
-### How can I use themes with OpenAsar?
+### How can I use Custom CSS / Themes?
+Open OpenAsar's config window (see previous section), then go into the theming tab and put your Custom CSS there.  
 If you don't have a theme, you can find one from BD's website (you don't need BD): https://betterdiscord.app/themes  
-Once you have a theme, copy and paste the contents of the CSS file (.theme.css/etc) into OpenAsar's Custom CSS (see previous section)
+Once you have a theme, copy and paste the contents of the CSS file (`.theme.css`, etc) into OpenAsar's Custom CSS (see previous section)  
+Make sure to click the restart button after making changes in the CSS in order to apply them.
 
 ### My Custom CSS isn't working
 Please check:
