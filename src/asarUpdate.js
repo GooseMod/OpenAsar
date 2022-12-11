@@ -3,7 +3,6 @@ const fs = require('original-fs'); // Use original-fs, not Electron's modified f
 const { join } = require('path');
 
 const asarPath = join(require.main.filename, '..');
-const downloadPath = join(asarPath, '..', 'app.asar.download');
 
 const asarUrl = `https://github.com/GooseMod/OpenAsar/releases/download/${oaVersion.split('-')[0]}/app.asar`;
 
@@ -16,17 +15,20 @@ const redirs = url => new Promise(res => get(url, r => { // Minimal wrapper arou
 }));
 
 module.exports = async () => { // (Try) update asar
+  if (!oaVersion.includes('-')) return;
   log('AsarUpdate', 'Updating...');
 
-  if (!oaVersion.includes('-')) return;
+  const res = (await redirs(asarUrl));
 
-  const file = fs.createWriteStream(downloadPath);
-  (await redirs(asarUrl)).pipe(file);
+  let data = [];
+  res.on('data', d => {
+    data.push(d);
+  });
 
-  await new Promise(res => file.on('finish', res));
+  res.on('end', () => {
+    const buf = Buffer.concat(data);
+    if (!buf.toString('hex').startsWith('04000000')) return log('AsarUpdate', 'Download error'); // Not like ASAR header
 
-  if (fs.readFileSync(downloadPath, 'utf8').startsWith('<')) return log('AsarUpdate', 'Download error');
-
-  fs.copyFileSync(downloadPath, asarPath); // Overwrite actual app.asar
-  fs.unlinkSync(downloadPath); // Delete downloaded temp file
+    fs.writeFile(asarPath, buf, e => log('AsarUpdate', 'Downloaded', e ?? ''));
+  });
 };
