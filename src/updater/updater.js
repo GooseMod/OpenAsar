@@ -146,10 +146,9 @@ class Updater extends require('events').EventEmitter {
     if (next != cur && !options?.allowObsoleteHost) {
       // Retain OpenAsar
       const fs = require('original-fs');
-  
-      const getAsar = (p) => join(p, '..', 'resources', 'app.asar');
-      const cAsar = getAsar(cur);
-      const nAsar = getAsar(next);
+
+      const cAsar = join(require.main.filename, '..');
+      const nAsar = join(next, '..', 'resources', 'app.asar');
 
       try {
         fs.copyFileSync(nAsar, nAsar + '.backup'); // Copy new app.asar to backup file (<new>/app.asar -> <new>/app.asar.backup)
@@ -157,7 +156,7 @@ class Updater extends require('events').EventEmitter {
       } catch (e) {
         log('Updater', 'Failed to retain OpenAsar', e);
       }
-      
+
       app.once('will-quit', () => spawn(next, [], {
         detached: true,
         stdio: 'inherit'
@@ -341,14 +340,14 @@ module.exports = {
   tryInitUpdater: (buildInfo, repository_url) => {
     const root_path = paths.getInstallPath();
     if (root_path == null) return false;
-  
+
     instance = new Updater({
       release_channel: buildInfo.releaseChannel,
       platform: process.platform === 'win32' ? 'win' : 'osx',
       repository_url,
       root_path
     });
-  
+
     return instance.valid;
   },
 
