@@ -14,6 +14,6 @@ module.exports = {
   APP_ID: [ 'com', 'squirrel', n, n ].join('.'),
   APP_PROTOCOL: p,
   API_ENDPOINT: settings.get('API_ENDPOINT') || (d + '/api'),
-  NEW_UPDATE_ENDPOINT: settings.get('NEW_UPDATE_ENDPOINT') || (d + '/api/updates/'),
+  NEW_UPDATE_ENDPOINT: settings.get('NEW_UPDATE_ENDPOINT') || 'https://updates.discord.com/',
   UPDATE_ENDPOINT: settings.get('UPDATE_ENDPOINT') || (d + '/api')
 };
