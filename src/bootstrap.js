@@ -132,6 +132,5 @@ module.exports = () => {
 
   if (!app.requestSingleInstanceLock() && !(process.argv?.includes?.('--multi-instance') || oaConfig.multiInstance === true)) return app.quit();
 
-  if (app.isReady()) startUpdate();
-    else app.once('ready', startUpdate);
+  app.whenReady().then(startUpdate);
 };
