@@ -6,7 +6,7 @@ const appName = basename(process.execPath, '.exe');
 const queuePrefix = [ 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName ];
 
 
-exports.install = (cb) => reg([ 'add', ...queuePrefix, '/d', join(process.execPath, '..', '..', 'Update.exe') + ' --processStart ' + basename(process.execPath) + (settings.get('START_MINIMIZED') ? ' --process-start-args --start-minimized' : ''), '/f' ], cb); // Make reg (with Electron args if start min)
+exports.install = (cb) => reg([ 'add', ...queuePrefix, '/d', '"' + join(process.execPath, '..', '..', 'Update.exe') + '" --processStart ' + basename(process.execPath) + (settings.get('START_MINIMIZED') ? ' --process-start-args --start-minimized' : ''), '/f' ], cb); // Make reg (with Electron args if start min)
 
 exports.update = (cb) => exports.isInstalled(installed => installed ? exports.install(cb) : cb()); // Reinstall if installed, else just cb
 
