@@ -13,12 +13,9 @@ const exec = app.getPath('exe');
 const desktopContent = `[Desktop Entry]
 Type=Application
 Exec=${exec}
-Hidden=false
-NoDisplay=false
 Name=${basename(process.execPath)}
 Icon=${join(global.systemElectron ? '/usr/share/pixmaps' : dirname(exec), 'discord.png')}
-Comment=Text and voice chat for gamers.
-X-GNOME-Autostart-enabled=true`;
+Comment=Text and voice chat for gamers.`;
 
 exports.install = (cb) => {
   try {
