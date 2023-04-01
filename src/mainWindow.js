@@ -25,41 +25,33 @@ const themesync = async () => {
   if (value !== pastValue) DiscordNative.userDataCache.cacheUserData(JSON.stringify(cached));
 };
 
-
-// Settings info version injection
+// Settings injection
 setInterval(() => {
   const host = [...document.querySelectorAll('[class*="info-"] [class*="line-"]')].find(x => x.textContent.startsWith('Host '));
   if (!host || document.querySelector('#openasar-ver')) return;
 
-  const el = document.createElement('span');
-  el.id = 'openasar-ver';
+  const oaVersion = host.cloneNode(true);
+  oaVersion.id = 'openasar-ver';
+  oaVersion.textContent = 'OpenAsar <channel> <hash>';
+  oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
 
-  el.textContent = 'OpenAsar <hash>';
-  el.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
+  host.insertAdjacentElement('afterend', oaVersion);
 
-  host.append(document.createTextNode(' | '), el);
-}, 2000);
+  const advanced = document.querySelector('[class*="socialLinks-"]').parentElement.querySelectorAll('[class*="separator-')[2].previousElementSibling;
+  if (!advanced) return;
+
+  const oaSetting = advanced.cloneNode(true);
+  oaSetting.textContent = 'OpenAsar';
+  oaSetting.onclick = oaVersion.onclick;
+
+  advanced.insertAdjacentElement('afterend', oaSetting);
+}, 1000);
 
 const injCSS = x => {
   const el = document.createElement('style');
   el.appendChild(document.createTextNode(x));
   document.body.appendChild(el);
 };
-
-injCSS(`
-[class^="socialLinks-"] + [class^="info-"] {
-  padding-right: 0;
-}
-
-#openasar-ver {
-  text-transform: none;
-  cursor: pointer;
-}
-
-#openasar-ver:hover {
-  text-decoration: underline;
-  color: var(--text-normal);
-}`);
 
 injCSS(`<css>`);
 

@@ -37,10 +37,10 @@ const startCore = () => {
       if (!bw.resizable) return; // Main window only
       splash.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
 
-      const [ channel, hash ] = oaVersion.split('-'); // Split via -
+      const [ channel = '', hash = '' ] = oaVersion.split('-'); // Split via -
 
       bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
-        .replaceAll('<hash>', hash)
+        .replaceAll('<hash>', hash).replaceAll('<channel>', channel)
         .replaceAll('<notrack>', oaConfig.noTrack)
         .replace('<css>', (oaConfig.css ?? '').replaceAll('\\', '\\\\').replaceAll('`', '\\`')));
 
