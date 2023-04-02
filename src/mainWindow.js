@@ -67,3 +67,12 @@ setInterval(() => { // Try init themesync
   } catch (e) { }
 }, 10000);
 themesync();
+
+// DOM Optimizer - see docs (todo)
+const removeOrig = Element.prototype.removeChild;
+Element.prototype.removeChild = function(...args) {
+  if (typeof args[0].className === 'string' && (args[0].className.indexOf('activity') !== -1))
+    return setTimeout(() => removeOrig.apply(this, args), 100);
+
+  return removeOrig.apply(this, args);
+};
