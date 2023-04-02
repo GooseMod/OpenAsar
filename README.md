@@ -20,4 +20,6 @@
 
 
 ## Config
-You can configure OpenAsar by clicking the "OpenAsar..." version info in the bottom of your settings sidebar, which will open the config window.
+You can configure OpenAsar by clicking the "OpenAsar..." version info in the bottom of your settings sidebar, which will open the config window or by clicking the new setting in app settings.
+
+![image](https://i.ibb.co/wJvbMb9/image.png)
