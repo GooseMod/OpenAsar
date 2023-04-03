@@ -79,4 +79,4 @@ const optimize = orig => function(...args) {
 };
 
 Element.prototype.removeChild = optimize(Element.prototype.removeChild);
-Element.prototype.appendChild = optimize(Element.prototype.appendChild);
+// Element.prototype.appendChild = optimize(Element.prototype.appendChild);
