@@ -55,7 +55,7 @@ exports.uninstall = cb => {
   }
 };
 
-exports.update = cb => exports.isInstalled(installed => installed ? exports.install(cb) : cb());
+exports.update = cb => process.platform === 'win32' && exports.isInstalled(installed => installed ? exports.install(cb) : cb());
 
 exports.isInstalled = cb => {
   switch (process.platform) {
