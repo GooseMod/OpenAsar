@@ -59,20 +59,24 @@ const injCSS = x => {
 
 injCSS(`<css>`);
 
-openasar = {}; // Define global for any mods which want to know / etc
+// Define global for any mods which want to know / etc
+openasar = {};
 
-setInterval(() => { // Try init themesync
+// Try init themesync
+setInterval(() => {
   try {
     themesync();
   } catch (e) { }
 }, 10000);
 themesync();
 
-// DOM Optimizer - see docs (todo)
-const removeOrig = Element.prototype.removeChild;
-Element.prototype.removeChild = function(...args) {
+// DOM Optimizer - https://github.com/GooseMod/OpenAsar/wiki/DOM-Optimizer
+const optimize = orig => function(...args) {
   if (typeof args[0].className === 'string' && (args[0].className.indexOf('activity') !== -1))
-    return setTimeout(() => removeOrig.apply(this, args), 100);
+    return setTimeout(() => orig.apply(this, args), 100);
 
-  return removeOrig.apply(this, args);
+  return orig.apply(this, args);
 };
+
+Element.prototype.removeChild = optimize(Element.prototype.removeChild);
+Element.prototype.appendChild = optimize(Element.prototype.appendChild);
