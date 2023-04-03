@@ -4,11 +4,18 @@ ipcMain.on('DISCORD_UPDATED_QUOTES', (e, c) => {
   if (c === 'o') exports.open();
 });
 
+let win;
 exports.open = () => {
-  const win = require('../utils/win')({
+  if (win) return win.show();
+
+  win = require('../utils/win')({
     width: 500,
     height: 650
   }, 'config');
+
+  win.on('close', () => {
+    win = null;
+  });
 
   let config = settings.get('openasar', {});
   config.setup = true;
@@ -33,5 +40,5 @@ exports.open = () => {
 
   ipcMain.on('of', () => {
     shell.openPath(require('../paths').getUserData() + '/settings.json')
-  })
+  });
 };
