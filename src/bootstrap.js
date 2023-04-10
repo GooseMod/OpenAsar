@@ -48,7 +48,7 @@ const startCore = () => {
     });
   });
 
-  desktopCore = require('./utils/requireNative')('discord_desktop_core');
+  desktopCore = require('discord_desktop_core');
 
   desktopCore.startup({
     splashScreen: splash,

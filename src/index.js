@@ -26,9 +26,15 @@ if (process.platform === 'win32') try {
   for (const m of require('fs').readdirSync(b)) M.globalPaths.push(join(b, m)); // For each module dir, add to globalPaths
 } catch { log('Init', 'Failed to QS globalPaths') }
 
+// inject Module.globalPaths into resolve lookups as it was removed in Electron >=17 and Discord depend on this workaround
+const rlp = M._resolveLookupPaths;
+M._resolveLookupPaths = (request, parent) => {
+  if (parent?.paths?.length > 0) parent.paths = parent.paths.concat(M.globalPaths);
+  return rlp(request, parent);
+};
 
 if (process.argv.includes('--overlay-host')) { // If overlay
-  require('./utils/requireNative')('discord_overlay2', 'standalone_host.js'); // Start overlay
+  require('discord_overlay2/standalone_host.js'); // Start overlay
 } else {
   require('./bootstrap')(); // Start bootstrap
 }
