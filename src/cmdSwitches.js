@@ -9,7 +9,8 @@ const presets = {
 
 module.exports = () => {
   let c = {};
-  for (const x of ('base,' + (oaConfig.cmdPreset || 'perf')).split(',').reduce((a, x) => a.concat(presets[x]?.split(' ')), [])) {
+  const customFlags = oaConfig.customFlags ? oaConfig.customFlags.split(' ') : [];
+  for (const x of ('base,' + (oaConfig.cmdPreset || 'perf')).split(',').reduce((a, x) => a.concat(presets[x]?.split(' ')), customFlags)) {
     if (!x) continue;
     const [ k, v ] = x.split('=');
 
