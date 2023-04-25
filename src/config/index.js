@@ -10,7 +10,7 @@ exports.open = () => {
 
   win = require('../utils/win')({
     width: 500,
-    height: 650
+    height: 690
   }, 'config');
 
   win.on('closed', () => {
