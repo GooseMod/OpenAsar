@@ -79,5 +79,7 @@ const optimize = orig => function(...args) {
   return orig.apply(this, args);
 };
 
-Element.prototype.removeChild = optimize(Element.prototype.removeChild);
-// Element.prototype.appendChild = optimize(Element.prototype.appendChild);
+if ('<domopt>' === 'true') {
+  Element.prototype.removeChild = optimize(Element.prototype.removeChild);
+  // Element.prototype.appendChild = optimize(Element.prototype.appendChild);
+}
