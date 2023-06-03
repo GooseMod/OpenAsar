@@ -28,7 +28,7 @@ const themesync = async () => {
 // Settings injection
 setInterval(() => {
   const host = [...document.querySelectorAll('[class*="info-"] [class*="line-"]')].find(x => x.textContent.startsWith('Host '));
-  if (!host || document.querySelector('#openasar-ver')) return;
+  if (!host || document.getElementById('openasar-ver')) return;
 
   const oaVersion = host.cloneNode(true);
   oaVersion.id = 'openasar-ver';
@@ -42,11 +42,12 @@ setInterval(() => {
   host.insertAdjacentElement('afterend', oaVersion);
 
   let advanced = document.querySelector('[class*="socialLinks-"]').parentElement.querySelector('[class*="header"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"]');
-  if (!advanced) return;
+  if (!advanced || document.getElementById('openasar-item')) return;
   if (advanced.nextSibling.className.includes('item')) advanced = advanced.nextSibling;
 
   const oaSetting = advanced.cloneNode(true);
   oaSetting.textContent = 'OpenAsar';
+  oaSetting.id = 'openasar-item';
   oaSetting.onclick = oaVersion.onclick;
 
   advanced.insertAdjacentElement('afterend', oaSetting);
