@@ -2,7 +2,7 @@ const { get } = require('https');
 const fs = require('original-fs'); // Use original-fs, not Electron's modified fs
 const { join } = require('path');
 
-const asarPath = join(require.main.filename, '..');
+const asarPath = join(__filename, '..');
 
 const asarUrl = `https://github.com/GooseMod/OpenAsar/releases/download/${oaVersion.split('-')[0]}/app.asar`;
 
