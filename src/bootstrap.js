@@ -1,6 +1,9 @@
 const { app, session } = require('electron');
 const { readFileSync } = require('fs');
-const { join } = require('path');
+const { readFile } = require('fs/promises');
+const { join, dirname } = require('path');
+const http = require('http');
+const https = require('https');
 
 if (!settings.get('enableHardwareAcceleration', true)) app.disableHardwareAcceleration();
 process.env.PULSE_LATENCY_MSEC = process.env.PULSE_LATENCY_MSEC ?? 30;
@@ -25,12 +28,66 @@ const updater = require('./updater/updater');
 const moduleUpdater = require('./updater/moduleUpdater');
 const autoStart = require('./autoStart');
 
+const fetchText = protocol => url => new Promise((resolve, reject) => {
+  protocol.get(url, res => {
+    if (res.statusCode !== 200) {
+      return void reject(new Error(`CSS import failed, code ${res.statusCode}`));
+    }
+    let data = '';
+    res.on('data', chunk => data += chunk);
+    res.once('end', () => resolve(data));
+  }).once('error', reject);
+});
+
+const httpFetchers = {
+  'http:': fetchText(http),
+  'https:': fetchText(https)
+};
+
+const importRegex = /@import\s+(?:url\()?\s*['"](.+?)['"]\s*(?:\))?\s*;/g;
+const resolveImports = async (cssString, prevImport) => {
+  const resolvedCss = await Promise.all(
+    cssString.match(importRegex)?.map(async cssImport => {
+      // Extract the URL from the import statement
+      const importString = cssImport.match(/['"](.+?)['"]/)[1];
+
+      // Try to parse the import string as a complete URL. If it fails, prepend the previous path and try again
+      let url;
+      try {
+        url = new URL(importString);
+      } catch {
+        url = new URL(join(prevImport, importString));
+      }
+
+      let importedCss, fetcher;
+
+      if (url.protocol === 'file:') {
+        importedCss = (await readFile(url)).toString();
+      } else if (fetcher = httpFetchers[url.protocol]) {
+        importedCss = await fetcher(url).catch(() => `/* Import failed for: ${importString} */`);
+      } else {
+        throw new Error(`Cannot handle protocol ${url.protocol} for url: ${importString}!`)
+      }
+
+      return resolveImports(importedCss, dirname(importString));
+    }) ?? []
+  );
+
+  cssString.match(importRegex)?.forEach((importStatement, index) => {
+    cssString = cssString.replace(importStatement, resolvedCss[index]);
+  });
+
+  return cssString;
+};
+
 let desktopCore;
-const startCore = () => {
+const startCore = async () => {
   if (oaConfig.js || oaConfig.css) session.defaultSession.webRequest.onHeadersReceived((d, cb) => {
     delete d.responseHeaders['content-security-policy'];
     cb(d);
   });
+
+  const css = await resolveImports(oaConfig.css);
 
   app.on('browser-window-created', (e, bw) => { // Main window injection
     bw.webContents.on('dom-ready', () => {
@@ -43,7 +100,7 @@ const startCore = () => {
         .replaceAll('<hash>', hash).replaceAll('<channel>', channel)
         .replaceAll('<notrack>', oaConfig.noTrack !== false)
         .replaceAll('<domopt>', oaConfig.domOptimizer !== false)
-        .replace('<css>', (oaConfig.css ?? '').replaceAll('\\', '\\\\').replaceAll('`', '\\`')));
+        .replace('<css>', css.replaceAll('\\', '\\\\').replaceAll('`', '\\`')));
 
       if (oaConfig.js) bw.webContents.executeJavaScript(oaConfig.js);
     });
