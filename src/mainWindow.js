@@ -27,7 +27,7 @@ const themesync = async () => {
 
 // Settings injection
 setInterval(() => {
-  const host = [...document.querySelectorAll('[class*="info-"] [class*="line-"]')].find(x => x.textContent.startsWith('Host '));
+  const host = [...document.querySelectorAll('[class*="sidebar"] [class*="info"] [class*="line"]')].find(x => x.textContent.startsWith('Host '));
   if (!host || document.getElementById('openasar-ver')) return;
 
   const oaVersion = host.cloneNode(true);
@@ -35,13 +35,13 @@ setInterval(() => {
   oaVersion.textContent = 'OpenAsar <channel> ';
   oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
 
-  const oaHash = document.querySelector('[class*="versionHash-"]').cloneNode(true);
+  const oaHash = document.querySelector('[class*="versionHash"]').cloneNode(true);
   oaHash.textContent = '(<hash>)';
   oaVersion.appendChild(oaHash);
 
   host.insertAdjacentElement('afterend', oaVersion);
 
-  let advanced = document.querySelector('[class*="socialLinks-"]').parentElement.querySelector('[class*="header"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"]');
+  let advanced = document.querySelector('[class*="socialLinks"]').parentElement.querySelector('[class*="header"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"]');
   if (!advanced || document.getElementById('openasar-item')) return;
   if (advanced.nextSibling.className.includes('item')) advanced = advanced.nextSibling;
 
