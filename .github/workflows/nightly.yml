@@ -63,8 +63,7 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        # coproc { xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging; }
-        ./DiscordCanary/DiscordCanary --enable-logging;
+        coproc { xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging; }
         grep -m1 "Finished discord_rpc" <&${COPROC[0]}
         sleep 1
         [[ $COPROC_PID ]] && kill $COPROC_PID
