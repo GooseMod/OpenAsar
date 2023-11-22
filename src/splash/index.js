@@ -119,8 +119,11 @@ const initNew = async (inst) => {
   toSend = -1;
 
   const retryOptions = {
-    skip_host_delta: true,
-    skip_module_delta: {}
+    skip_host_delta: false,
+    skip_module_delta: {},
+    skip_all_module_delta: false,
+    skip_windows_arch_update: false,
+    optin_windows_transition_progression: false
   };
 
   while (true) {
@@ -154,7 +157,10 @@ const initNew = async (inst) => {
       });
 
       if (!installedAnything) {
-        await inst.startCurrentVersion();
+        await inst.startCurrentVersion({
+          skip_windows_arch_update: false,
+          optin_windows_transition_progression: false
+        });
         inst.collectGarbage();
 
         return launchMain();

@@ -23,7 +23,7 @@ const M = require('module'); // Module
 
 const b = join(paths.getExeDir(), 'modules'); // Base dir
 if (process.platform === 'win32') try {
-  for (const m of require('fs').readdirSync(b)) M.globalPaths.push(join(b, m)); // For each module dir, add to globalPaths
+  for (const m of require('fs').readdirSync(b)) M.globalPaths.unshift(join(b, m)); // For each module dir, add to globalPaths
 } catch { log('Init', 'Failed to QS globalPaths') }
 
 // inject Module.globalPaths into resolve lookups as it was removed in Electron >=17 and Discord depend on this workaround
