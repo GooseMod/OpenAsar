@@ -15,11 +15,7 @@ const TASK_STATE_WORKING = 'Working';
 // discord made breaking changes without any api versioning wow!!
 // so we have to read the node module to determine the version
 let updaterVersion = 1;
-
 const updaterPath = paths.getExeDir() + '/updater.node';
-const updaterContents = require('fs').readFileSync(updaterPath, 'utf8');
-if (updaterContents.includes('Determined this is an architecture transition')) updaterVersion = 2;
-log('Updater', 'Determined native module version', updaterVersion);
 
 class Updater extends require('events').EventEmitter {
   constructor(options) {
@@ -363,6 +359,11 @@ module.exports = {
   tryInitUpdater: (buildInfo, repository_url) => {
     const root_path = paths.getInstallPath();
     if (root_path == null) return false;
+
+    const updaterContents = require('fs').readFileSync(updaterPath, 'utf8');
+    if (updaterContents.includes('Determined this is an architecture transition')) updaterVersion = 2;
+
+    log('Updater', 'Determined native module version', updaterVersion);
 
     instance = new Updater({
       release_channel: buildInfo.releaseChannel,
