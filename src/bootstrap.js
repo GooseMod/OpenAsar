@@ -1,4 +1,4 @@
-const { app, session } = require('electron');
+const { app, session, dialog } = require('electron');
 const { readFileSync } = require('fs');
 const { join } = require('path');
 
@@ -48,31 +48,39 @@ const startCore = () => {
       if (oaConfig.js) bw.webContents.executeJavaScript(oaConfig.js);
     });
   });
+  try {
+    desktopCore = require('discord_desktop_core');
 
-  desktopCore = require('discord_desktop_core');
+    desktopCore.startup({
+      splashScreen: splash,
+      moduleUpdater,
+      buildInfo,
+      Constants,
+      updater,
+      autoStart,
 
-  desktopCore.startup({
-    splashScreen: splash,
-    moduleUpdater,
-    buildInfo,
-    Constants,
-    updater,
-    autoStart,
+      // Just requires
+      appSettings: require('./appSettings'),
+      paths: require('./paths'),
 
-    // Just requires
-    appSettings: require('./appSettings'),
-    paths: require('./paths'),
-
-    // Stubs
-    GPUSettings: {
-      replace: () => {}
-    },
-    crashReporterSetup: {
-      isInitialized: () => true,
-      getGlobalSentry: () => null,
-      metadata: {}
-    }
-  });
+      // Stubs
+      GPUSettings: {
+        replace: () => {}
+      },
+      crashReporterSetup: {
+        isInitialized: () => true,
+        getGlobalSentry: () => null,
+        metadata: {}
+      }
+    });
+  } catch (e) {
+    dialog.showMessageBox({
+        title: "Discord Crashed",
+        type: "error",
+        message: e.code ? e.code : "Something crashed your Discord Client",
+        detail: e && e.stack ? e.stack : String(e)
+      }).then(app.quit);
+  }
 };
 
 const startUpdate = () => {
