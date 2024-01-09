@@ -42,7 +42,7 @@ setInterval(() => {
   host.insertAdjacentElement('afterend', oaVersion);
 
   let advanced = document.querySelector('[class*="socialLinks"]').parentElement.querySelector('[class*="premiumTab"] ~ [class*="header"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] ~ [class*="separator"]')?.previousSibling;
-  if (!advanced) advanced = [...document.querySelectorAll('[class*="item"]')].find(x => x.textContent === 'Advanced')
+  if (!advanced) advanced = [...document.querySelectorAll('[class*="item"]')].find(x => x.textContent === 'Advanced');
   if (!advanced || document.getElementById('openasar-item')) return;
 
   const oaSetting = advanced.cloneNode(true);
