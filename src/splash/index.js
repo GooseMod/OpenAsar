@@ -119,7 +119,7 @@ const initNew = async (inst) => {
   toSend = -1;
 
   const retryOptions = {
-    skip_host_delta: false,
+    skip_host_delta: true,
     skip_module_delta: {},
     skip_all_module_delta: false,
     skip_windows_arch_update: false,
@@ -149,9 +149,7 @@ const initNew = async (inst) => {
         if (install == null) return;
         simpleRecord(installs, install);
 
-        if (task.HostInstall != null) {
-          retryOptions.skip_host_delta = true;
-        } else if (task.ModuleInstall != null) {
+        if (task.ModuleInstall != null) {
           retryOptions.skip_module_delta[install.version.module.name] = true;
         }
       });
