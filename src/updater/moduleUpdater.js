@@ -3,7 +3,7 @@ const fs = require('fs');
 const Module = require('module');
 const { execFile } = require('child_process');
 const { app, autoUpdater } = require('electron');
-const { get } = require('https');
+const { get } = require('../utils/get');
 
 const paths = require('../paths');
 
@@ -31,20 +31,6 @@ const resetTracking = () => {
   downloading = Object.assign({}, base);
   installing = Object.assign({}, base);
 };
-
-const req = url => new Promise(res => get(url, r => { // Minimal wrapper around https.get to include body
-  let dat = '';
-  r.on('data', b => dat += b.toString());
-
-  r.on('end', () => res([ r, dat ]));
-}));
-
-const redirs = url => new Promise(res => get(url, r => { // Minimal wrapper around https.get to follow redirects
-  const loc = r.headers.location;
-  if (loc) return redirs(loc).then(res);
-
-  res(r);
-}));
 
 exports.init = (endpoint, { releaseChannel, version }) => {
   skipHost = settings.get('SKIP_HOST_UPDATE');
@@ -77,10 +63,10 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     }
 
     checkForUpdates() {
-      req(this.url).then(([ r, b ]) => {
-        if (r.statusCode === 204) return this.emit('update-not-available');
+      get(this.url).then(([r, b]) => {
+        if (!b || r === 204) return this.emit('update-not-available');
 
-        this.emit('update-manually', b);
+        this.emit('update-manually', b.toString());
       });
     }
 
@@ -111,7 +97,12 @@ exports.init = (endpoint, { releaseChannel, version }) => {
 };
 
 const checkModules = async () => {
-  remote = JSON.parse((await req(baseUrl + '/versions.json' + qs))[1]);
+  const buf = (await get(baseUrl + '/versions.json' + qs))[1];
+  if (!buf) {
+    log('Modules', 'versions.json retrieval failure.');
+    return;
+  }
+  remote = JSON.parse(buf.toString());
 
   for (const name in installed) {
     const inst = installed[name].installedVersion;
@@ -131,27 +122,22 @@ const downloadModule = async (name, ver) => {
   downloading.total++;
 
   const path = join(downloadPath, name + '-' + ver + '.zip');
-  const file = fs.createWriteStream(path);
 
   // log('Modules', 'Downloading', `${name}@${ver}`);
 
-  let success, total, cur =  0;
-  const res = await redirs(baseUrl + '/' + name + '/' + ver + qs);
-  success = res.statusCode === 200;
-  total = parseInt(res.headers['content-length'] ?? 1, 10);
+  let success, total, cur = 0;
+  const res = await get(baseUrl + '/' + name + '/' + ver + qs);
+  success = res[0] === 200;
 
-  res.pipe(file);
-
-  res.on('data', c => {
-    cur += c.length;
-
-    events.emit('downloading-module', { name, cur, total });
-  });
-
-  await new Promise((res) => file.on('close', res));
-
-  if (success) commitManifest();
-    else downloading.fail++;
+  // todo: if a progress-bar-like interface and stream-like file writing are still wanted, implement
+  if (success) {
+    total = parseInt(res[2].get('content-length') ?? 1, 10);
+    events.emit('downloading-module', { name, total, total });
+    fs.writeFile(path, res[1], e => log('ModuleUpdate', 'Writing to file failed:', e));
+    commitManifest();
+  } else {
+    downloading.fail++;
+  }
 
   events.emit('downloaded-module', {
     name
