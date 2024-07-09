@@ -1,4 +1,4 @@
-const { get } = require('./utils/get');
+const get = require('./utils/get');
 const fs = require('original-fs'); // Use original-fs, not Electron's modified fs
 const { join } = require('path');
 

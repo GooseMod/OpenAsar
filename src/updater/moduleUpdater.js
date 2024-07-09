@@ -3,7 +3,7 @@ const fs = require('fs');
 const Module = require('module');
 const { execFile } = require('child_process');
 const { app, autoUpdater } = require('electron');
-const { get } = require('../utils/get');
+const get = require('../utils/get');
 
 const paths = require('../paths');
 
@@ -63,7 +63,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     }
 
     checkForUpdates() {
-      get(this.url).then(([r, b]) => {
+      get(this.url).then(([r, b, _headers]) => {
         if (!b || r === 204) return this.emit('update-not-available');
 
         this.emit('update-manually', b.toString());
