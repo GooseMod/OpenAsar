@@ -3,7 +3,7 @@ const fs = require('fs');
 const Module = require('module');
 const { execFile } = require('child_process');
 const { app, autoUpdater } = require('electron');
-const get = require('../utils/get');
+const { get, request } = require('../utils/get');
 
 const paths = require('../paths');
 
@@ -122,22 +122,35 @@ const downloadModule = async (name, ver) => {
   downloading.total++;
 
   const path = join(downloadPath, name + '-' + ver + '.zip');
+  const file = fs.createWriteStream(path);
 
   // log('Modules', 'Downloading', `${name}@${ver}`);
 
   let success, total, cur = 0;
-  const res = await get(baseUrl + '/' + name + '/' + ver + qs);
-  success = res[0] === 200;
+  request(
+    baseUrl + '/' + name + '/' + ver + qs,
+    res => {
+      success = (res.statusCode === 200);
+      // res.headers is a
+      // https://www.electronjs.org/docs/latest/api/incoming-message#responseheaders
+      total = parseInt(res.headers['content-length'][0] ?? 1, 10);
+    },
+    chunk => {
+      cur += chunk.length;
+      events.emit('downloading-module', { name, cur, total });
 
-  // todo: if a progress-bar-like interface and stream-like file writing are still wanted, implement
-  if (success) {
-    total = parseInt(res[2].get('content-length') ?? 1, 10);
-    events.emit('downloading-module', { name, total, total });
-    fs.writeFile(path, res[1], e => log('ModuleUpdate', 'Writing to file failed:', e));
-    commitManifest();
-  } else {
-    downloading.fail++;
-  }
+      file.write(chunk);
+    },
+    () => {
+      file.close();
+    }
+  );
+
+  // block till file.close()
+  await new Promise(res => file.on('close', res));
+
+  if (success) commitManifest();
+  else downloading.fail++;
 
   events.emit('downloaded-module', {
     name
