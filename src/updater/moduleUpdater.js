@@ -63,7 +63,7 @@ exports.init = (endpoint, { releaseChannel, version }) => {
     }
 
     checkForUpdates() {
-      get(this.url).then(([r, b, _headers]) => {
+      get(this.url).then(([r, b]) => {
         if (!b || r === 204) return this.emit('update-not-available');
 
         this.emit('update-manually', b.toString());

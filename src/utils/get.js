@@ -2,7 +2,7 @@ const { net } = require('electron');
 
 // returns a promise that resolves to [statusCode, Buffer, headers]
 // [code, null, null] if request failed
-module.exports.get = async (url) => {
+module.exports.get = async url => {
   const response = await net.fetch(new Request(url, {
     method: 'GET',
     redirect: 'follow'
