@@ -41,12 +41,12 @@ setInterval(() => {
 
   host.insertAdjacentElement('afterend', oaVersion);
 
-  let advanced = document.querySelector('[class*="socialLinks"]').parentElement.querySelector('[class*="premiumTab"] ~ [class*="header"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] ~ [class*="separator"]')?.previousSibling;
-  if (!advanced) advanced = [...document.querySelectorAll('[class*="item"]')].find(x => x.textContent === 'Advanced');
+  let advanced = document.querySelector('[class^=side] :nth-last-child(1 of [class^=header]:not([class^=headerText])')?.previousElementSibling?.previousElementSibling;;
   if (!advanced || document.getElementById('openasar-item')) return;
 
   const oaSetting = advanced.cloneNode(true);
   oaSetting.textContent = 'OpenAsar';
+  oaSetting.setAttribute('aria-label', 'OpenAsar');
   oaSetting.id = 'openasar-item';
   oaSetting.onclick = oaVersion.onclick;
 
