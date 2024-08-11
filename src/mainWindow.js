@@ -41,7 +41,7 @@ setInterval(() => {
 
   host.insertAdjacentElement('afterend', oaVersion);
 
-  let advanced = document.querySelector('[class^=side] :nth-last-child(1 of [class^=header]:not([class^=headerText])')?.previousElementSibling?.previousElementSibling;;
+  let advanced = document.querySelector('[class^=side] :nth-last-child(1 of [class^=header]:not([class^=headerText])')?.previousElementSibling?.previousElementSibling;
   if (!advanced || document.getElementById('openasar-item')) return;
 
   const oaSetting = advanced.cloneNode(true);
