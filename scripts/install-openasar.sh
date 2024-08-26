@@ -28,7 +28,7 @@ oAsarInstall()
    echo 
 
    if [ -a "app.asar.bak" ]; then
-     sudo rm app.asar.bak
+     sudo rm app.asar
    fi
 
    sudo mv app.asar app.asar.bak
