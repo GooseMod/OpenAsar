@@ -41,11 +41,34 @@ setInterval(() => {
 
   host.insertAdjacentElement('afterend', oaVersion);
 
-  let advanced = document.querySelector('[class*="socialLinks"]').parentElement.querySelector('[class*="premiumTab"] ~ [class*="header"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] + [class*="item"] ~ [class*="separator"]')?.previousSibling;
-  if (!advanced) advanced = [...document.querySelectorAll('[class*="item"]')].find(x => x.textContent === 'Advanced');
-  if (!advanced || document.getElementById('openasar-item')) return;
+  if (document.getElementById('openasar-item'))
+    return;
 
+  // 1st method to get the advanced node
+  // it's the simplest way, but if discord decide to change that custom value, it's F
+  let advanced = document.querySelector('[data-tab-id=Advanced]');
+
+  // 2nd method to get the advanced node
+  // this one has the risk of not matching if discord add or remove any setting in the category
+  if (!advanced) {
+      let advanced = document.querySelector(':has([class^=socialLinks]) > [class^="premiumTab"] ~ [class^="header"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] ~ [class^="separator"]')?.previousElementSibling;
+  }
+
+  // 3rd method to get the advanced node
+  // this one has the risk of misplacing the settings if a client-mod is used and the place where it decide to put is settings is anywhere under the App Settings part
+  if (!advanced) {
+    let advanced = document.querySelector(':has([class^=socialLinks]) > :nth-last-child(1 of [class^=header]')?.previousElementSibling?.previousElementSibling;
+  }
+
+  // 4th method to get the advanced node
+  // this one will only work if the user's language is english
+  if (!advanced) {
+    let advanced = [...document.querySelectorAll('[class^="item"]')].find(x => x.textContent === 'Advanced');
+  }
+  
   const oaSetting = advanced.cloneNode(true);
+  oaSetting.setAttribute('data-tab-id', 'OpenAsar'); // we need to change what we clone so the data is not misleading
+  oaSetting.setAttribute('aria-label', 'OpenAsar'); // we need to change what we clone so the data is not misleading
   oaSetting.textContent = 'OpenAsar';
   oaSetting.id = 'openasar-item';
   oaSetting.onclick = oaVersion.onclick;
