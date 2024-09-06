@@ -51,19 +51,19 @@ setInterval(() => {
   // 2nd method to get the advanced node
   // this one has the risk of not matching if discord add or remove any setting in the category
   if (!advanced) {
-      let advanced = document.querySelector(':has([class^=socialLinks]) > [class^="premiumTab"] ~ [class^="header"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] ~ [class^="separator"]')?.previousElementSibling;
+    advanced = document.querySelector(':has([class^=socialLinks]) > [class^="header"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"]:has(+ [class^="separator"])');
   }
 
   // 3rd method to get the advanced node
-  // this one has the risk of misplacing the settings if a client-mod is used and the place where it decide to put is settings is anywhere under the App Settings part
+  // this one has the risk of misplacing or not creating the settings if a client-mod is used and the place where it decide to put is settings is anywhere under the App Settings part
   if (!advanced) {
-    let advanced = document.querySelector(':has([class^=socialLinks]) > :nth-last-child(1 of [class^=header]')?.previousElementSibling?.previousElementSibling;
+    advanced = document.querySelector(':has([class^=socialLinks]) > [class^="item"]:has(+ [class^="separator"] + :nth-last-child(1 of [class^=header]))');
   }
 
   // 4th method to get the advanced node
   // this one will only work if the user's language is english
   if (!advanced) {
-    let advanced = [...document.querySelectorAll('[class^="item"]')].find(x => x.textContent === 'Advanced');
+    advanced = [...document.querySelectorAll('[class^="item"]')].find(x => x.textContent === 'Advanced');
   }
   
   const oaSetting = advanced.cloneNode(true);
