@@ -95,6 +95,15 @@ else
    echo "$HOME/.local/share/flatpak/app/com.discordapp.Discord/current/active/files/discord/resources/ not found"
 fi
 
+if [ -d "/snap/discord/current/usr/share/discord/resources/" ]; then
+   cd /snap/discord/current/usr/share/discord/resources/
+   
+   echo
+   echo "Found Discord installation in Snap, but Snap packages are read-only. Consider using Flatpak or your distribution's native installation option."
+   
+   exit 2
+fi
+
 #None of the directory searches are successful
 echo "No Discord directories were found. Exiting..."
 exit 1
