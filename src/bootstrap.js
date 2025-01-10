@@ -71,6 +71,10 @@ const startCore = () => {
       isInitialized: () => true,
       getGlobalSentry: () => null,
       metadata: {}
+    },
+    logger: {
+      initializeLogging: () => {},
+      ipcMainRendererLogger: () => {}
     }
   });
 };
