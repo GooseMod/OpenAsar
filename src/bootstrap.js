@@ -26,6 +26,7 @@ const moduleUpdater = require('./updater/moduleUpdater');
 const autoStart = require('./autoStart');
 
 let desktopCore;
+
 const startCore = () => {
   if (oaConfig.js || oaConfig.css) session.defaultSession.webRequest.onHeadersReceived((d, cb) => {
     delete d.responseHeaders['content-security-policy'];
@@ -37,7 +38,7 @@ const startCore = () => {
       if (!bw.resizable) return; // Main window only
       splash.pageReady(); // Override Core's pageReady with our own on dom-ready to show main window earlier
 
-      const [ channel = '', hash = '' ] = oaVersion.split('-'); // Split via -
+      const [channel = '', hash = ''] = oaVersion.split('-'); // Split via -
 
       bw.webContents.executeJavaScript(readFileSync(join(__dirname, 'mainWindow.js'), 'utf8')
         .replaceAll('<hash>', hash).replaceAll('<channel>', channel)
@@ -50,6 +51,15 @@ const startCore = () => {
   });
 
   desktopCore = require('discord_desktop_core');
+
+  let desktopTTI = new Proxy({}, {
+    get: (target, prop) => {
+      if (typeof target[prop] === 'undefined') {
+        target[prop] = () => { };
+      }
+      return target[prop];
+    }
+  });
 
   desktopCore.startup({
     splashScreen: splash,
@@ -65,7 +75,7 @@ const startCore = () => {
 
     // Stubs
     GPUSettings: {
-      replace: () => {}
+      replace: () => { }
     },
     crashReporterSetup: {
       isInitialized: () => true,
@@ -73,9 +83,18 @@ const startCore = () => {
       metadata: {}
     },
     logger: {
-      initializeLogging: () => {},
-      ipcMainRendererLogger: () => {}
-    }
+      initializeLogging: () => { },
+      ipcMainRendererLogger: () => { }
+    },
+    analytics: new Proxy({}, {
+      get: (target, prop) => {
+        if (prop === 'getDesktopTTI') return () => desktopTTI;
+        if (typeof target[prop] === 'undefined') {
+          target[prop] = () => { };
+        }
+        return target[prop];
+      }
+    })
   });
 };
 
@@ -93,7 +112,7 @@ const startUpdate = () => {
   if (updater.tryInitUpdater(buildInfo, Constants.NEW_UPDATE_ENDPOINT)) {
     const inst = updater.getUpdater();
 
-    inst.on('host-updated', () => autoStart.update(() => {}));
+    inst.on('host-updated', () => autoStart.update(() => { }));
     inst.on('unhandled-exception', fatal);
     inst.on('InconsistentInstallerState', fatal);
     inst.on('update-error', console.error);
