@@ -96,8 +96,6 @@ else
 fi
 
 if [ -d "/snap/discord/current/usr/share/discord/resources/" ]; then
-   cd /snap/discord/current/usr/share/discord/resources/
-   
    echo
    echo "Found Discord installation in Snap, but Snap packages are read-only. Consider using Flatpak or your distribution's native installation option."
    
