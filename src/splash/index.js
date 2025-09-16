@@ -122,8 +122,6 @@ const initNew = async (inst) => {
     skip_host_delta: true,
     skip_module_delta: {},
     skip_all_module_delta: false,
-    skip_windows_arch_update: false,
-    optin_windows_transition_progression: false,
     allow_optional_updates: false
   };
 
@@ -156,10 +154,7 @@ const initNew = async (inst) => {
       });
 
       if (!installedAnything) {
-        await inst.startCurrentVersion({
-          skip_windows_arch_update: false,
-          optin_windows_transition_progression: false
-        });
+        await inst.startCurrentVersion({});
         inst.collectGarbage();
 
         return launchMain();
