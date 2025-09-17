@@ -61,6 +61,10 @@ jobs:
         tar xf discord.tar.gz
         cp app.asar Discord/resources/app.asar
 
+        # workaround https://github.com/electron/electron/issues/42510
+        sudo chown root ./Discord/chrome-sandbox
+        sudo chmod 4755 ./Discord/chrome-sandbox
+
     - name: Check if Discord will startup
       run: |
         # coproc { xvfb-run -e /dev/stdout ./Discord/Discord --enable-logging; }
