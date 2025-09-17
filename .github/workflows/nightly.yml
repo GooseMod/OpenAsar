@@ -59,6 +59,8 @@ jobs:
       run: |
         wget "https://discord.com/api/download/stable?platform=linux&format=tar.gz" -O discord.tar.gz
         tar xf discord.tar.gz
+
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.quit\(\);  /" app.asar
         cp app.asar Discord/resources/app.asar
 
         # workaround https://github.com/electron/electron/issues/42510
@@ -67,10 +69,7 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        coproc { xvfb-run -e /dev/stdout ./Discord/Discord --enable-logging; }
-        grep -m1 "Finished discord_rpc" <&${COPROC[0]}
-        sleep 1
-        [[ $COPROC_PID ]] && kill $COPROC_PID
+        xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging | grep -m1 "ABRA"
       timeout-minutes: 3
 
   test-linux-canary:
@@ -96,6 +95,8 @@ jobs:
       run: |
         wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
         tar xf discord.tar.gz
+
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.quit\(\);  /" app.asar
         cp app.asar DiscordCanary/resources/app.asar
 
         # workaround https://github.com/electron/electron/issues/42510
@@ -104,10 +105,7 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        coproc { xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging; }
-        grep -m1 "Finished discord_rpc" <&${COPROC[0]}
-        sleep 1
-        [[ $COPROC_PID ]] && kill $COPROC_PID
+        xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging | grep -m1 "ABRA"
       timeout-minutes: 3
 
   test-win-stable:
