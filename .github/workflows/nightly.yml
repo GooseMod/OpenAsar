@@ -67,11 +67,47 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        # coproc { xvfb-run -e /dev/stdout ./Discord/Discord --enable-logging; }
-        # grep -m1 "Finished discord_rpc" <&${COPROC[0]}
-        # sleep 1
-        # [[ $COPROC_PID ]] && kill $COPROC_PID
-        ./Discord/Discord --enable-logging
+        coproc { xvfb-run -e /dev/stdout ./Discord/Discord --enable-logging; }
+        grep -m1 "Finished discord_rpc" <&${COPROC[0]}
+        sleep 1
+        [[ $COPROC_PID ]] && kill $COPROC_PID
+      timeout-minutes: 3
+
+  test-linux-canary:
+    name: Test Linux Canary
+
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: built-asar
+        path: artifact
+
+    - name: Extract artifact
+      run: |
+        cp artifact/app.asar .
+
+    - name: Download Client with OpenAsar
+      run: |
+        wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
+        tar xf discord.tar.gz
+        cp app.asar DiscordCanary/resources/app.asar
+
+        # workaround https://github.com/electron/electron/issues/42510
+        sudo chown root ./DiscordCanary/chrome-sandbox
+        sudo chmod 4755 ./DiscordCanary/chrome-sandbox
+
+    - name: Check if Discord will startup
+      run: |
+        coproc { xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging; }
+        grep -m1 "Finished discord_rpc" <&${COPROC[0]}
+        sleep 1
+        [[ $COPROC_PID ]] && kill $COPROC_PID
       timeout-minutes: 3
 
   test-win-stable:
