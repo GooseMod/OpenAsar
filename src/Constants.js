@@ -15,5 +15,7 @@ module.exports = {
   APP_PROTOCOL: p,
   API_ENDPOINT: settings.get('API_ENDPOINT') || (d + '/api'),
   NEW_UPDATE_ENDPOINT: settings.get('NEW_UPDATE_ENDPOINT') || 'https://updates.discord.com/',
-  UPDATE_ENDPOINT: settings.get('UPDATE_ENDPOINT') || (d + '/api')
+  UPDATE_ENDPOINT: settings.get('UPDATE_ENDPOINT') || (d + '/api'),
+  DISABLE_WINDOWS_64BIT_TRANSITION: false,
+  OPTIN_WINDOWS_64BIT_TRANSITION_PROGRESSION: false
 };

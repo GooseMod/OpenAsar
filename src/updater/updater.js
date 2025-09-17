@@ -14,6 +14,9 @@ const TASK_STATE_WORKING = 'Working';
 
 const updaterPath = paths.getExeDir() + '/updater.node';
 
+// discord made breaking changes without any api versioning wow!!
+// so we have to read the node module to determine the version (again)
+let moduleVersion = 3;
 class Updater extends require('events').EventEmitter {
   constructor(options) {
     super();
@@ -297,6 +300,11 @@ class Updater extends require('events').EventEmitter {
   }
 
   updateToLatestWithOptions(options, progressCallback) {
+    if (moduleVersion === 2) {
+      options.skip_windows_arch_update = false;
+      options.optin_windows_transition_progression = false;
+    }
+
     return this._sendRequest({
       UpdateToLatest: {
         options
@@ -306,6 +314,11 @@ class Updater extends require('events').EventEmitter {
 
 
   async startCurrentVersion(queryOptions, options) {
+    if (moduleVersion === 2) {
+      queryOptions.skip_windows_arch_update = false;
+      queryOptions.optin_windows_transition_progression = false;
+    }
+
     const versions = await this.queryCurrentVersionsWithOptions(queryOptions);
     await this.setRunningManifest(versions.last_successful_update);
 
@@ -354,6 +367,9 @@ module.exports = {
   tryInitUpdater: (buildInfo, repository_url) => {
     const root_path = paths.getInstallPath();
     if (root_path == null) return false;
+
+    const updaterContents = require('fs').readFileSync(updaterPath, 'utf8');
+    if (updaterContents.includes('Determined this is an architecture transition')) moduleVersion = 2;
 
     instance = new Updater({
       release_channel: buildInfo.releaseChannel,
