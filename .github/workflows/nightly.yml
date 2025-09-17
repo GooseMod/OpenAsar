@@ -60,7 +60,7 @@ jobs:
         wget "https://discord.com/api/download/stable?platform=linux&format=tar.gz" -O discord.tar.gz
         tar xf discord.tar.gz
 
-        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.quit\(\);  /" app.asar
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.exit\(\);  /" app.asar
         cp app.asar Discord/resources/app.asar
 
         # workaround https://github.com/electron/electron/issues/42510
@@ -69,7 +69,7 @@ jobs:
 
     - name: Check if Discord will startup
       run: |
-        xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging | grep -m1 "ABRA"
+        xvfb-run -e /dev/stdout ./Discord/Discord --enable-logging | grep -m1 "ABRA"
       timeout-minutes: 3
 
   test-linux-canary:
@@ -96,7 +96,7 @@ jobs:
         wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
         tar xf discord.tar.gz
 
-        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.quit\(\);  /" app.asar
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.exit\(\);  /" app.asar
         cp app.asar DiscordCanary/resources/app.asar
 
         # workaround https://github.com/electron/electron/issues/42510
@@ -139,7 +139,7 @@ jobs:
         tar xf client.tar
 
         # Install OpenAsar build and setup environment
-        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.quit\(\);  /" app.asar
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.exit\(\);  /" app.asar
         sed -r -i "s/if\(next!=cur&&!options\?\.allowObsoleteHost\)/if\(false\)                                 /" app.asar
         cp -f app.asar files/resources/app.asar
         mkdir discord
@@ -185,7 +185,7 @@ jobs:
         tar xf client.tar
 
         # Install OpenAsar build and setup environment
-        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.quit\(\);  /" app.asar
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.exit\(\);  /" app.asar
         sed -r -i "s/if\(next!=cur&&!options\?\.allowObsoleteHost\)/if\(false\)                                 /" app.asar
         cp -f app.asar files/resources/app.asar
         mkdir discord
