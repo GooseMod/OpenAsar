@@ -4,7 +4,7 @@ const fs = require('fs');
 
 console.log('getting manifest...');
 
-get('https://discord.com/api/updates/distributions/app/manifests/latest?channel=canary&platform=win&arch=x86', async (res) => {
+get('https://discord.com/api/updates/distributions/app/manifests/latest?channel=stable&platform=win&arch=x64', async (res) => {
   let body = '';
   res.on('data', (chunk) => {
     body += chunk.toString();
