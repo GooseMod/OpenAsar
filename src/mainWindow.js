@@ -27,54 +27,31 @@ const themesync = async () => {
 
 // Settings injection
 setInterval(() => {
-  const host = [...document.querySelectorAll('[class*="sidebar"] [class*="info"] [class*="line"]')].find(x => x.textContent.startsWith('Host '));
-  if (!host || document.getElementById('openasar-ver')) return;
+  const versionInfo = document.querySelector('[class*="sidebar"] [class*="compactInfo"]');
+  if (!versionInfo || document.getElementById('openasar-ver')) return;
 
-  const oaVersion = host.cloneNode(true);
+  const oaVersionInfo = versionInfo.cloneNode(true);
+  const oaVersion = oaVersionInfo.children[0];
   oaVersion.id = 'openasar-ver';
-  oaVersion.textContent = 'OpenAsar <channel> ';
+  oaVersion.textContent = 'OpenAsar (<hash>)';
   oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
 
-  const oaHash = document.querySelector('[class*="versionHash"]').cloneNode(true);
-  oaHash.textContent = '(<hash>)';
-  oaVersion.appendChild(oaHash);
+  oaVersionInfo.textContent = '';
+  oaVersionInfo.appendChild(oaVersion);
+  versionInfo.parentElement.parentElement.lastElementChild.insertAdjacentElement('beforebegin', oaVersionInfo);
 
-  host.insertAdjacentElement('afterend', oaVersion);
-
-  if (document.getElementById('openasar-item'))
-    return;
-
-  // 1st method to get the advanced node
-  // it's the simplest way, but if discord decide to change that custom value, it's F
-  let advanced = document.querySelector('[data-tab-id=Advanced]');
-
-  // 2nd method to get the advanced node
-  // this one has the risk of not matching if discord add or remove any setting in the category
-  if (!advanced) {
-    advanced = document.querySelector(':has([class^=socialLinks]) > [class^="header"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"] + [class^="item"]:has(+ [class^="separator"])');
-  }
-
-  // 3rd method to get the advanced node
-  // this one has the risk of misplacing or not creating the settings if a client-mod is used and the place where it decide to put is settings is anywhere under the App Settings part
-  if (!advanced) {
-    advanced = document.querySelector(':has([class^=socialLinks]) > [class^="item"]:has(+ [class^="separator"] + :nth-last-child(1 of [class^=header]))');
-  }
-
-  // 4th method to get the advanced node
-  // this one will only work if the user's language is english
-  if (!advanced) {
-    advanced = [...document.querySelectorAll('[class^="item"]')].find(x => x.textContent === 'Advanced');
-  }
+  if (document.getElementById('openasar-item')) return;
+  let advanced = document.querySelector('[data-list-item-id="settings-sidebar___advanced_sidebar_item"]');
+  if (!advanced) advanced = document.querySelector('[class*="sidebar"] [class*="nav"] > [class*="section"]:nth-child(3) > :last-child');
+  if (!advanced) advanced = [...document.querySelectorAll('[class*="item"]')].find(x => x.textContent === 'Advanced');
   
   const oaSetting = advanced.cloneNode(true);
-  oaSetting.setAttribute('data-tab-id', 'OpenAsar'); // we need to change what we clone so the data is not misleading
-  oaSetting.setAttribute('aria-label', 'OpenAsar'); // we need to change what we clone so the data is not misleading
-  oaSetting.textContent = 'OpenAsar';
+  oaSetting.querySelector('[class*="text"]').textContent = 'OpenAsar';
   oaSetting.id = 'openasar-item';
   oaSetting.onclick = oaVersion.onclick;
 
   advanced.insertAdjacentElement('afterend', oaSetting);
-}, 1000);
+}, 800);
 
 const injCSS = x => {
   const el = document.createElement('style');
