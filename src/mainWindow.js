@@ -26,32 +26,59 @@ const themesync = async () => {
 };
 
 // Settings injection
-setInterval(() => {
-  const versionInfo = document.querySelector('[class*="sidebar"] [class*="compactInfo"]');
-  if (!versionInfo || document.getElementById('openasar-ver')) return;
+const injectSettings = () => {
+  const sidebar = document.querySelector('[data-list-id="settings-sidebar"]');
+  if (!sidebar) return;
 
-  const oaVersionInfo = versionInfo.cloneNode(true);
-  const oaVersion = oaVersionInfo.children[0];
-  oaVersion.id = 'openasar-ver';
-  oaVersion.textContent = 'OpenAsar (<hash>)';
-  oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
+  // Version info
+  if (!document.getElementById('openasar-ver')) {
+    const footer = sidebar.lastElementChild;
+    const versionInfo = footer?.firstElementChild;
 
-  oaVersionInfo.textContent = '';
-  oaVersionInfo.appendChild(oaVersion);
-  versionInfo.parentElement.parentElement.lastElementChild.insertAdjacentElement('beforebegin', oaVersionInfo);
+    if (versionInfo) {
+      const oaVersionInfo = versionInfo.cloneNode(true);
+      const oaVersion = oaVersionInfo.firstElementChild ?? oaVersionInfo;
 
+      oaVersion.id = 'openasar-ver';
+      oaVersion.textContent = 'OpenAsar (<hash>)';
+      oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
+
+      oaVersionInfo.textContent = '';
+      oaVersionInfo.appendChild(oaVersion);
+      footer.insertAdjacentElement('beforebegin', oaVersionInfo);
+    }
+  }
+
+  // Sidebar entry
   if (document.getElementById('openasar-item')) return;
-  let advanced = document.querySelector('[data-list-item-id="settings-sidebar___advanced_sidebar_item"]');
-  if (!advanced) advanced = document.querySelector('[class*="sidebar"] [class*="nav"] > [class*="section"]:nth-child(3) > :last-child');
-  if (!advanced) advanced = [...document.querySelectorAll('[class*="item"]')].find(x => x.textContent === 'Advanced');
-  
+
+  const advanced = document.querySelector('[data-settings-sidebar-item="advanced_panel"]');
+  if (!advanced) return;
+
   const oaSetting = advanced.cloneNode(true);
-  oaSetting.querySelector('[class*="text"]').textContent = 'OpenAsar';
   oaSetting.id = 'openasar-item';
-  oaSetting.onclick = oaVersion.onclick;
+  oaSetting.dataset.settingsSidebarItem = 'openasar_panel';
+
+  const item = oaSetting.querySelector('[role="listitem"]') ?? oaSetting;
+  const text = item.querySelector('span, div');
+
+  if (text) text.textContent = 'OpenAsar';
+  item.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
 
   advanced.insertAdjacentElement('afterend', oaSetting);
-}, 800);
+};
+
+(function observeSettings() {
+  const sidebar = document.querySelector('[data-list-id="settings-sidebar"]');
+  if (!sidebar) return setTimeout(observeSettings, 500);
+
+  new MutationObserver(injectSettings).observe(sidebar, {
+    childList: true,
+    subtree: true
+  });
+
+  injectSettings();
+})();
 
 const injCSS = x => {
   const el = document.createElement('style');
