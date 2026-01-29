@@ -26,72 +26,60 @@ const themesync = async () => {
 };
 
 // Settings injection
-const injectSettings = () => {
+const injectOpenAsar = () => {
+  if (document.getElementById('openasar-ver')) return true;
+
   const sidebar = document.querySelector('[data-list-id="settings-sidebar"]');
-  if (!sidebar) return;
+  if (!sidebar) return false;
 
-  console.log("[OpenASAR] L33: sidebar trouvé");
-
-  // Version info
-  if (!document.getElementById('openasar-ver')) {
-    const footer = sidebar.lastElementChild;
-    const versionInfo = footer?.firstElementChild;
-
-    if (versionInfo) {
-
-      console.log("[OpenASAR] L41: versionInfo existe : " versionInfo);
-
-      const oaVersionInfo = versionInfo.cloneNode(true);
-      const oaVersion = oaVersionInfo.firstElementChild ?? oaVersionInfo;
-
-      oaVersion.id = 'openasar-ver';
-      oaVersion.textContent = 'OpenAsar (<hash>)';
-      oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
-
-      oaVersionInfo.textContent = '';
-      oaVersionInfo.appendChild(oaVersion);
-      footer.insertAdjacentElement('beforebegin', oaVersionInfo);
-
-      console.log("[OpenASAR] L55: versionInfo injecté");
-
-    }
+  // Inject version info before links
+  const links = sidebar.querySelector('div[class*="links"]');
+  if (links) {
+    const versionDiv = document.createElement('div');
+    versionDiv.className = 'clickable__2debe compact__2debe';
+    versionDiv.style.cssText = 'cursor: pointer; margin-bottom: 8px;';
+    
+    const versionSpan = document.createElement('span');
+    versionSpan.id = 'openasar-ver';
+    versionSpan.className = 'text-xxs/normal_cf4812';
+    versionSpan.setAttribute('data-text-variant', 'text-xxs/normal');
+    versionSpan.style.color = 'var(--text-muted)';
+    versionSpan.textContent = 'OpenAsar (<hash>)';
+    versionSpan.onclick = () => window.open('https://openasar.dev', '_blank');
+    
+    versionDiv.appendChild(versionSpan);
+    links.parentElement.insertBefore(versionDiv, links);
+    console.log('[OpenAsar] Version info injected');
   }
 
-  // Sidebar entry
-  if (document.getElementById('openasar-item')) return;
+  if (document.getElementById('openasar-item')) return true;
 
-  const advanced = document.querySelector('[data-settings-sidebar-item="advanced_panel"]');
-  if (!advanced) return;
+  // Inject menu item after Advanced
+  let advanced = sidebar.querySelector('[data-list-item-id*="advanced"]')
+    || sidebar.querySelector('[data-settings-sidebar-item="advanced_panel"]')?.querySelector('[class*="item"]')
+    || (() => {
+      const sections = sidebar.querySelectorAll('[class*="section"]');
+      return sections[2]?.querySelectorAll('[class*="item"]')[sections[2]?.querySelectorAll('[class*="item"]').length - 1];
+    })();
 
-  console.log("[OpenASAR] L66: Advanced trouvé");
+  if (advanced) {
+    const item = advanced.cloneNode(true);
+    item.id = 'openasar-item';
+    item.querySelector('[class*="text"]').textContent = 'OpenAsar';
+    item.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
+    advanced.insertAdjacentElement('afterend', item);
+    console.log('[OpenAsar] Menu item injected');
+  }
 
-  const oaSetting = advanced.cloneNode(true);
-  oaSetting.id = 'openasar-item';
-  oaSetting.dataset.settingsSidebarItem = 'openasar_panel';
-
-  const item = oaSetting.querySelector('[role="listitem"]') ?? oaSetting;
-  const text = item.querySelector('span, div');
-
-  if (text) text.textContent = 'OpenAsar';
-  item.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
-
-  advanced.insertAdjacentElement('afterend', oaSetting);
-
-  console.log("[OpenASAR] L80: OpenAsar injecté");
-
+  return true;
 };
 
-(function observeSettings() {
-  const sidebar = document.querySelector('[data-list-id="settings-sidebar"]');
-  if (!sidebar) return setTimeout(observeSettings, 500);
+const observer = new MutationObserver(() => {
+  if (injectOpenAsar()) observer.disconnect();
+});
 
-  new MutationObserver(injectSettings).observe(sidebar, {
-    childList: true,
-    subtree: true
-  });
-
-  injectSettings();
-})();
+observer.observe(document.body, { childList: true, subtree: true });
+setTimeout(() => { if (injectOpenAsar()) observer.disconnect(); }, 500);
 
 const injCSS = x => {
   const el = document.createElement('style');
