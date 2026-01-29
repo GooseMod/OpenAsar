@@ -26,62 +26,45 @@ const themesync = async () => {
 };
 
 // Settings injection
-const injectSettings = () => {
-  console.log("Injection settings triggered 1");
-  const sidebar = document.querySelector('[data-list-id="settings-sidebar"]');
-  if (!sidebar) return;
+setInterval(() => {
+  console.log("[OpenASAR] L30: Début de setInterval");
+  const versionInfo = document.querySelector('[class*="sidebar"] [class*="compactInfo"]');
+  if (!versionInfo || document.getElementById('openasar-ver')) return;
 
-  // Version info
-  if (!document.getElementById('openasar-ver')) {
-    console.log("Injection settings triggered 2");
-    const footer = sidebar.lastElementChild;
-    const versionInfo = footer?.firstElementChild;
+  console.log("[OpenASAR] L34: versionInfo existe");
 
-    if (versionInfo) {
-      console.log("Injection settings triggered 3");
-      const oaVersionInfo = versionInfo.cloneNode(true);
-      const oaVersion = oaVersionInfo.firstElementChild ?? oaVersionInfo;
+  const oaVersionInfo = versionInfo.cloneNode(true);
+  const oaVersion = oaVersionInfo.children[0];
+  oaVersion.id = 'openasar-ver';
+  oaVersion.textContent = 'OpenAsar (<hash>)';
+  oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
 
-      oaVersion.id = 'openasar-ver';
-      oaVersion.textContent = 'OpenAsar (<hash>)';
-      oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
+  oaVersionInfo.textContent = '';
+  oaVersionInfo.appendChild(oaVersion);
+  versionInfo.parentElement.parentElement.lastElementChild.insertAdjacentElement('beforebegin', oaVersionInfo);
 
-      oaVersionInfo.textContent = '';
-      oaVersionInfo.appendChild(oaVersion);
-      footer.insertAdjacentElement('beforebegin', oaVersionInfo);
-    }
-  }
+  console.log("[OpenASAR] L46: Injection versionInfo terminée");
 
-  // Sidebar entry
   if (document.getElementById('openasar-item')) return;
 
-  const advanced = document.querySelector('[data-settings-sidebar-item="advanced_panel"]');
-  if (!advanced) return;
+  console.log("[OpenASAR] L50: openasar-item n'existe pas");
+
+  let advanced = document.querySelector('[data-list-item-id="settings-sidebar___advanced_sidebar_item"]');
+  if (!advanced) advanced = document.querySelector('[class*="sidebar"] [class*="nav"] > [class*="section"]:nth-child(3) > :last-child');
+  if (!advanced) advanced = [...document.querySelectorAll('[class*="item"]')].find(x => x.textContent === 'Advanced');
+
+  console.log("[OpenASAR] L56: advanced= ${advanced}");
 
   const oaSetting = advanced.cloneNode(true);
+  oaSetting.querySelector('[class*="text"]').textContent = 'OpenAsar';
   oaSetting.id = 'openasar-item';
-  oaSetting.dataset.settingsSidebarItem = 'openasar_panel';
-
-  const item = oaSetting.querySelector('[role="listitem"]') ?? oaSetting;
-  const text = item.querySelector('span, div');
-
-  if (text) text.textContent = 'OpenAsar';
-  item.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
+  oaSetting.onclick = oaVersion.onclick;
 
   advanced.insertAdjacentElement('afterend', oaSetting);
-};
 
-(function observeSettings() {
-  const sidebar = document.querySelector('[data-list-id="settings-sidebar"]');
-  if (!sidebar) return setTimeout(observeSettings, 500);
+  console.log("[OpenASAR] L65: Injection itemSetting terminée");
 
-  new MutationObserver(injectSettings).observe(sidebar, {
-    childList: true,
-    subtree: true
-  });
-
-  injectSettings();
-})();
+}, 800);
 
 const injCSS = x => {
   const el = document.createElement('style');
