@@ -28,7 +28,7 @@ const themesync = async () => {
 // Settings injection
 setInterval(() => {
   console.log("[OpenASAR] L30: Début de setInterval");
-  const versionInfo = document.querySelector('[class*="sidebar"] [class*="compactInfo"]');
+  const versionInfo = document.querySelector('[class*="sidebar"] :where([class*="compactInfo"], .bd-version-info)');
   if (!versionInfo || document.getElementById('openasar-ver')) return;
 
   console.log("[OpenASAR] L34: versionInfo existe");
