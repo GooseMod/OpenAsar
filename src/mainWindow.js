@@ -27,18 +27,18 @@ const themesync = async () => {
 
 // Settings injection
 const injectSettings = () => {
-  console.log("Injection settings triggered 1")
+  console.log("Injection settings triggered 1");
   const sidebar = document.querySelector('[data-list-id="settings-sidebar"]');
   if (!sidebar) return;
 
   // Version info
   if (!document.getElementById('openasar-ver')) {
-    console.log("Injection settings triggered 2")
+    console.log("Injection settings triggered 2");
     const footer = sidebar.lastElementChild;
     const versionInfo = footer?.firstElementChild;
 
     if (versionInfo) {
-      console.log("Injection settings triggered 3")
+      console.log("Injection settings triggered 3");
       const oaVersionInfo = versionInfo.cloneNode(true);
       const oaVersion = oaVersionInfo.firstElementChild ?? oaVersionInfo;
 
