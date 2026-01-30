@@ -34,30 +34,15 @@ const injectOpenAsar = () => {
 
   // Inject version info before links
   if (!document.getElementById('openasar-ver')) {
-    const versionInfo = sidebar.querySelector('[class*="compactInfo"]');
     const links = sidebar.querySelector('div[class*="links"]');
     
     if (links) {
-      let oaVersionInfo, oaVersion;
-      
-      if (versionInfo) {
-        // Clone Discord native versionInfo
-        oaVersionInfo = versionInfo.cloneNode(true);
-        oaVersion = oaVersionInfo.children[0];
-      } else {
-        // Fallback: create minimal element
-        oaVersionInfo = document.createElement('div');
-        oaVersion = document.createElement('span');
-        oaVersionInfo.appendChild(oaVersion);
-      }
-      
+      const oaVersion = document.createElement('span');
       oaVersion.id = 'openasar-ver';
       oaVersion.textContent = 'OpenAsar (<hash>)';
       oaVersion.onclick = () => window.open('https://openasar.dev', '_blank');
       
-      oaVersionInfo.textContent = '';
-      oaVersionInfo.appendChild(oaVersion);
-      links.parentElement.insertBefore(oaVersionInfo, links);
+      links.parentElement.insertBefore(oaVersion, links);
       console.log('[OpenAsar] Version info injected');
     }
   }
