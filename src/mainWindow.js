@@ -27,59 +27,64 @@ const themesync = async () => {
 
 // Settings injection
 const injectOpenAsar = () => {
-  if (document.getElementById('openasar-ver')) return true;
+  if (document.getElementById('openasar-ver') && document.getElementById('openasar-item')) return;
 
   const sidebar = document.querySelector('[data-list-id="settings-sidebar"]');
-  if (!sidebar) return false;
+  if (!sidebar) return;
 
   // Inject version info before links
-  const links = sidebar.querySelector('div[class*="links"]');
-  if (links) {
-    const versionDiv = document.createElement('div');
-    versionDiv.className = 'clickable__2debe compact__2debe';
-    versionDiv.style.cssText = 'cursor: pointer; margin-bottom: 8px;';
+  if (!document.getElementById('openasar-ver')) {
+    const versionInfo = sidebar.querySelector('[class*="compactInfo"]');
+    const links = sidebar.querySelector('div[class*="links"]');
     
-    const versionSpan = document.createElement('span');
-    versionSpan.id = 'openasar-ver';
-    versionSpan.className = 'text-xxs/normal_cf4812';
-    versionSpan.setAttribute('data-text-variant', 'text-xxs/normal');
-    versionSpan.style.color = 'var(--text-muted)';
-    versionSpan.textContent = 'OpenAsar (<hash>)';
-    versionSpan.onclick = () => window.open('https://openasar.dev', '_blank');
-    
-    versionDiv.appendChild(versionSpan);
-    links.parentElement.insertBefore(versionDiv, links);
-    console.log('[OpenAsar] Version info injected');
+    if (links) {
+      let oaVersionInfo, oaVersion;
+      
+      if (versionInfo) {
+        // Clone Discord native versionInfo
+        oaVersionInfo = versionInfo.cloneNode(true);
+        oaVersion = oaVersionInfo.children[0];
+      } else {
+        // Fallback: create minimal element
+        oaVersionInfo = document.createElement('div');
+        oaVersion = document.createElement('span');
+        oaVersionInfo.appendChild(oaVersion);
+      }
+      
+      oaVersion.id = 'openasar-ver';
+      oaVersion.textContent = 'OpenAsar (<hash>)';
+      oaVersion.onclick = () => window.open('https://openasar.dev', '_blank');
+      
+      oaVersionInfo.textContent = '';
+      oaVersionInfo.appendChild(oaVersion);
+      links.parentElement.insertBefore(oaVersionInfo, links);
+      console.log('[OpenAsar] Version info injected');
+    }
   }
-
-  if (document.getElementById('openasar-item')) return true;
 
   // Inject menu item after Advanced
-  let advanced = sidebar.querySelector('[data-list-item-id*="advanced"]')
-    || sidebar.querySelector('[data-settings-sidebar-item="advanced_panel"]')?.querySelector('[class*="item"]')
-    || (() => {
-      const sections = sidebar.querySelectorAll('[class*="section"]');
-      return sections[2]?.querySelectorAll('[class*="item"]')[sections[2]?.querySelectorAll('[class*="item"]').length - 1];
-    })();
+  if (!document.getElementById('openasar-item')) {
+    let advanced = sidebar.querySelector('[data-list-item-id*="advanced"]')
+      || sidebar.querySelector('[data-settings-sidebar-item="advanced_panel"]')?.querySelector('[class*="item"]')
+      || (() => {
+        const sections = sidebar.querySelectorAll('[class*="section"]');
+        return sections[2]?.querySelectorAll('[class*="item"]')[sections[2]?.querySelectorAll('[class*="item"]').length - 1];
+      })();
 
-  if (advanced) {
-    const item = advanced.cloneNode(true);
-    item.id = 'openasar-item';
-    item.querySelector('[class*="text"]').textContent = 'OpenAsar';
-    item.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
-    advanced.insertAdjacentElement('afterend', item);
-    console.log('[OpenAsar] Menu item injected');
+    if (advanced) {
+      const item = advanced.cloneNode(true);
+      item.id = 'openasar-item';
+      item.querySelector('[class*="text"]').textContent = 'OpenAsar';
+      item.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
+      advanced.insertAdjacentElement('afterend', item);
+      console.log('[OpenAsar] Menu item injected');
+    }
   }
-
-  return true;
 };
 
-const observer = new MutationObserver(() => {
-  if (injectOpenAsar()) observer.disconnect();
-});
-
+const observer = new MutationObserver(() => injectOpenAsar());
 observer.observe(document.body, { childList: true, subtree: true });
-setTimeout(() => { if (injectOpenAsar()) observer.disconnect(); }, 500);
+setTimeout(injectOpenAsar, 500);
 
 const injCSS = x => {
   const el = document.createElement('style');
