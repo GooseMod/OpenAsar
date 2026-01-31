@@ -49,7 +49,6 @@ const injectOpenAsar = () => {
         oaVersion.style.color = 'var(--text-muted)';
         
         clickableDiv.appendChild(oaVersion);
-        console.log('[OpenAsar] Version info injected');
       }
     }
   }
@@ -69,7 +68,6 @@ const injectOpenAsar = () => {
       item.querySelector('[class*="text"]').textContent = 'OpenAsar';
       item.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
       advanced.insertAdjacentElement('afterend', item);
-      console.log('[OpenAsar] Menu item injected');
     }
   }
 };
