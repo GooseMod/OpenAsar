@@ -43,9 +43,10 @@ const injectOpenAsar = () => {
       if (clickableDiv) {
         const oaVersion = document.createElement('div');
         oaVersion.id = 'openasar-ver';
+        oaVersion.className = 'text-xxs/normal_cf4812';
         oaVersion.textContent = 'OpenAsar (<hash>)';
         oaVersion.onclick = () => window.open('https://openasar.dev', '_blank');
-        oaVersion.style.cssText = 'cursor: pointer; font-size: 12px; color: var(--text-muted);';
+        oaVersion.style.color = 'var(--text-muted)';
         
         clickableDiv.appendChild(oaVersion);
         console.log('[OpenAsar] Version info injected');
