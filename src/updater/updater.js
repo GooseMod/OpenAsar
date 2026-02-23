@@ -14,9 +14,6 @@ const TASK_STATE_WORKING = 'Working';
 
 const updaterPath = paths.getExeDir() + '/updater.node';
 
-// discord made breaking changes without any api versioning wow!!
-// so we have to read the node module to determine the version (again)
-let moduleVersion = 3;
 class Updater extends require('events').EventEmitter {
   constructor(options) {
     super();
@@ -300,11 +297,6 @@ class Updater extends require('events').EventEmitter {
   }
 
   updateToLatestWithOptions(options, progressCallback) {
-    if (moduleVersion === 2) {
-      options.skip_windows_arch_update = false;
-      options.optin_windows_transition_progression = false;
-    }
-
     return this._sendRequest({
       UpdateToLatest: {
         options
@@ -314,11 +306,6 @@ class Updater extends require('events').EventEmitter {
 
 
   async startCurrentVersion(queryOptions, options) {
-    if (moduleVersion === 2) {
-      queryOptions.skip_windows_arch_update = false;
-      queryOptions.optin_windows_transition_progression = false;
-    }
-
     const versions = await this.queryCurrentVersionsWithOptions(queryOptions);
     await this.setRunningManifest(versions.last_successful_update);
 
@@ -368,18 +355,19 @@ module.exports = {
     const root_path = paths.getInstallPath();
     if (root_path == null) return false;
 
-    const updaterContents = require('fs').readFileSync(updaterPath, 'utf8');
-    if (updaterContents.includes('Determined this is an architecture transition')) moduleVersion = 2;
-
-    instance = new Updater({
+    const opts = {
       release_channel: buildInfo.releaseChannel,
       platform: process.platform === 'win32' ? 'win' : 'osx',
       repository_url,
       root_path,
       user_data_path: paths.getUserData(),
       current_os_arch: process.platform === 'win32' ? (['AMD64', 'IA64'].includes(process.env.PROCESSOR_ARCHITEW6432 ?? process.env.PROCESSOR_ARCHITECTURE) ? 'x64' : 'x86') : null
-    });
+    };
 
+    const updaterContents = require('fs').readFileSync(updaterPath, 'utf8');
+    if (updaterContents.includes('use_rust_bspatch')) opts.use_rust_bspatch = false;
+
+    instance = new Updater(opts);
     return instance.valid;
   },
 
