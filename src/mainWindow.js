@@ -26,32 +26,55 @@ const themesync = async () => {
 };
 
 // Settings injection
-setInterval(() => {
-  const versionInfo = document.querySelector('[class*="sidebar"] [class*="compactInfo"]');
-  if (!versionInfo || document.getElementById('openasar-ver')) return;
+const injectOpenAsar = () => {
+  if (document.getElementById('openasar-ver') && document.getElementById('openasar-item')) return;
 
-  const oaVersionInfo = versionInfo.cloneNode(true);
-  const oaVersion = oaVersionInfo.children[0];
-  oaVersion.id = 'openasar-ver';
-  oaVersion.textContent = 'OpenAsar (<hash>)';
-  oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
+  const sidebar = document.querySelector('[data-list-id="settings-sidebar"]');
+  if (!sidebar) return;
 
-  oaVersionInfo.textContent = '';
-  oaVersionInfo.appendChild(oaVersion);
-  versionInfo.parentElement.parentElement.lastElementChild.insertAdjacentElement('beforebegin', oaVersionInfo);
+  // Inject version info inside clickable div
+  if (!document.getElementById('openasar-ver')) {
+    const links = sidebar.querySelector('div[class*="links"]');
+    
+    if (links && links.parentElement) {
+      const container = links.parentElement;
+      const clickableDiv = container.firstElementChild;
+      
+      if (clickableDiv) {
+        const oaVersion = document.createElement('div');
+        oaVersion.id = 'openasar-ver';
+        oaVersion.className = 'text-xxs/normal_cf4812';
+        oaVersion.textContent = 'OpenAsar (<hash>)';
+        oaVersion.onclick = () => window.open('https://openasar.dev', '_blank');
+        oaVersion.style.color = 'var(--text-muted)';
+        
+        clickableDiv.appendChild(oaVersion);
+      }
+    }
+  }
 
-  if (document.getElementById('openasar-item')) return;
-  let advanced = document.querySelector('[data-list-item-id="settings-sidebar___advanced_sidebar_item"]');
-  if (!advanced) advanced = document.querySelector('[class*="sidebar"] [class*="nav"] > [class*="section"]:nth-child(3) > :last-child');
-  if (!advanced) advanced = [...document.querySelectorAll('[class*="item"]')].find(x => x.textContent === 'Advanced');
-  
-  const oaSetting = advanced.cloneNode(true);
-  oaSetting.querySelector('[class*="text"]').textContent = 'OpenAsar';
-  oaSetting.id = 'openasar-item';
-  oaSetting.onclick = oaVersion.onclick;
+  // Inject menu item after Advanced
+  if (!document.getElementById('openasar-item')) {
+    let advanced = sidebar.querySelector('[data-list-item-id*="advanced"]')
+      || sidebar.querySelector('[data-settings-sidebar-item="advanced_panel"]')?.querySelector('[class*="item"]')
+      || (() => {
+        const sections = sidebar.querySelectorAll('[class*="section"]');
+        return sections[2]?.querySelectorAll('[class*="item"]')[sections[2]?.querySelectorAll('[class*="item"]').length - 1];
+      })();
 
-  advanced.insertAdjacentElement('afterend', oaSetting);
-}, 800);
+    if (advanced) {
+      const item = advanced.cloneNode(true);
+      item.id = 'openasar-item';
+      item.querySelector('[class*="text"]').textContent = 'OpenAsar';
+      item.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
+      advanced.insertAdjacentElement('afterend', item);
+    }
+  }
+};
+
+const observer = new MutationObserver(() => injectOpenAsar());
+observer.observe(document.body, { childList: true, subtree: true });
+setTimeout(injectOpenAsar, 500);
 
 const injCSS = x => {
   const el = document.createElement('style');
