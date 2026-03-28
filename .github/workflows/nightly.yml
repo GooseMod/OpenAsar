@@ -227,7 +227,7 @@ jobs:
         git push origin --delete nightly || true
         git tag nightly
         git push origin nightly
-        curl -L -o old.asar "https://github.com/GooseMod/OpenAsar/releases/download/nightly/app.asar"
+        curl -L -o old.asar "https://github.com/${{ github.repository }}/releases/download/nightly/app.asar"
         gh release delete ${{ env.VERSION }} -y || true
         gh release create ${{ env.VERSION }} -t "Nightly" -n "$(bash scripts/nightlyNotes.sh)" ${{ env.FILES }}
       env:
