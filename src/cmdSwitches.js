@@ -1,4 +1,7 @@
+const { join } = require('path');
 const { app } = require('electron');
+
+const paths = require('./paths');
 
 const presets = {
   'base': '--autoplay-policy=no-user-gesture-required --disable-features=WinRetrieveSuggestionsOnlyOnDemand,HardwareMediaKeyHandling,MediaSessionService,UseEcoQoSForBackgroundProcess,IntensiveWakeUpThrottling,AllowAggressiveThrottlingWithWebSocket --disable-background-timer-throttling', // Base Discord
@@ -6,10 +9,13 @@ const presets = {
   'battery': '--enable-features=TurnOffStreamingMediaCachingOnBattery --force_low_power_gpu' // Known to have better battery life for Chromium?
 };
 
-
 module.exports = () => {
+  const flags = ('base,' + (oaConfig.cmdPreset || 'perf')).split(',').reduce((a, x) => a.concat(presets[x]?.split(' ')), (oaConfig.customFlags ?? '').split(' '));
+  if (process.platform === 'linux' && settings.get('openH264Enabled', true))
+    flags.push('--enable-libopenh264', '--openh264-library-path=' + join(paths.getAssetCachePath(), 'openh264', 'libopenh264-2.5.1-linux64.7.so'));
+
   let c = {};
-  for (const x of ('base,' + (oaConfig.cmdPreset || 'perf')).split(',').reduce((a, x) => a.concat(presets[x]?.split(' ')), (oaConfig.customFlags ?? '').split(' '))) {
+  for (const x of flags) {
     if (!x) continue;
     const [ k, v ] = x.split('=');
 
