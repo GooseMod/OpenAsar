@@ -12,8 +12,7 @@ const TASK_STATE_FAILED = 'Failed';
 const TASK_STATE_WAITING = 'Waiting';
 const TASK_STATE_WORKING = 'Working';
 
-const updaterPath = paths.getExeDir() + '/updater.node';
-
+const updaterPath = process.platform === 'darwin' ? join(process.execPath, '..', '..', 'Resources', 'updater.node') : join(process.execPath, '..', 'updater.node');
 class Updater extends require('events').EventEmitter {
   constructor(options) {
     super();
@@ -29,6 +28,8 @@ class Updater extends require('events').EventEmitter {
     }
 
     this.committedHostVersion = null;
+    this.committedModules = new Set();
+    this.committedModulePaths = new Map();
     this.rootPath = options.root_path;
     this.nextRequestId = 0;
     this.requests = new Map();
@@ -138,6 +139,14 @@ class Updater extends require('events').EventEmitter {
     return join(this.rootPath, `app-${this.committedHostVersion.join('.')}`);
   }
 
+  _updateMacOSHostVersion(hostExePath) {
+    return this._handleSyncResponse(this._sendRequestSync({
+      UpdateMacOSHostVersion: {
+        host_exe_path: hostExePath
+      }
+    }));
+  }
+
   _startCurrentVersionInner(options, versions) {
     if (this.committedHostVersion == null) this.committedHostVersion = versions.current_host;
 
@@ -149,7 +158,7 @@ class Updater extends require('events').EventEmitter {
       const fs = require('original-fs');
 
       const cAsar = join(require.main.filename, '..');
-      const nAsar = join(next, '..', 'resources', 'app.asar');
+      const nAsar = process.platform === 'darwin' ? join(next, 'Contents', 'Resources', 'app.asar') : join(next, '..', 'resources', 'app.asar');
 
       try {
         fs.copyFileSync(nAsar, nAsar + '.backup'); // Copy new app.asar to backup file (<new>/app.asar -> <new>/app.asar.backup)
@@ -158,10 +167,14 @@ class Updater extends require('events').EventEmitter {
         log('Updater', 'Failed to retain OpenAsar', e);
       }
 
-      app.once('will-quit', () => spawn(next, [], {
-        detached: true,
-        stdio: 'inherit'
-      }));
+      if (process.platform === 'darwin') {
+        this._updateMacOSHostVersion(next);
+      } else {
+        app.once('will-quit', () => spawn(next, [], {
+          detached: true,
+          stdio: 'inherit'
+        }));
+      }
 
       log('Updater', 'Restarting', next);
       return app.quit();
@@ -173,7 +186,14 @@ class Updater extends require('events').EventEmitter {
   _commitModulesInner(versions) {
     const base = join(this._getHostPath(), 'modules');
 
-    for (const m in versions.current_modules) Module.globalPaths.unshift(join(base, `${m}-${versions.current_modules[m]}`));
+    for (const m in versions.current_modules) {
+      const path = join(base, `${m}-${versions.current_modules[m]}`);
+      if (this.committedModules.has(m) || Module.globalPaths.includes(path)) continue;
+
+      this.committedModules.add(m);
+      this.committedModulePaths.set(m, join(path, m));
+      Module.globalPaths.unshift(path);
+    }
   }
 
   _recordDownloadProgress(name, progress) {
@@ -352,7 +372,7 @@ module.exports = {
   INCONSISTENT_INSTALLER_STATE_ERROR: 'InconsistentInstallerState',
 
   tryInitUpdater: (buildInfo, repository_url) => {
-    const root_path = paths.getInstallPath();
+    const root_path = paths.getRootPath();
     if (root_path == null) return false;
 
     const opts = {
