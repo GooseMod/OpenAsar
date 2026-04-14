@@ -25,12 +25,36 @@ const updater = require('./updater/updater');
 const moduleUpdater = require('./updater/moduleUpdater');
 const autoStart = require('./autoStart');
 
+const cacheGuardedSessions = new WeakSet();
+const guardSessionStartupCaches = ses => {
+  if (ses == null || cacheGuardedSessions.has(ses)) return;
+  cacheGuardedSessions.add(ses);
+
+  const now = Date.now();
+  const patch = key => {
+    const orig = ses[key].bind(ses);
+    ses[key] = options => {
+      if (Date.now() - now < 10000) {
+        log('Cache', 'Prevented startup ' + key);
+        return Promise.resolve();
+      }
+
+      return orig(options);
+    };
+  };
+
+  patch('clearStorageData');
+  patch('clearCodeCaches');
+};
+
 let desktopCore;
 const startCore = () => {
   if (oaConfig.js || oaConfig.css) session.defaultSession.webRequest.onHeadersReceived((d, cb) => {
     delete d.responseHeaders['content-security-policy'];
     cb(d);
   });
+
+  guardSessionStartupCaches(session.defaultSession);
 
   app.on('browser-window-created', (e, bw) => { // Main window injection
     bw.webContents.on('dom-ready', () => {
