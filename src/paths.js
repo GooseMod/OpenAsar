@@ -3,12 +3,13 @@ const { app } = require('electron');
 
 const buildInfo = require('./utils/buildInfo');
 
-let userData, userDataVersioned, resourcesPath, moduleData, exeDir, installPath, logPath, assetCachePath;
+let userData, userDataVersioned, resourcesPath, moduleData, exeDir, installPath, rootPath, logPath, assetCachePath;
 exports.getUserData = () => userData;
 exports.getUserDataVersioned = () => userDataVersioned;
 exports.getResources = () => resourcesPath;
 exports.getModuleDataPath = () => moduleData;
 exports.getInstallPath = () => installPath;
+exports.getRootPath = () => rootPath;
 exports.getLogPath = () => logPath;
 exports.getExeDir = () => exeDir;
 exports.getAssetCachePath = () => assetCachePath;
@@ -22,6 +23,8 @@ exports.init = () => {
 
   exeDir = dirname(app.getPath('exe'));
   if (basename(exeDir).startsWith('app-')) installPath = join(exeDir, '..');
+    else if (process.platform === 'darwin') installPath = join(exeDir, '..', '..', '..');
+  rootPath = process.platform === 'darwin' ? userData : installPath;
 
   moduleData = buildInfo.newUpdater ? join(userData, 'module_data') : join(userDataVersioned, 'modules');
   resourcesPath = join(process.resourcesPath);
