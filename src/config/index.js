@@ -4,6 +4,11 @@ ipcMain.on('DISCORD_UPDATED_QUOTES', (e, c) => {
   if (c === 'o') exports.open();
 });
 
+const restart = () => {
+  app.relaunch();
+  app.exit(0);
+};
+
 let win;
 exports.open = () => {
   if (win && !win.isDestroyed()) return win.show();
@@ -23,6 +28,12 @@ exports.open = () => {
   settings.save();
 
   ipcMain.on('cs', (e, c) => {
+    if (typeof c === 'string') {
+      global.oaVersion = c + '-';
+      require('../asarUpdate')().then(restart);
+      return;
+    }
+
     config = c;
     settings.set('openasar', config);
     settings.save();
@@ -34,11 +45,10 @@ exports.open = () => {
 
   ipcMain.on('cr', () => {
     settings.save();
-    app.relaunch();
-    app.exit();
+    restart();
   });
 
   ipcMain.on('of', () => {
-    shell.openPath(require('../paths').getUserData() + '/settings.json')
+    shell.openPath(require('../paths').getUserData() + '/settings.json');
   });
 };

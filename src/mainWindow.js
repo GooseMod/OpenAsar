@@ -33,7 +33,7 @@ setInterval(() => {
   const oaVersionInfo = versionInfo.cloneNode(true);
   const oaVersion = oaVersionInfo.children[0];
   oaVersion.id = 'openasar-ver';
-  oaVersion.textContent = 'OpenAsar (<hash>)';
+  oaVersion.textContent = 'OpenAsar <channel> (<hash>)';
   oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
 
   oaVersionInfo.textContent = '';
@@ -44,7 +44,7 @@ setInterval(() => {
   let advanced = document.querySelector('[data-list-item-id="settings-sidebar___advanced_sidebar_item"]');
   if (!advanced) advanced = document.querySelector('[class*="sidebar"] [class*="nav"] > [class*="section"]:nth-child(3) > :last-child');
   if (!advanced) advanced = [...document.querySelectorAll('[class*="item"]')].find(x => x.textContent === 'Advanced');
-  
+
   const oaSetting = advanced.cloneNode(true);
   oaSetting.querySelector('[class*="text"]').textContent = 'OpenAsar';
   oaSetting.id = 'openasar-item';
