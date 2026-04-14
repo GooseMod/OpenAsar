@@ -7,6 +7,7 @@ const { hrtime } = require('process');
 const paths = require('../paths');
 
 let instance;
+let currentVersion;
 const TASK_STATE_COMPLETE = 'Complete';
 const TASK_STATE_FAILED = 'Failed';
 const TASK_STATE_WAITING = 'Waiting';
@@ -139,6 +140,16 @@ class Updater extends require('events').EventEmitter {
     return join(this.rootPath, `app-${this.committedHostVersion.join('.')}`);
   }
 
+  _getHostExePath() {
+    const hostPath = this._getHostPath();
+    if (process.platform === 'darwin') {
+      const app = process.execPath.split('/').findLast(x => x.endsWith('.app'));
+      if (app) return join(hostPath, app);
+    }
+
+    return join(hostPath, basename(process.execPath));
+  }
+
   _updateMacOSHostVersion(hostExePath) {
     return this._handleSyncResponse(this._sendRequestSync({
       UpdateMacOSHostVersion: {
@@ -150,10 +161,11 @@ class Updater extends require('events').EventEmitter {
   _startCurrentVersionInner(options, versions) {
     if (this.committedHostVersion == null) this.committedHostVersion = versions.current_host;
 
-    const cur = resolve(process.execPath);
-    const next = resolve(join(this._getHostPath(), basename(process.execPath)));
-
-    if (next != cur && !options?.allowObsoleteHost) {
+    const next = resolve(this._getHostExePath());
+    if ((process.platform === 'darwin' ?
+      (currentVersion !== this.committedHostVersion.join('.')) :
+      (next !== resolve(process.execPath))
+    ) && !options?.allowObsoleteHost) {
       // Retain OpenAsar
       const fs = require('original-fs');
 
@@ -388,6 +400,7 @@ module.exports = {
     if (updaterContents.includes('use_rust_bspatch')) opts.use_rust_bspatch = false;
 
     instance = new Updater(opts);
+    currentVersion = buildInfo.version;
     return instance.valid;
   },
 
