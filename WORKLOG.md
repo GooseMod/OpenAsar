@@ -14,6 +14,10 @@
 - Added a hybrid settings injection path that first tries to patch Discord's internal settings layout and then falls back to DOM injection.
 - Matched the current BetterDiscord settings DOM where `Advanced` is absent and `Developer` / `Log Out` are the stable fallback anchors.
 - Identified that local test builds were being overwritten on first launch by OpenAsar's self-updater.
-- Updated `src/asarUpdate.js` so extra-suffixed local builds are treated as dev builds and skip self-replacement.
+- Added a build-time auto-update flag so local test archives can be packed with self-updates disabled intentionally.
+- Kept the default source behavior with self-updates enabled unless the build flag is explicitly set.
+- Added `scripts/pack.js` to build local `app.asar` files with options such as `--disable-autoupdate`.
+- Local test build command:
+  `node scripts/pack.js --disable-autoupdate --version nightly-$(git rev-parse --short HEAD)-localtest --output tmp/openasar-build/app.asar`
 - Verified the updated file with `node -c src/mainWindow.js`.
 - Verified the repo still packs locally by producing `tmp/pack-test/app.asar`.
