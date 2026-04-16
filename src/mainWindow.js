@@ -59,97 +59,6 @@ const findVersionInfo = () => firstNode(
   () => [...document.querySelectorAll('[class*="sidebar"] [class*="info"] [class*="line"]')].find(x => x.textContent?.startsWith('Host '))
 );
 
-let webpackRequire;
-const getWebpackRequire = () => {
-  if (webpackRequire) return webpackRequire;
-  const chunk = window.webpackChunkdiscord_app;
-  if (!chunk?.push) return;
-
-  chunk.push([[`openasar_${Date.now()}`], {}, req => webpackRequire = req]);
-  chunk.pop?.();
-  return webpackRequire;
-};
-
-const getWebpackModule = filter => {
-  const req = getWebpackRequire();
-  if (!req?.c) return;
-
-  for (const mod of Object.values(req.c)) {
-    const exp = mod?.exports;
-    if (!exp) continue;
-
-    if (filter(exp)) return exp;
-    if (exp.default && filter(exp.default)) return exp.default;
-
-    for (const nested of Object.values(exp)) {
-      if (nested && filter(nested)) return nested;
-    }
-  }
-};
-
-const getLayoutItemTitle = item => {
-  try {
-    const title = item?.useTitle?.();
-    if (typeof title === 'string') return title;
-    if (typeof title?.props?.children === 'string') return title.props.children;
-    if (Array.isArray(title?.props?.children)) return title.props.children.join('');
-    if (title && typeof title.toString === 'function') return String(title);
-  } catch { }
-
-  return '';
-};
-
-const patchSettingsLayoutItems = items => {
-  if (!Array.isArray(items) || items.some(x => x?.key === 'openasar_item' || getLayoutItemTitle(x) === 'OpenAsar')) return items;
-
-  const logoutIndex = items.findIndex(x => x?.key?.includes?.('logout') || getLayoutItemTitle(x) === 'Log Out');
-  const developerIndex = items.findIndex(x => x?.key?.includes?.('developer') || getLayoutItemTitle(x) === 'Developer');
-  const anchorIndex = logoutIndex !== -1 ? logoutIndex : developerIndex;
-  if (anchorIndex === -1) return items;
-
-  const template = items[anchorIndex];
-  const openAsarItem = {
-    ...template,
-    key: 'openasar_item',
-    id: 'openasar_item',
-    useTitle: () => 'OpenAsar',
-    onClick: openOpenAsarSettings,
-    usePredicate: () => true,
-    useSearchTerms: () => ['openasar'],
-    buildLayout: () => []
-  };
-
-  const insertAt = logoutIndex !== -1 ? logoutIndex : developerIndex + 1;
-  return [
-    ...items.slice(0, insertAt),
-    openAsarItem,
-    ...items.slice(insertAt)
-  ];
-};
-
-const patchSettingsLayout = () => {
-  const rootLayout = getWebpackModule(m => m?.key === '$Root' && typeof m.buildLayout === 'function');
-  if (!rootLayout || rootLayout.__openasarPatched) return;
-
-  const originalBuildLayout = rootLayout.buildLayout;
-  rootLayout.buildLayout = function(...args) {
-    const sections = originalBuildLayout.apply(this, args);
-    if (!Array.isArray(sections)) return sections;
-
-    return sections.map(section => {
-      if (!section?.buildLayout || section.__openasarSectionPatched) return section;
-
-      const originalSectionBuild = section.buildLayout;
-      section.buildLayout = function(...sectionArgs) {
-        return patchSettingsLayoutItems(originalSectionBuild.apply(this, sectionArgs));
-      };
-      section.__openasarSectionPatched = true;
-      return section;
-    });
-  };
-  rootLayout.__openasarPatched = true;
-};
-
 const findAdvancedItem = () => {
   const sidebar = findSettingsSidebar();
   return firstNode(
@@ -230,7 +139,6 @@ const attachSettingsObserver = () => {
 };
 
 const syncSettingsInjection = () => {
-  patchSettingsLayout();
   injectVersionInfo();
   injectSettingsItem();
   attachSettingsObserver();

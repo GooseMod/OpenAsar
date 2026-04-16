@@ -11,12 +11,14 @@
 - Kept the injected menu entry based on cloning native Discord sidebar items instead of creating fresh nodes with hard-coded Discord classes.
 - Added a settings-area-scoped `MutationObserver` so the OpenAsar item can be restored after BetterDiscord or Discord rerenders the sidebar.
 - Kept a slower interval fallback to retry injection without relying on a global full-page observer.
-- Added a hybrid settings injection path that first tries to patch Discord's internal settings layout and then falls back to DOM injection.
+- Evaluated a hybrid settings injection path that patched Discord's internal settings layout alongside DOM injection.
 - Matched the current BetterDiscord settings DOM where `Advanced` is absent and `Developer` / `Log Out` are the stable fallback anchors.
 - Identified that local test builds were being overwritten on first launch by OpenAsar's self-updater.
 - Added a build-time auto-update flag so local test archives can be packed with self-updates disabled intentionally.
 - Kept the default source behavior with self-updates enabled unless the build flag is explicitly set.
 - Added `scripts/pack.js` to build local `app.asar` files with options such as `--disable-autoupdate`.
+- Confirmed the DOM-only settings injection works once local test builds stop being overwritten by the self-updater.
+- Reverted the experimental hybrid settings patch and kept the DOM-only fix for the final code path.
 - Local test build command:
   `node scripts/pack.js --disable-autoupdate --version nightly-$(git rev-parse --short HEAD)-localtest --output tmp/openasar-build/app.asar`
 - Verified the updated file with `node -c src/mainWindow.js`.
