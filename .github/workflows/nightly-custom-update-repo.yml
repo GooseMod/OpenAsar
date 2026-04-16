@@ -1,16 +1,10 @@
 name: Nightly Custom Update Repo
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-    - 'src/**'
-    - 'scripts/**'
-    - '.github/workflows/**'
   workflow_dispatch:
 
 env:
-  UPDATE_REPO: 'XxUnkn0wnxX/OpenAsar' # Default fork repo for this checkout.
+  UPDATE_REPO: 'owner/repo' # Change this to your fork before using this workflow for releases.
 
 jobs:
   build:
