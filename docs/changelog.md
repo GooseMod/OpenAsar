@@ -4,7 +4,7 @@
 
 ### BetterDiscord settings compatibility
 
-- Investigated OpenAsar issue `#222`, PR `#225`, and the `TirOFlanc/OpenAsar` fork.
+- Investigated [OpenAsar issue #222](https://github.com/GooseMod/OpenAsar/issues/222), [PR #225](https://github.com/GooseMod/OpenAsar/pull/225), and the [TirOFlanc/OpenAsar fork](https://github.com/TirOFlanc/OpenAsar).
 - Reviewed the local BetterDiscord codebase to understand how it patches Discord's settings UI.
 - Identified the main failure mode in `src/mainWindow.js`: OpenAsar's settings item injection was incorrectly gated behind version/footer detection.
 - Reworked the settings injection flow in `src/mainWindow.js` so version injection and menu item injection are independent.
