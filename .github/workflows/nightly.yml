@@ -1,12 +1,7 @@
 name: Nightly
 
 on:
-  push:
-    branches: [ main ]
-    paths:
-    - 'src/**'
-    - 'scripts/**'
-    - '.github/workflows/**'
+  workflow_dispatch:
 
 jobs:
   build:
