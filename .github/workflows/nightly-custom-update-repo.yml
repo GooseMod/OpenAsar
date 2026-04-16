@@ -1,0 +1,237 @@
+name: Nightly Custom Update Repo
+
+on:
+  workflow_dispatch:
+
+env:
+  UPDATE_REPO: 'XxUnkn0wnxX/OpenAsar' # Default fork repo for this checkout.
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js v20.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 20.x
+
+    - name: Validate update repo
+      run: |
+        if [ "${{ env.UPDATE_REPO }}" = "owner/repo" ]; then
+          echo "Set UPDATE_REPO to your fork before running this workflow."
+          exit 1
+        fi
+
+    - name: Pack fork-update asar
+      run: |
+        npm i -g asar
+        node scripts/pack.js --update-repo "${{ env.UPDATE_REPO }}" --version nightly-$(git rev-parse HEAD | cut -c 1-7) --output app.asar
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: built-asar-custom-update-repo
+        path: app.asar
+        retention-days: 1
+
+  test-linux-stable:
+    name: Test Linux Stable
+
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: built-asar-custom-update-repo
+        path: artifact
+
+    - name: Extract artifact
+      run: |
+        cp artifact/app.asar .
+
+    - name: Download Client with OpenAsar
+      run: |
+        wget "https://discord.com/api/download/stable?platform=linux&format=tar.gz" -O discord.tar.gz
+        tar xf discord.tar.gz
+
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.exit\(\);  /" app.asar
+        cp app.asar Discord/resources/app.asar
+
+        # workaround https://github.com/electron/electron/issues/42510
+        sudo chown root ./Discord/chrome-sandbox
+        sudo chmod 4755 ./Discord/chrome-sandbox
+
+    - name: Check if Discord will startup
+      run: |
+        xvfb-run -e /dev/stdout ./Discord/Discord --enable-logging | grep -m1 "ABRA"
+      timeout-minutes: 3
+
+  test-linux-canary:
+    name: Test Linux Canary
+
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: built-asar-custom-update-repo
+        path: artifact
+
+    - name: Extract artifact
+      run: |
+        cp artifact/app.asar .
+
+    - name: Download Client with OpenAsar
+      run: |
+        wget "https://discord.com/api/download/canary?platform=linux&format=tar.gz" -O discord.tar.gz
+        tar xf discord.tar.gz
+
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.exit\(\);  /" app.asar
+        cp app.asar DiscordCanary/resources/app.asar
+
+        # workaround https://github.com/electron/electron/issues/42510
+        sudo chown root ./DiscordCanary/chrome-sandbox
+        sudo chmod 4755 ./DiscordCanary/chrome-sandbox
+
+    - name: Check if Discord will startup
+      run: |
+        xvfb-run -e /dev/stdout ./DiscordCanary/DiscordCanary --enable-logging | grep -m1 "ABRA"
+      timeout-minutes: 3
+
+  test-win-stable:
+    name: Test Windows Stable
+
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js v20.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 20.x
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: built-asar-custom-update-repo
+        path: artifact
+
+    - name: Extract artifact
+      run: |
+        cp artifact/app.asar .
+
+    - name: Setup Client
+      shell: bash
+      run: |
+        node scripts/downloadWin.js
+        tar xf client.tar
+
+        # Install OpenAsar build and setup environment
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.exit\(\);  /" app.asar
+        sed -r -i "s/if\(next!=cur&&!options\?\.allowObsoleteHost\)/if\(false\)                                 /" app.asar
+        cp -f app.asar files/resources/app.asar
+        mkdir discord
+        cp -rf files/ discord/app-1.0.0
+        cd discord/app-1.0.0
+        mkdir modules
+
+    - name: Check if Discord will startup
+      run: |
+        cd discord/app-1.0.0
+        ./Discord.exe | grep -m1 "ABRA"
+      timeout-minutes: 3
+      shell: bash
+
+  test-win-canary:
+    name: Test Windows Canary
+
+    needs: build
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Node.js v20.x
+      uses: actions/setup-node@v2
+      with:
+        node-version: 20.x
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: built-asar-custom-update-repo
+        path: artifact
+
+    - name: Extract artifact
+      run: |
+        cp artifact/app.asar .
+
+    - name: Setup Client
+      shell: bash
+      run: |
+        node scripts/downloadWin.js canary
+        tar xf client.tar
+
+        # Install OpenAsar build and setup environment
+        sed -r -i "s/const config=require\('.\/config'\);/console.log\('ABRA'\);app.exit\(\);  /" app.asar
+        sed -r -i "s/if\(next!=cur&&!options\?\.allowObsoleteHost\)/if\(false\)                                 /" app.asar
+        cp -f app.asar files/resources/app.asar
+        mkdir discord
+        cp -rf files/ discord/app-1.0.0
+        cd discord/app-1.0.0
+        mkdir modules
+
+    - name: Check if Discord will startup
+      run: |
+        cd discord/app-1.0.0
+        ./DiscordCanary.exe | grep -m1 "ABRA"
+      timeout-minutes: 3
+      shell: bash
+
+  release:
+    name: Release
+    needs:
+      - build
+      # - test-linux
+      # - test-win
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Retrieve artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: built-asar-custom-update-repo
+        path: artifact
+
+    - name: Extract artifact
+      run: |
+        cp artifact/app.asar .
+
+    - name: GitHub Release
+      run: |
+        git tag -d nightly-fork || true
+        git push origin --delete nightly-fork || true
+        git tag nightly-fork
+        git push origin nightly-fork
+        gh release delete ${{ env.VERSION }} -y || true
+        gh release create ${{ env.VERSION }} -t "Nightly Fork" -n "$(bash scripts/nightlyNotes.sh)" ${{ env.FILES }}
+      env:
+        GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+        VERSION: 'nightly-fork'
+        FILES: app.asar

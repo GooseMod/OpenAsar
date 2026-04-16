@@ -7,6 +7,7 @@ const tmpRoot = join(root, 'tmp', 'pack-build');
 
 const args = process.argv.slice(2);
 let disableAutoUpdate = false;
+let updateRepo = 'GooseMod/OpenAsar';
 let version;
 let output = join(root, 'tmp', 'openasar-build', 'app.asar');
 
@@ -23,18 +24,25 @@ for (let i = 0; i < args.length; i++) {
     continue;
   }
 
+  if (arg === '--update-repo') {
+    updateRepo = args[++i];
+    continue;
+  }
+
   if (arg === '--output') {
     output = resolve(args[++i]);
     continue;
   }
 
   if (arg === '--help') {
-    console.log('Usage: node scripts/pack.js [--disable-autoupdate] [--version <value>] [--output <path>]');
+    console.log('Usage: node scripts/pack.js [--disable-autoupdate] [--update-repo <owner/repo>] [--version <value>] [--output <path>]');
     process.exit(0);
   }
 
   throw new Error(`Unknown argument: ${arg}`);
 }
+
+if (!/^[^/\s]+\/[^/\s]+$/.test(updateRepo)) throw new Error(`Invalid --update-repo value: ${updateRepo}`);
 
 if (!version) {
   const git = spawnSync('git', ['rev-parse', '--short', 'HEAD'], {
@@ -103,6 +111,7 @@ const indexPath = join(tmpRoot, 'src', 'index.js');
 let indexCode = readFileSync(indexPath, 'utf8');
 indexCode = indexCode.replace("global.oaVersion = 'nightly';", `global.oaVersion = '${version}';`);
 indexCode = indexCode.replace('<disableAutoUpdate>', disableAutoUpdate ? 'true' : 'false');
+indexCode = indexCode.replaceAll('<updateRepo>', updateRepo);
 writeFileSync(indexPath, indexCode);
 
 stripTree(join(tmpRoot, 'src'));
