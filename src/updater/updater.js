@@ -1,4 +1,4 @@
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const { app } = require('electron');
 const Module = require('module');
 const { join, resolve, basename } = require('path');
@@ -373,6 +373,17 @@ class Updater extends require('events').EventEmitter {
   }
 }
 
+const getCurrentArch = () => {
+  if (process.platform === 'win32') {
+    return ['AMD64', 'IA64'].includes(process.env.PROCESSOR_ARCHITEW6432 ?? process.env.PROCESSOR_ARCHITECTURE) ? 'x64' : 'x86';
+  }
+
+  if (process.platform === 'darwin') {
+    return execSync('uname -m').toString().trim() === 'arm64' ? 'arm64' : 'x64';
+  }
+
+  return null;
+};
 
 module.exports = {
   Updater,
@@ -393,7 +404,7 @@ module.exports = {
       repository_url,
       root_path,
       user_data_path: paths.getUserData(),
-      current_os_arch: process.platform === 'win32' ? (['AMD64', 'IA64'].includes(process.env.PROCESSOR_ARCHITEW6432 ?? process.env.PROCESSOR_ARCHITECTURE) ? 'x64' : 'x86') : null
+      current_os_arch: getCurrentArch()
     };
 
     const updaterContents = require('fs').readFileSync(updaterPath, 'utf8');
