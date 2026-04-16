@@ -394,7 +394,7 @@ module.exports = {
 
   INCONSISTENT_INSTALLER_STATE_ERROR: 'InconsistentInstallerState',
 
-  tryInitUpdater: (buildInfo, repository_url) => {
+  tryInitUpdater: (buildInfo, repository_url, use_rust_bspatch) => {
     const root_path = paths.getRootPath();
     if (root_path == null) return false;
 
@@ -404,7 +404,8 @@ module.exports = {
       repository_url,
       root_path,
       user_data_path: paths.getUserData(),
-      current_os_arch: getCurrentArch()
+      current_os_arch: getCurrentArch(),
+      use_rust_bspatch: use_rust_bspatch === true
     };
 
     const updaterContents = require('fs').readFileSync(updaterPath, 'utf8');
