@@ -2,16 +2,11 @@ const fs = require('fs');
 const { join, basename, dirname } = require('path');
 const { app } = require('electron');
 
-const buildInfo = require('./utils/buildInfo');
-
-const desktopPath = join(app.getPath('appData'), 'autostart', app.name + '-' + buildInfo.releaseChannel + '.desktop');
-
 const exec = app.getPath('exe');
-
-// Windows registry util
-const reg = (a, c) => require('child_process').execFile('reg.exe', a, c);
-
 const appName = basename(exec, '.exe');
+const desktopPath = join(app.getPath('appData'), 'autostart', app.getName() + '.desktop');
+
+const reg = (a, c) => require('child_process').execFile('reg.exe', a, c);
 const queuePrefix = [ 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run', '/v', appName ];
 
 exports.install = cb => {
@@ -27,6 +22,8 @@ exports.install = cb => {
       fs.writeFile(desktopPath, `[Desktop Entry]
 Type=Application
 Exec=${exec}
+Hidden=false
+NoDisplay=false
 Name=${basename(exec)}
 Icon=${join(global.systemElectron ? '/usr/share/pixmaps' : dirname(exec), 'discord.png')}
 Comment=Text and voice chat for gamers.
@@ -55,7 +52,7 @@ exports.uninstall = cb => {
   }
 };
 
-exports.update = cb => process.platform === 'win32' && exports.isInstalled(installed => installed ? exports.install(cb) : cb());
+exports.update = cb => process.platform === 'win32' ? exports.isInstalled(installed => installed ? exports.install(cb) : cb()) : cb();
 
 exports.isInstalled = cb => {
   switch (process.platform) {
