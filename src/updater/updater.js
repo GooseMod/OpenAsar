@@ -1,5 +1,6 @@
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const { app } = require('electron');
+const fs = require('fs');
 const Module = require('module');
 const { join, resolve, basename } = require('path');
 const { hrtime } = require('process');
@@ -373,6 +374,26 @@ class Updater extends require('events').EventEmitter {
   }
 }
 
+const getCurrentArch = () => {
+  if (process.platform === 'win32') {
+    return ['AMD64', 'IA64'].includes(process.env.PROCESSOR_ARCHITEW6432 ?? process.env.PROCESSOR_ARCHITECTURE) ? 'x64' : 'x86';
+  }
+
+  if (process.platform === 'darwin') {
+    return execSync('uname -m').toString().trim() === 'arm64' ? 'arm64' : 'x64';
+  }
+
+  // linux (discord only support it anyway)
+  return 'x64';
+};
+
+const getPlatform = () => {
+  switch (process.platform) {
+    case 'darwin': return 'osx';
+    case 'win32': return 'win';
+    default: return process.platform;
+  }
+};
 
 module.exports = {
   Updater,
@@ -383,21 +404,19 @@ module.exports = {
 
   INCONSISTENT_INSTALLER_STATE_ERROR: 'InconsistentInstallerState',
 
-  tryInitUpdater: (buildInfo, repository_url) => {
+  tryInitUpdater: (buildInfo, repository_url, use_rust_bspatch) => {
     const root_path = paths.getRootPath();
-    if (root_path == null) return false;
+    if (root_path == null || !fs.existsSync(updaterPath)) return false;
 
     const opts = {
       release_channel: buildInfo.releaseChannel,
-      platform: process.platform === 'win32' ? 'win' : 'osx',
+      platform: getPlatform(),
       repository_url,
       root_path,
       user_data_path: paths.getUserData(),
-      current_os_arch: process.platform === 'win32' ? (['AMD64', 'IA64'].includes(process.env.PROCESSOR_ARCHITEW6432 ?? process.env.PROCESSOR_ARCHITECTURE) ? 'x64' : 'x86') : null
+      current_os_arch: getCurrentArch(),
+      use_rust_bspatch: use_rust_bspatch === true
     };
-
-    const updaterContents = require('fs').readFileSync(updaterPath, 'utf8');
-    if (updaterContents.includes('use_rust_bspatch')) opts.use_rust_bspatch = false;
 
     instance = new Updater(opts);
     currentVersion = buildInfo.version;

@@ -22,8 +22,11 @@ exports.init = () => {
   userDataVersioned = join(userData, buildInfo.version);
 
   exeDir = dirname(app.getPath('exe'));
-  if (basename(exeDir).startsWith('app-')) installPath = join(exeDir, '..');
-    else if (process.platform === 'darwin') installPath = join(exeDir, '..', '..', '..');
+  if (basename(exeDir).startsWith('app-')) {
+    installPath = join(exeDir, '..');
+  } else if (process.platform === 'darwin') {
+    installPath = join(exeDir, '..', '..', '..');
+  }
   rootPath = process.platform === 'darwin' ? userData : installPath;
 
   moduleData = buildInfo.newUpdater ? join(userData, 'module_data') : join(userDataVersioned, 'modules');

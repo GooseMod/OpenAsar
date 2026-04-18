@@ -14,11 +14,12 @@ log('BuildInfo', buildInfo);
 const Constants = require('./Constants');
 app.setAppUserModelId(Constants.APP_ID);
 
-app.name = 'discord'; // Force name as sometimes breaks
+if (buildInfo.releaseChannel !== 'stable' && process.platform === 'linux') {
+  app.setName(app.getName() + '-' + buildInfo.releaseChannel);
+}
 
 const fatal = e => log('Fatal', e);
 process.on('uncaughtException', console.error);
-
 
 const splash = require('./splash');
 const updater = require('./updater/updater');
@@ -131,8 +132,7 @@ const startUpdate = () => {
   if (urls.length > 0) session.defaultSession.webRequest.onBeforeRequest({ urls }, (e, cb) => cb({ cancel: true }));
 
   const startMin = process.argv?.includes?.('--start-minimized');
-
-  if (updater.tryInitUpdater(buildInfo, Constants.NEW_UPDATE_ENDPOINT)) {
+  if (Constants.USE_NEW_UPDATER && updater.tryInitUpdater(buildInfo, Constants.NEW_UPDATE_ENDPOINT, Constants.USE_RUST_BSPATCH)) {
     const inst = updater.getUpdater();
 
     inst.on('host-updated', () => autoStart.update(() => {}));
@@ -140,7 +140,7 @@ const startUpdate = () => {
     inst.on('InconsistentInstallerState', fatal);
     inst.on('update-error', console.error);
 
-    require('./winFirst').do();
+    require('./firstRun').do();
   } else {
     moduleUpdater.init(Constants.UPDATE_ENDPOINT, buildInfo);
   }
