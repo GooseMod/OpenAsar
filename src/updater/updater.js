@@ -1,5 +1,6 @@
 const { spawn, execSync } = require('child_process');
 const { app } = require('electron');
+const fs = require('fs');
 const Module = require('module');
 const { join, resolve, basename } = require('path');
 const { hrtime } = require('process');
@@ -382,7 +383,16 @@ const getCurrentArch = () => {
     return execSync('uname -m').toString().trim() === 'arm64' ? 'arm64' : 'x64';
   }
 
-  return null;
+  // linux (discord only support it anyway)
+  return 'x64';
+};
+
+const getPlatform = () => {
+  switch (process.platform) {
+    case 'darwin': return 'osx';
+    case 'win32': return 'win';
+    default: return process.platform;
+  }
 };
 
 module.exports = {
@@ -396,20 +406,17 @@ module.exports = {
 
   tryInitUpdater: (buildInfo, repository_url, use_rust_bspatch) => {
     const root_path = paths.getRootPath();
-    if (root_path == null) return false;
+    if (root_path == null || !fs.existsSync(updaterPath)) return false;
 
     const opts = {
       release_channel: buildInfo.releaseChannel,
-      platform: process.platform === 'win32' ? 'win' : 'osx',
+      platform: getPlatform(),
       repository_url,
       root_path,
       user_data_path: paths.getUserData(),
       current_os_arch: getCurrentArch(),
       use_rust_bspatch: use_rust_bspatch === true
     };
-
-    const updaterContents = require('fs').readFileSync(updaterPath, 'utf8');
-    if (updaterContents.includes('use_rust_bspatch')) opts.use_rust_bspatch = false;
 
     instance = new Updater(opts);
     currentVersion = buildInfo.version;
