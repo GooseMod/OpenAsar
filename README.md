@@ -19,5 +19,9 @@
 ## [Install Guide](https://github.com/GooseMod/OpenAsar/wiki/Install-Guide)
 
 
+## Local Build
+See [docs/build.md](docs/build.md) for local build instructions, including local test builds with `--disable-autoupdate`.
+
 ## Config
+
 You can configure OpenAsar by clicking the "OpenAsar..." version info in the bottom of your settings sidebar, which will open the config window.
