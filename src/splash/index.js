@@ -119,7 +119,7 @@ const initNew = async (inst) => {
   toSend = -1;
 
   const retryOptions = {
-    skip_host_delta: false,
+    skip_host_delta: true,
     skip_module_delta: {},
     skip_all_module_delta: false,
     allow_optional_updates: settings.get('ALLOW_OPTIONAL_UPDATES', true)
