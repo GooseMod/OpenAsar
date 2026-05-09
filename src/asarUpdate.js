@@ -11,10 +11,14 @@ const redirs = url => new Promise(res => get(url, r => { // Minimal wrapper arou
 }));
 
 module.exports = async () => { // (Try) update asar
+  if (global.oaDisableAutoUpdate) return log('AsarUpdate', 'Skipping build-configured auto-update disable');
   if (!oaVersion.includes('-')) return;
+  const releaseChannel = oaVersion.split('-')[0];
+  const updateRepo = global.oaUpdateRepo || 'GooseMod/OpenAsar';
+
   log('AsarUpdate', 'Updating...');
 
-  const res = (await redirs(`https://github.com/GooseMod/OpenAsar/releases/download/${oaVersion.split('-')[0]}/app.asar`));
+  const res = (await redirs(`https://github.com/${updateRepo}/releases/download/${releaseChannel}/app.asar`));
 
   let data = [];
   res.on('data', d => {
