@@ -34,6 +34,7 @@ setInterval(() => {
   const oaVersion = oaVersionInfo.children[0];
   oaVersion.id = 'openasar-ver';
   oaVersion.textContent = 'OpenAsar <channel> (<hash>)';
+  oaVersion.style.cursor = 'pointer';
   oaVersion.onclick = () => DiscordNative.ipc.send('DISCORD_UPDATED_QUOTES', 'o');
 
   oaVersionInfo.textContent = '';
