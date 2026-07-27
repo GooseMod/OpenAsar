@@ -61,8 +61,12 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   Module.globalPaths.push(basePath);
 
   // Purge pending
-  fs.rmSync(downloadPath, { recursive: true, force: true });
-  mkdir(downloadPath);
+  try {
+    fs.rmSync(downloadPath, { recursive: true, force: true });
+    mkdir(downloadPath);
+  } catch (e) {
+    log('Module','WARNING: Failed to purge pending downloads:', e.message, '(NOTE: This is expected behaviour when running the Flatpak version of Discord.)')
+  }
 
   try {
     installed = JSON.parse(fs.readFileSync(manifestPath));
