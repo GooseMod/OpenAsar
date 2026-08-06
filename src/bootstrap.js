@@ -123,7 +123,11 @@ const startUpdate = () => {
 
     require('./firstRun').do();
   } else {
-    moduleUpdater.init(Constants.UPDATE_ENDPOINT, buildInfo);
+    try {
+      moduleUpdater.init(Constants.UPDATE_ENDPOINT, buildInfo);
+    } catch (e) {
+      log('Modules', 'Failed to init module updater', e);
+    }
   }
 
   splash.events.once('APP_SHOULD_LAUNCH', () => {

@@ -61,8 +61,12 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   Module.globalPaths.push(basePath);
 
   // Purge pending
-  fs.rmSync(downloadPath, { recursive: true, force: true });
-  mkdir(downloadPath);
+  try {
+    fs.rmSync(downloadPath, { recursive: true, force: true });
+    mkdir(downloadPath);
+  } catch (e) {
+    log('Modules', 'Failed to init pending directory', e);
+  }
 
   try {
     installed = JSON.parse(fs.readFileSync(manifestPath));
@@ -134,6 +138,23 @@ const downloadModule = async (name, ver) => {
   const path = join(downloadPath, name + '-' + ver + '.zip');
   const file = fs.createWriteStream(path);
 
+  let writeFailed = false;
+  file.on('error', (e) => {
+    if (writeFailed) return;
+    writeFailed = true;
+
+    log('Modules', 'Failed to download', name, e);
+
+    downloading.fail++;
+    downloading.done++;
+
+    events.emit('downloaded-module', { name });
+
+    if (downloading.done === downloading.total) {
+      events.emit('downloaded', { failed: downloading.fail });
+    }
+  });
+
   // log('Modules', 'Downloading', `${name}@${ver}`);
 
   let success, total, cur =  0;
@@ -150,6 +171,8 @@ const downloadModule = async (name, ver) => {
   });
 
   await new Promise((res) => file.on('close', res));
+
+  if (writeFailed) return;
 
   if (success) commitManifest();
     else downloading.fail++;
@@ -268,7 +291,13 @@ exports.quitAndInstallUpdates = () => host.quitAndInstall();
 exports.isInstalled = (n, v) => installed[n] && (skipModule || !(v && installed[n].installedVersion !== v));
 exports.getInstalled = () => ({ ...installed });
 
-const commitManifest = () => fs.writeFileSync(manifestPath, JSON.stringify(installed, null, 2));
+const commitManifest = () => {
+  try {
+    fs.writeFileSync(manifestPath, JSON.stringify(installed, null, 2));
+  } catch (e) {
+    log('Modules', 'Failed to write manifest', e);
+  }
+};
 
 exports.install = (name, def, { version } = {}) => {
   if (exports.isInstalled(name, version)) {
