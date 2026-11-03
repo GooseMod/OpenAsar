@@ -61,8 +61,10 @@ exports.init = (endpoint, { releaseChannel, version }) => {
   Module.globalPaths.push(basePath);
 
   // Purge pending
-  fs.rmSync(downloadPath, { recursive: true, force: true });
-  mkdir(downloadPath);
+  if (!skipModule) {
+    fs.rmSync(downloadPath, { recursive: true, force: true });
+    mkdir(downloadPath);
+  }
 
   try {
     installed = JSON.parse(fs.readFileSync(manifestPath));
