@@ -201,11 +201,11 @@ class Updater extends require('events').EventEmitter {
 
     for (const m in versions.current_modules) {
       const path = join(base, `${m}-${versions.current_modules[m]}`);
-      if (this.committedModules.has(m) || Module.globalPaths.includes(path)) continue;
+      if (this.committedModules.has(m)) continue;
 
       this.committedModules.add(m);
       this.committedModulePaths.set(m, join(path, m));
-      Module.globalPaths.unshift(path);
+      if (!Module.globalPaths.includes(path)) Module.globalPaths.unshift(path);
     }
   }
 
