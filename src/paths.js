@@ -1,4 +1,5 @@
 const { join, dirname, basename } = require('path');
+const { mkdirSync } = require('fs');
 const { app } = require('electron');
 
 const buildInfo = require('./utils/buildInfo');
@@ -20,6 +21,7 @@ exports.init = () => {
   const appDir = 'discord' + (buildInfo.releaseChannel === 'stable' ? '' : buildInfo.releaseChannel); // Clean channel naming up later to util?
   userData = process.env.DISCORD_USER_DATA_DIR ?? join(app.getPath('appData'), appDir);
   userDataVersioned = join(userData, buildInfo.version);
+  mkdirSync(userDataVersioned, { recursive: true });
 
   exeDir = dirname(app.getPath('exe'));
   if (basename(exeDir).startsWith('app-')) {
@@ -30,9 +32,11 @@ exports.init = () => {
   rootPath = process.platform === 'darwin' ? userData : installPath;
 
   moduleData = buildInfo.localModulesRoot != null ? buildInfo.localModulesRoot :
-    (buildInfo.newUpdater ? join(userData, 'module_data') : join(userDataVersioned, 'modules'));
+    buildInfo.standaloneModules ? join(process.resourcesPath, 'standalone_modules') :
+    (buildInfo.newUpdater !== false ? join(userData, 'module_data') : join(userDataVersioned, 'modules'));
   resourcesPath = join(process.resourcesPath);
   logPath = join(userData, 'logs');
+  mkdirSync(logPath, { recursive: true });
   assetCachePath = join(userData, 'discord_asset_cache');
 
   global.moduleDataPath = moduleData; // Global because discord
